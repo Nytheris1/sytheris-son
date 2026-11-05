@@ -3,11 +3,12 @@ import { neon, neonConfig } from '@neondatabase/serverless'
 import { promises as fs } from 'fs'
 import path from 'path'
 
-// 🚨 SUPABASE BAĞLANTI AYARLARI 🚨
-// Neon sürücüsünün standart Postgres (Supabase) bağlantı havuzlarıyla çalışması için:
+// Supabase (Supavisor) bağlantı havuzuyla uyumluluk için gerekli ayarlar
 neonConfig.pipelineConnect = false;
-// Vercel Node.js ortamında global WebSocket bazen bulunmaz, fetch'e zorluyoruz:
-neonConfig.fetchConnectionCache = true;
+// WebSocket desteğini garantiye al
+if (typeof WebSocket !== 'undefined') {
+  neonConfig.webSocketConstructor = WebSocket;
+}
 
 /**
  * Minimal key/value store. Uses Postgres (Neon/Supabase) when DATABASE_URL is present,
@@ -26,7 +27,15 @@ export function storeBackend(): 'postgres' | 'memory' {
 }
 
 function sql() {
-  return neon(process.env.DATABASE_URL as string)
+  const dbUrl = process.env.DATABASE_URL || '';
+  
+  // 🚨 DEBUG: Vercel loglarında hangi linke bağlanmaya çalıştığını görmek için
+  if (dbUrl) {
+    const maskedUrl = dbUrl.replace(/:[^:@]+@/, ':****@');
+    console.log("🔗 [DB CONNECTION ATTEMPT]:", maskedUrl);
+  }
+
+  return neon(dbUrl)
 }
 
 async function ensureTable() {
