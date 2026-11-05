@@ -1,0 +1,16 @@
+{
+  "name": "Sytheris Anime",
+  "short_name": "Sytheris",
+  "description": "Karanlık fantezi ve anime dünyası.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#e63946",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
