@@ -1,20 +1,7 @@
 import 'server-only'
-import { neon, neonConfig } from '@neondatabase/serverless'
+import { Pool } from 'pg'
 import { promises as fs } from 'fs'
 import path from 'path'
-
-// Supabase (Supavisor) bağlantı havuzuyla uyumluluk için gerekli ayarlar
-neonConfig.pipelineConnect = false;
-// WebSocket desteğini garantiye al
-if (typeof WebSocket !== 'undefined') {
-  neonConfig.webSocketConstructor = WebSocket;
-}
-
-/**
- * Minimal key/value store. Uses Postgres (Neon/Supabase) when DATABASE_URL is present,
- * otherwise falls back to a JSON file in the OS temp dir so the app keeps working
- * in development and previews without a database.
- */
 
 type Row = { key: string; value: unknown }
 
@@ -26,23 +13,22 @@ export function storeBackend(): 'postgres' | 'memory' {
   return process.env.DATABASE_URL ? 'postgres' : 'memory'
 }
 
-function sql() {
-  const dbUrl = process.env.DATABASE_URL || '';
-  
-  // 🚨 DEBUG: Vercel loglarında hangi linke bağlanmaya çalıştığını görmek için
-  if (dbUrl) {
-    const maskedUrl = dbUrl.replace(/:[^:@]+@/, ':****@');
-    console.log("🔗 [DB CONNECTION ATTEMPT]:", maskedUrl);
-  }
-
-  return neon(dbUrl)
-}
+// Standart PostgreSQL bağlantı havuzu (Supabase ile tam uyumlu)
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+})
 
 async function ensureTable() {
   if (!g.__syTable) {
     g.__syTable = (async () => {
-      const q = sql()
-      await q`CREATE TABLE IF NOT EXISTS sytheris_kv (key TEXT PRIMARY KEY, value JSONB NOT NULL, updated_at TIMESTAMPTZ NOT NULL DEFAULT now())`
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS sytheris_kv (
+          key TEXT PRIMARY KEY, 
+          value JSONB NOT NULL, 
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+        )
+      `)
     })().catch((e) => {
       g.__syTable = undefined
       throw e
@@ -77,8 +63,8 @@ function scheduleFlush(map: Map<string, unknown>) {
 export async function kvGet<T>(key: string): Promise<T | null> {
   if (storeBackend() === 'postgres') {
     await ensureTable()
-    const rows = (await sql()`SELECT value FROM sytheris_kv WHERE key = ${key}`) as { value: T }[]
-    return rows[0]?.value ?? null
+    const res = await pool.query('SELECT value FROM sytheris_kv WHERE key = $1', [key])
+    return res.rows[0]?.value ?? null
   }
   const m = await memory()
   return (m.get(key) as T) ?? null
@@ -87,8 +73,11 @@ export async function kvGet<T>(key: string): Promise<T | null> {
 export async function kvSet<T>(key: string, value: T) {
   if (storeBackend() === 'postgres') {
     await ensureTable()
-    await sql()`INSERT INTO sytheris_kv (key, value, updated_at) VALUES (${key}, ${JSON.stringify(value)}::jsonb, now())
-      ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()`
+    await pool.query(
+      `INSERT INTO sytheris_kv (key, value, updated_at) VALUES ($1, $2::jsonb, now())
+       ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()`,
+      [key, JSON.stringify(value)]
+    )
     return
   }
   const m = await memory()
@@ -99,7 +88,7 @@ export async function kvSet<T>(key: string, value: T) {
 export async function kvDel(key: string) {
   if (storeBackend() === 'postgres') {
     await ensureTable()
-    await sql()`DELETE FROM sytheris_kv WHERE key = ${key}`
+    await pool.query('DELETE FROM sytheris_kv WHERE key = $1', [key])
     return
   }
   const m = await memory()
@@ -111,8 +100,11 @@ export async function kvList<T>(prefix: string, limit = 500): Promise<{ key: str
   if (storeBackend() === 'postgres') {
     await ensureTable()
     const like = prefix.replace(/[%_]/g, (c) => `\\${c}`) + '%'
-    const rows = (await sql()`SELECT key, value FROM sytheris_kv WHERE key LIKE ${like} ORDER BY updated_at DESC LIMIT ${limit}`) as Row[]
-    return rows as { key: string; value: T }[]
+    const res = await pool.query(
+      'SELECT key, value FROM sytheris_kv WHERE key LIKE $1 ORDER BY updated_at DESC LIMIT $2',
+      [like, limit]
+    )
+    return res.rows as { key: string; value: T }[]
   }
   const m = await memory()
   const out: { key: string; value: T }[] = []
@@ -125,7 +117,7 @@ export async function storeHealth() {
   try {
     if (storeBackend() === 'postgres') {
       await ensureTable()
-      await sql()`SELECT 1`
+      await pool.query('SELECT 1')
     } else {
       await memory()
     }
