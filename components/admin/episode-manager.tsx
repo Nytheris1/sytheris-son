@@ -29,7 +29,10 @@ export function EpisodeManager({ catalog }: { catalog: CatalogItem[] }) {
 
   function submit(e: React.FormEvent) {
     e.preventDefault()
-    if (!anime) return toast.error('Önce bir anime seç')
+    if (!anime) {
+      toast.error('Önce bir anime seç')
+      return
+    }
     start(async () => {
       const res = await addEpisodeAction({
         animeId: anime.id,
@@ -44,7 +47,10 @@ export function EpisodeManager({ catalog }: { catalog: CatalogItem[] }) {
         subtitleText: subMode === 'text' ? f.subtitleText : '',
         subtitleLang: f.subtitleLang,
       })
-      if (!res.ok) return toast.error(res.error)
+      if (!res.ok) {
+        toast.error(res.error)
+        return
+      }
       toast.success(`${anime.title} · ${f.number}. bölüm eklendi`)
       setF((x) => ({ ...x, number: x.number + 1, title: '', videoUrl: '', magnetUrl: '', thumbnail: '', subtitleUrl: '', subtitleText: '' }))
       router.refresh()
@@ -52,14 +58,16 @@ export function EpisodeManager({ catalog }: { catalog: CatalogItem[] }) {
   }
 
   const handleFindStream = async () => {
-    if (!anime || !f.number) return toast.error('Anime ve bölüm numarası gerekli')
+    if (!anime || !f.number) {
+      toast.error('Anime ve bölüm numarası gerekli')
+      return
+    }
     setSearchingStream(true)
     toast.loading('HLS/MP4 Akış linki aranıyor...', { id: 'stream' })
     
     try {
       const res = await fetch(`/api/stream?title=${encodeURIComponent(anime.title)}&ep=${f.number}`)
       
-      // Güvenli okuma: Eğer sunucu JSON yerine HTML hata sayfası dönerse çökmeyi engeller
       const text = await res.text()
       let data
       try {
@@ -84,7 +92,10 @@ export function EpisodeManager({ catalog }: { catalog: CatalogItem[] }) {
   }
 
   const handleFindTorrent = async () => {
-    if (!anime || !f.number) return toast.error('Anime ve bölüm numarası gerekli')
+    if (!anime || !f.number) {
+      toast.error('Anime ve bölüm numarası gerekli')
+      return
+    }
     setSearchingTorrent(true)
     toast.loading('Torrent aranıyor...', { id: 'torrent' })
     
@@ -132,7 +143,6 @@ export function EpisodeManager({ catalog }: { catalog: CatalogItem[] }) {
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            {/* MP4 / HLS */}
             <div className="flex flex-col gap-2 rounded-2xl border border-primary/20 bg-primary/5 p-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">HLS / MP4 Linki</span>
@@ -149,7 +159,6 @@ export function EpisodeManager({ catalog }: { catalog: CatalogItem[] }) {
               <input type="text" className={field} placeholder="https://.../master.m3u8" value={f.videoUrl} onChange={(e) => setF({ ...f, videoUrl: e.target.value })} />
             </div>
 
-            {/* Magnet */}
             <div className="flex flex-col gap-2 rounded-2xl border border-border p-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Magnet Linki</span>
