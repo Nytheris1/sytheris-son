@@ -4,6 +4,7 @@ import { Hero } from '@/components/home/hero'
 import { OnSiteRow } from '@/components/home/on-site-row'
 import { TopTen } from '@/components/home/top-ten'
 import { WeeklyPick } from '@/components/home/weekly-pick'
+import { AppDownload } from '@/components/home/app-download' // 🚨 YENİ EKLENDİ
 import { getAnimeMeta, getHomeData } from '@/lib/anilist'
 import { seasonTr } from '@/lib/format'
 import { getEpisodeCatalog, getSettings } from '@/lib/site'
@@ -42,6 +43,11 @@ export default async function HomePage() {
       <AnimeRow eyebrow="Efsaneler" title="Tüm zamanların" accent="zirvesi" description="Topluluğun en yüksek puan verdiği başyapıtlar." href="/ara?sort=SCORE_DESC" items={data.allTime} />
       <AnimeRow eyebrow="Popüler" title="Herkesin izlediği" accent="favoriler" href="/ara?sort=POPULARITY_DESC" items={data.popular} />
       <AnimeRow eyebrow="Yakında" title="Gelecek" accent="yapımlar" description="Henüz yayınlanmamış ama şimdiden merakla beklenenler." href="/ara?status=NOT_YET_RELEASED" items={data.upcoming} />
+      
+      {/* 🚨 UYGULAMAYI İNDİR BANNER'I (En alta eklendi) */}
+      <div className="px-4 md:px-8">
+        <AppDownload />
+      </div>
     </div>
   )
 }
