@@ -8,6 +8,7 @@ import { MaintenanceScreen } from '@/components/shell/maintenance-screen'
 import { getSettings } from '@/lib/site'
 import { isAdmin } from '@/lib/session'
 import { THEME_SCRIPT } from '@/lib/themes'
+import { FloatingInstall } from '@/components/ui/floating-install' // 🚨 YENİ EKLENDİ
 import './globals.css'
 
 const bricolage = Bricolage_Grotesque({ subsets: ['latin', 'latin-ext'], variable: '--font-bricolage', display: 'swap' })
@@ -44,6 +45,7 @@ export const metadata: Metadata = {
     ],
     apple: '/apple-icon.png',
   },
+  manifest: '/manifest.json', // 🚨 PWA Manifest Eklendi
 }
 
 export const viewport: Viewport = {
@@ -74,9 +76,29 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           strategy="beforeInteractive"
           dangerouslySetInnerHTML={{ __html: BOOT_SCRIPT }}
         />
+        
+        {/* 🚨 Service Worker Kaydı (PWA için gerekli) */}
+        <Script
+          id="sw-register"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js');
+                });
+              }
+            `,
+          }}
+        />
+
         <AppProviders introEnabled={settings.introEnabled}>
           {showMaintenance ? <MaintenanceScreen settings={settings} /> : children}
         </AppProviders>
+        
+        {/* 🚨 Yüzen Animasyonlu Uygulama İndirme Butonu */}
+        <FloatingInstall />
+
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>
