@@ -86,9 +86,33 @@ export function EpisodeManager({ catalog }: { catalog: CatalogItem[] }) {
             </div>
           </label>
 
-          {/* MAGNET LİNKİ ALANI BURAYA EKLENDİ */}
           <label className="flex flex-col gap-1.5 text-sm">
-            <span className="text-muted-foreground">Magnet Linki (WebTorrent - Opsiyonel)</span>
+            <span className="flex items-center justify-between text-muted-foreground">
+              Magnet Linki (WebTorrent - Opsiyonel)
+              <button 
+                type="button" 
+                onClick={async () => {
+                  if (!anime || !f.number) return toast.error('Önce anime ve bölüm no seçin');
+                  const q = `${anime.title} ${f.number < 10 ? '0'+f.number : f.number}`;
+                  toast.loading('Torrent aranıyor...', { id: 'torrent' });
+                  try {
+                    const res = await fetch(`/api/torrents?q=${encodeURIComponent(q)}`);
+                    const data = await res.json();
+                    if (data.magnet) {
+                      setF({ ...f, magnetUrl: data.magnet });
+                      toast.success(`Bulundu! (${data.seeders} seed)`, { id: 'torrent' });
+                    } else {
+                      toast.error(data.error || 'Bulunamadı', { id: 'torrent' });
+                    }
+                  } catch {
+                    toast.error('Arama hatası', { id: 'torrent' });
+                  }
+                }}
+                className="text-xs text-primary hover:underline"
+              >
+                Otomatik Bul
+              </button>
+            </span>
             <input type="text" className={field} placeholder="magnet:?xt=urn:btih:..." value={f.magnetUrl} onChange={(e) => setF({ ...f, magnetUrl: e.target.value })} />
           </label>
 
