@@ -102,7 +102,7 @@ export function AppDownload() {
               <div className="w-16 h-16 rounded-2xl bg-red-600 flex items-center justify-center mb-4 shadow-lg shadow-red-600/40">
                 <span className="text-3xl font-black text-white">S</span>
               </div>
-              <h3 className="text-white font-bold text-xl">Sytheris</h1>
+              <h3 className="text-white font-bold text-xl">Sytheris</h3>
               <p className="text-neutral-500 text-sm mt-2">Anime Dünyası</p>
             </div>
           </div>
