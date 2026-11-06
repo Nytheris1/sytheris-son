@@ -1,290 +1,189 @@
 'use client'
 
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { AnimatePresence, motion } from 'motion/react'
+import { useEffect, useState } from 'react'
 import { ArrowRight } from 'lucide-react'
 
-/*
- * SYTHERIS — "Kare" (The Frame) · v6
- * Act I   : a counter climbs to 100 while trending covers flip through one centred frame, faster and faster.
- * Act II  : the last cover bursts out of its frame and becomes the whole screen.
- * Act III : the title rises out of the floor, the chrome slides in.
- * Exit    : the curtain lifts upward onto the site.
- *
- * Drop-in replacement for components/shell/intro.tsx — same props, same "intro-seen" contract.
- */
-
-const TITLE = 'SYTHERIS'.split('')
-const EXPO = [0.87, 0, 0.13, 1] as const
-const OUT = [0.16, 1, 0.3, 1] as const
-const LOAD_MS = 2600
-const TITLE_DELAY_MS = 700
-const HOLD_MS = 2600
-const FLIP_START_MS = 260
-const FLIP_DELAYS = [420, 340, 280, 220, 180, 150, 130, 115, 105]
-const OPEN_CLIP = 'inset(0px 0px 0px 0px round 0px)'
-
-type Phase = 'load' | 'open' | 'title'
-
-type IntroProps = {
-  covers: string[]
-  enabled: boolean
-  /** Ignores the "already seen" flag and never writes it. Used for replaying the intro on demand. */
-  preview?: boolean
-  onClose?: () => void
-}
-
-function frameClip() {
-  if (typeof window === 'undefined') return OPEN_CLIP
-  const W = window.innerWidth
-  const H = window.innerHeight
-  const h = Math.min(H * 0.42, W * 0.6)
-  const w = (h * 2) / 3
-  const y = (H - h) / 2
-  const x = (W - w) / 2
-  return `inset(${y}px ${x}px ${y}px ${x}px round 6px)`
-}
-
-export function Intro({ covers, enabled, preview = false, onClose }: IntroProps) {
-  const reduce = useReducedMotion() ?? false
+export function Intro({ covers, enabled }: { covers: string[]; enabled: boolean }) {
   const [show, setShow] = useState(true)
-  const [phase, setPhase] = useState<Phase>('load')
-  const [flip, setFlip] = useState(0)
-  const [count, setCount] = useState(0)
-  const [clock, setClock] = useState('')
-  const [clip, setClip] = useState(OPEN_CLIP)
-  const finished = useRef(false)
-  const enterRef = useRef<HTMLButtonElement>(null)
+  const [ready, setReady] = useState(false)
+  const [pct, setPct] = useState(0)
+  const [time, setTime] = useState('')
 
-  const reel = useMemo(() => {
-    const list = covers.filter(Boolean).slice(0, FLIP_DELAYS.length + 1)
-    return list.length ? list : ['/placeholder.svg']
-  }, [covers])
-  const finalCover = reel[reel.length - 1]
-
-  const finish = useCallback(() => {
-    if (finished.current) return
-    finished.current = true
-    if (!preview) {
-      try {
-        sessionStorage.setItem('sy-intro-seen', '1')
-      } catch {}
-    }
-    document.body.style.overflow = ''
-    setShow(false)
-  }, [preview])
+  // Görselleri 3 eşit sütuna böl
+  const col1 = covers.filter((_, i) => i % 3 === 0).slice(0, 6)
+  const col2 = covers.filter((_, i) => i % 3 === 1).slice(0, 6)
+  const col3 = covers.filter((_, i) => i % 3 === 2).slice(0, 6)
 
   useEffect(() => {
-    const seen = !preview && document.documentElement.classList.contains('intro-seen')
+    const seen = document.documentElement.classList.contains('intro-seen')
     if (!enabled || seen) {
       setShow(false)
       return
     }
+    setReady(true)
     document.body.style.overflow = 'hidden'
-    enterRef.current?.focus({ preventScroll: true })
-    setClip(frameClip())
-
-    const timers: number[] = []
-    const later = (fn: () => void, ms: number) => timers.push(window.setTimeout(fn, ms))
-
-    if (reduce) {
-      setCount(100)
-      setFlip(reel.length - 1)
-      setPhase('title')
-      later(finish, 2400)
-    } else {
-      let at = FLIP_START_MS
-      for (let i = 1; i < reel.length; i++) {
-        at += FLIP_DELAYS[i - 1] ?? 100
-        const index = i
-        later(() => setFlip(index), Math.min(at, LOAD_MS - 120))
-      }
-      later(() => setPhase('open'), LOAD_MS)
-      later(() => setPhase('title'), LOAD_MS + TITLE_DELAY_MS)
-      later(finish, LOAD_MS + TITLE_DELAY_MS + HOLD_MS)
-    }
-
+    
+    // Yükleme simülasyonu
     const start = performance.now()
+    const total = 3800
     let raf = 0
     const tick = (now: number) => {
-      const p = Math.min(1, (now - start) / LOAD_MS)
-      const eased = p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2
-      setCount(Math.round(eased * 100))
+      const p = Math.min(1, (now - start) / total)
+      setPct(Math.round(p * 100))
       if (p < 1) raf = requestAnimationFrame(tick)
     }
-    if (!reduce) raf = requestAnimationFrame(tick)
-
-    const fmt = () => setClock(new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }))
-    fmt()
-    const clockId = window.setInterval(fmt, 1000)
-    const onResize = () => setClip(frameClip())
-    window.addEventListener('resize', onResize)
+    raf = requestAnimationFrame(tick)
+    const done = window.setTimeout(() => finish(), total + 400)
 
     const keys = (e: KeyboardEvent) => {
-      if (e.key === 'Enter' || e.key === 'Escape' || e.key === ' ') {
-        e.preventDefault()
-        finish()
-      }
+      if (e.key === 'Enter' || e.key === 'Escape' || e.key === ' ') finish()
     }
     window.addEventListener('keydown', keys)
-
     return () => {
-      timers.forEach(window.clearTimeout)
       cancelAnimationFrame(raf)
-      window.clearInterval(clockId)
-      window.removeEventListener('resize', onResize)
+      window.clearTimeout(done)
       window.removeEventListener('keydown', keys)
       document.body.style.overflow = ''
     }
-  }, [enabled, preview, reduce, reel.length, finish])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enabled])
 
-  const loading = phase === 'load'
-  const titled = phase === 'title'
+  useEffect(() => {
+    if (!ready) return
+    const fmt = () => setTime(new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }))
+    fmt()
+    const id = window.setInterval(fmt, 1000)
+    return () => window.clearInterval(id)
+  }, [ready])
+
+  function finish() {
+    try {
+      sessionStorage.setItem('sy-intro-seen', '1')
+    } catch {}
+    document.body.style.overflow = ''
+    setShow(false)
+  }
 
   return (
-    <AnimatePresence onExitComplete={onClose}>
+    <AnimatePresence>
       {show && (
         <motion.div
           id="sy-intro"
           key="intro"
-          role="dialog"
-          aria-modal="true"
-          aria-label="SYTHERIS açılış animasyonu"
-          className="dark fixed inset-0 z-[100] overflow-hidden bg-scrim text-on-scrim"
-          initial={{ clipPath: 'inset(0% 0% 0% 0%)' }}
-          exit={{ clipPath: 'inset(0% 0% 100% 0%)' }}
-          transition={{ duration: reduce ? 0.3 : 0.95, ease: EXPO }}
+          className="dark fixed inset-0 z-[100] overflow-hidden bg-[#0a0a0a] text-[#ededed]"
+          exit={{ y: '-100%' }}
+          initial={{ y: 0 }}
+          transition={{ duration: 1, ease: [0.76, 0, 0.24, 1] }}
           suppressHydrationWarning
         >
-          {/* Act I — the reel inside the frame */}
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center" aria-hidden="true">
-            <div className="relative aspect-[2/3] h-[min(42vh,60vw)] overflow-hidden rounded-md">
-              <AnimatePresence initial={false}>
-                <motion.img
-                  key={flip}
-                  src={reel[flip]}
-                  alt=""
-                  decoding="async"
-                  className="absolute inset-0 size-full object-cover"
-                  initial={reduce ? false : { clipPath: 'inset(100% 0% 0% 0%)', scale: 1.25 }}
-                  animate={{ clipPath: 'inset(0% 0% 0% 0%)', scale: 1 }}
-                  exit={{ opacity: 1 }}
-                  transition={{ duration: 0.38, ease: OUT }}
-                />
-              </AnimatePresence>
-            </div>
+          {/* Film Grain Dokusu */}
+          <div 
+            className="pointer-events-none absolute inset-0 z-50 opacity-[0.15] mix-blend-overlay"
+            style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}
+          />
+
+          {/* Arka Plan Görselleri (Sonsuz Kayan 3 Sütun) */}
+          <div className="absolute inset-0 z-0 flex gap-4 opacity-40">
+            {[col1, col2, col3].map((col, i) => (
+              <div key={i} className="flex h-full flex-1 flex-col gap-4">
+                <motion.div
+                  initial={{ y: 0 }}
+                  animate={{ y: ['0%', '-50%'] }}
+                  transition={{ duration: 25 + i * 5, ease: 'linear', repeat: Infinity }}
+                  className="flex flex-col gap-4"
+                >
+                  {[...col, ...col].map((src, j) => (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img 
+                      key={j} 
+                      src={src || '/placeholder.svg'} 
+                      alt="" 
+                      className="aspect-[2/3] w-full rounded-md object-cover" 
+                    />
+                  ))}
+                </motion.div>
+              </div>
+            ))}
           </div>
 
-          {/* Act II — the final cover breaks out of the frame */}
-          <motion.div
-            className="absolute inset-0"
-            aria-hidden="true"
-            initial={false}
-            animate={{ clipPath: loading ? clip : OPEN_CLIP, opacity: loading ? 0 : 1 }}
-            transition={{ clipPath: { duration: reduce ? 0 : 1.15, ease: EXPO }, opacity: { duration: 0 } }}
-          >
-            <motion.img
-              src={finalCover}
-              alt=""
-              decoding="async"
-              className="size-full object-cover"
-              initial={false}
-              animate={{ scale: loading ? 1.35 : 1.04 }}
-              transition={{ duration: reduce ? 0 : 2.4, ease: OUT }}
-            />
-            <div className="absolute inset-0 bg-scrim/45" />
-            <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-scrim via-scrim/70 to-transparent" />
-            <div className="grain absolute inset-0" />
-          </motion.div>
+          {/* Ekranın Ortasını Karartma (Yazı okunsun diye) */}
+          <div className="absolute inset-0 z-10 bg-black/50 backdrop-blur-[2px]" />
 
-          <div className="relative flex h-full flex-col">
-            <header className="flex items-center justify-between gap-4 px-5 py-5 font-mono text-[10px] uppercase tracking-[0.3em] text-on-scrim/70 sm:px-10 sm:text-[11px]">
-              <motion.span
-                className="flex items-center gap-2"
-                animate={{ opacity: 1 }}
-                initial={reduce ? false : { opacity: 0 }}
-                transition={{ delay: 0.2, duration: 0.6 }}
-              >
-                <span className="size-1.5 rounded-full bg-primary" />
-                SYTHERIS / V6.0
-              </motion.span>
-              <motion.span
-                className="hidden tabular-nums md:inline"
-                animate={{ opacity: titled ? 1 : 0, y: titled ? 0 : -8 }}
-                transition={{ duration: 0.6, ease: OUT }}
-                suppressHydrationWarning
-              >
-                TR · {clock || '--:--:--'}
-              </motion.span>
-              <button
-                ref={enterRef}
-                type="button"
-                onClick={finish}
-                className="group flex items-center gap-3 rounded-full border border-on-scrim/25 bg-scrim/40 py-2 pl-4 pr-2 text-on-scrim outline-none backdrop-blur-md transition-colors hover:border-primary hover:bg-primary hover:text-primary-foreground focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-scrim"
-              >
-                {titled ? 'İçeri gir' : 'Atla'}
-                <span className="flex size-6 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors group-hover:bg-primary-foreground group-hover:text-primary">
-                  <ArrowRight className="size-3" aria-hidden="true" />
-                </span>
-              </button>
-            </header>
+          {/* İçerik (UI) */}
+          <div className="relative z-20 flex h-full flex-col justify-between p-6 sm:p-10">
+            
+            {/* Üst Bilgi */}
+            <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.3em] text-white/50">
+              <span className="flex items-center gap-3">
+                <span className="size-1.5 rounded-full bg-white animate-pulse" />
+                Sytheris / Editoryal Seçki
+              </span>
+              <span className="hidden sm:inline">Türkiye · {time}</span>
+              <span>v4.0</span>
+            </div>
 
-            <div className="relative flex-1">
-              <motion.p
-                className="absolute bottom-6 left-5 max-w-40 font-mono sm:bottom-auto sm:top-1/2 sm:-translate-y-1/2 text-[10px] uppercase leading-relaxed tracking-[0.3em] text-on-scrim/60 sm:left-10 sm:text-[11px]"
-                animate={{ opacity: loading ? 1 : 0 }}
-                transition={{ duration: 0.4 }}
-              >
-                Trend kapaklar
-                <br />
-                yükleniyor
-              </motion.p>
-
+            {/* Orta Kısım: Devasa Tipografi */}
+            <div className="relative flex flex-1 flex-col justify-center overflow-hidden">
               <motion.div
-                className="absolute bottom-0 right-5 font-bold leading-none tracking-[-0.06em] tabular-nums text-[22vw] sm:right-10 sm:text-[11rem]"
-                animate={{ opacity: loading ? 1 : 0, y: loading ? 0 : 40 }}
-                transition={{ duration: 0.5, ease: OUT }}
-                aria-live="polite"
+                initial={{ y: '100%', opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+                className="flex flex-col"
               >
-                {String(count).padStart(3, '0')}
-                <span className="sr-only">%</span>
-              </motion.div>
-
-              <motion.div
-                className="absolute inset-x-5 bottom-4 flex items-end justify-between gap-6 sm:inset-x-10"
-                animate={{ opacity: titled ? 1 : 0, y: titled ? 0 : 16 }}
-                transition={{ delay: titled ? 0.55 : 0, duration: 0.7, ease: OUT }}
-              >
-                <p className="max-w-xs text-pretty text-base leading-relaxed text-on-scrim/85 sm:text-lg">
-                  Bir sonraki favori animen burada.
+                <p className="mb-4 text-center font-serif text-xl italic text-white/70 sm:text-3xl lg:text-4xl">
+                  "Bir sonraki hikayen burada."
                 </p>
-                <p className="hidden font-mono text-[10px] uppercase tracking-[0.3em] text-on-scrim/60 sm:block sm:text-[11px]">
-                  Anime keşif platformu
-                </p>
+                
+                {/* Devasa SYTHERIS Yazısı */}
+                <div className="relative flex w-full items-center justify-center">
+                  <span className="block whitespace-nowrap text-center font-sans text-[18vw] font-black uppercase leading-[0.75] tracking-tighter text-transparent" style={{ WebkitTextStroke: '2px rgba(255,255,255,0.9)' }}>
+                    SYTHERIS
+                  </span>
+                  {/* Yazının üzerinden geçen renkli animasyon (Tema rengi) */}
+                  <motion.span 
+                    initial={{ width: '0%' }}
+                    animate={{ width: '100%' }}
+                    transition={{ duration: 1.5, ease: [0.76, 0, 0.24, 1], delay: 1 }}
+                    className="absolute inset-y-0 left-0 overflow-hidden whitespace-nowrap text-center font-sans text-[18vw] font-black uppercase leading-[0.75] tracking-tighter text-white mix-blend-difference"
+                  >
+                    SYTHERIS
+                  </motion.span>
+                </div>
               </motion.div>
             </div>
 
-            <h1 className="relative px-3 pb-3 sm:px-8 sm:pb-6" aria-label="SYTHERIS">
-              <span
-                className="flex justify-between overflow-hidden font-bold leading-[0.8] tracking-[-0.05em] text-[23.5vw]"
-                aria-hidden="true"
-              >
-                {TITLE.map((letter, i) => (
-                  <motion.span
-                    key={i}
-                    className="inline-block pt-[0.08em]"
-                    initial={false}
-                    animate={{ y: titled ? '0%' : '110%' }}
-                    transition={{ delay: titled ? i * 0.045 : 0, duration: reduce ? 0 : 1.05, ease: OUT }}
-                  >
-                    {letter}
-                  </motion.span>
-                ))}
-              </span>
-            </h1>
+            {/* Alt Kısım: Progress ve Buton */}
+            <div className="flex flex-col gap-6">
+              <div className="flex items-end justify-between">
+                <div className="flex items-center gap-4">
+                  {/* Progress Bar */}
+                  <div className="relative h-12 w-[1px] bg-white/20 overflow-hidden">
+                    <div 
+                      className="absolute bottom-0 left-0 w-full bg-white transition-all duration-100 ease-linear"
+                      style={{ height: `${pct}%` }}
+                    />
+                  </div>
+                  <span className="font-mono text-2xl tabular-nums tracking-tighter sm:text-4xl">
+                    {String(pct).padStart(3, '0')}
+                  </span>
+                </div>
 
-            <div className="absolute inset-x-0 bottom-0 h-0.5 bg-on-scrim/10" aria-hidden="true">
-              <div className="h-full origin-left bg-primary" style={{ transform: `scaleX(${count / 100})` }} />
+                <button
+                  type="button"
+                  onClick={finish}
+                  className="group flex items-center gap-4 rounded-full bg-white px-6 py-3.5 text-sm font-semibold text-black transition-transform hover:scale-105 sm:px-8 sm:py-4"
+                >
+                  Keşfetmeye Başla
+                  <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+                </button>
+              </div>
+              
+              <div className="flex justify-between border-t border-white/10 pt-4 font-mono text-[10px] uppercase tracking-[0.2em] text-white/40">
+                <span>Yükleniyor</span>
+                <span className="hidden sm:inline">Görseller: AniList</span>
+                <span>{String(pct).padStart(3, '0')} / 100</span>
+              </div>
             </div>
           </div>
         </motion.div>
