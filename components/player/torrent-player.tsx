@@ -15,7 +15,7 @@ export function TorrentPlayer({ magnetURI, subtitleSrc, subtitleLang }: { magnet
 
     async function initTorrent() {
       try {
-        const WebTorrent = (await import('webtorrent')).default
+        const WebTorrent = (await import('webtorrent/dist/webtorrent.min.js')).default
         
         if (!isMounted) return
         

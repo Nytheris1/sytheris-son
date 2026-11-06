@@ -78,6 +78,58 @@ export function VideoPlayer({ src, subtitleSrc, subtitleLang, poster, title, epi
 
   useEffect(() => setPipSupported(Boolean(document.pictureInPictureEnabled)), [])
 
+  // HLS (m3u8) DESTEĞİ
+  useEffect(() => {
+    const v = video.current
+    if (!v) return
+
+    let hls: any = null
+    const isHls = src.includes('.m3u8')
+
+    if (isHls) {
+      import('hls.js').then(({ default: Hls }) => {
+        if (Hls.isSupported()) {
+          hls = new Hls({
+            maxMaxBufferLength: 30, // Tarayıcının önbelleğe alacağı maksimum saniye (hızı etkiler)
+          })
+          hls.loadSource(src)
+          hls.attachMedia(v)
+          hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            v.play().catch(() => setPlaying(false))
+          })
+          hls.on(Hls.Events.ERROR, (event: any, data: any) => {
+            if (data.fatal) {
+              switch (data.type) {
+                case Hls.ErrorTypes.NETWORK_ERROR:
+                  hls.startLoad()
+                  break
+                case Hls.ErrorTypes.MEDIA_ERROR:
+                  hls.recoverMediaError()
+                  break
+                default:
+                  setError('HLS Yayını oynatılamadı veya bağlantı kesildi.')
+                  hls.destroy()
+                  break
+              }
+            }
+          })
+        } else if (v.canPlayType('application/vnd.apple.mpegurl')) {
+          // Safari (Native HLS Desteği)
+          v.src = src
+        } else {
+          setError('Tarayıcınız HLS (m3u8) formatını desteklemiyor.')
+        }
+      })
+    } else {
+      // Normal MP4 / WebM
+      v.src = src
+    }
+
+    return () => {
+      if (hls) hls.destroy()
+    }
+  }, [src])
+
   const poke = useCallback(() => {
     setControls(true)
     if (hideTimer.current) window.clearTimeout(hideTimer.current)
@@ -111,6 +163,7 @@ export function VideoPlayer({ src, subtitleSrc, subtitleLang, poster, title, epi
     const v = video.current
     if (!v) return
     const saved = Number(localStorage.getItem(`sy-pos-${storageKey}`))
+    
     const onMeta = () => {
       setDuration(v.duration)
       if (saved && saved < v.duration - 15) v.currentTime = saved
@@ -144,8 +197,12 @@ export function VideoPlayer({ src, subtitleSrc, subtitleLang, poster, title, epi
     }
     const onError = () => {
       setWaiting(false)
-      setError('Video yüklenemedi. Bağlantı geçersiz olabilir ya da kaynak erişime kapalı.')
+      // HLS eklentisi kendi hata mesajını göstereceği için MP4 hatasını susturabiliriz (isteğe bağlı)
+      if (!src.includes('.m3u8')) {
+        setError('Video yüklenemedi. Bağlantı geçersiz olabilir ya da kaynak erişime kapalı.')
+      }
     }
+    
     v.addEventListener('loadedmetadata', onMeta)
     v.addEventListener('timeupdate', onTime)
     v.addEventListener('progress', onTime)
@@ -157,8 +214,10 @@ export function VideoPlayer({ src, subtitleSrc, subtitleLang, poster, title, epi
     v.addEventListener('volumechange', onVolume)
     v.addEventListener('ended', onEnded)
     v.addEventListener('error', onError)
+    
     const onFs = () => setFullscreen(Boolean(document.fullscreenElement))
     document.addEventListener('fullscreenchange', onFs)
+    
     return () => {
       v.removeEventListener('loadedmetadata', onMeta)
       v.removeEventListener('timeupdate', onTime)
@@ -173,7 +232,7 @@ export function VideoPlayer({ src, subtitleSrc, subtitleLang, poster, title, epi
       v.removeEventListener('error', onError)
       document.removeEventListener('fullscreenchange', onFs)
     }
-  }, [storageKey])
+  }, [storageKey, src])
 
   useEffect(() => {
     const t = trackEl.current
@@ -239,9 +298,9 @@ export function VideoPlayer({ src, subtitleSrc, subtitleLang, poster, title, epi
       onMouseLeave={() => playing && setControls(false)}
       className={cn('dark group/player relative aspect-video w-full select-none overflow-hidden bg-black text-foreground [container-type:inline-size]', fullscreen ? 'rounded-none' : 'rounded-3xl', !showUi && 'cursor-none')}
     >
+      {/* src prop'u buradan kaldırıldı (useEffect içinde atanıyor) */}
       <video
         ref={video}
-        src={src}
         poster={poster ?? undefined}
         playsInline
         preload="metadata"
