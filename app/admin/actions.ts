@@ -54,6 +54,7 @@ export async function addEpisodeAction(input: {
   number: number
   title: string
   videoUrl: string
+  magnetUrl?: string // <-- BURAYA EKLENDİ
   subtitleUrl?: string
   subtitleText?: string
   subtitleLang: string
@@ -69,17 +70,24 @@ export async function addEpisodeAction(input: {
       return false
     }
   }
+
+  // Video veya Magnet'ten en az biri olmalı
+  const hasVideo = isUrl(input.videoUrl)
+  const hasMagnet = Boolean(input.magnetUrl && (input.magnetUrl.startsWith('magnet:?') || input.magnetUrl.endsWith('.torrent')))
+
   if (!Number.isInteger(input.animeId) || input.animeId <= 0) return { ok: false as const, error: 'Anime seçmelisin.' }
   if (!Number.isInteger(input.number) || input.number <= 0 || input.number > 5000) return { ok: false as const, error: 'Geçerli bir bölüm numarası gir.' }
-  if (!isUrl(input.videoUrl)) return { ok: false as const, error: 'Geçerli bir video (MP4) bağlantısı gir.' }
+  if (!hasVideo && !hasMagnet) return { ok: false as const, error: 'Geçerli bir video bağlantısı veya Magnet linki gir.' }
   if (input.subtitleUrl && !isUrl(input.subtitleUrl)) return { ok: false as const, error: 'Altyazı bağlantısı geçersiz.' }
+
   const ep = await addEpisode({
     animeId: input.animeId,
     animeTitle: input.animeTitle.slice(0, 200),
     animeCover: input.animeCover ?? null,
     number: input.number,
     title: input.title.slice(0, 200),
-    videoUrl: input.videoUrl,
+    videoUrl: input.videoUrl || '', // Boş olabilir
+    magnetUrl: input.magnetUrl || null, // Veritabanına kaydedildi
     subtitleUrl: input.subtitleUrl || null,
     subtitleText: input.subtitleText ? input.subtitleText.slice(0, 500_000) : null,
     subtitleLang: (input.subtitleLang || 'tr').slice(0, 5),

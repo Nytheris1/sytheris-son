@@ -54,6 +54,7 @@ export type Episode = {
   number: number
   title: string
   videoUrl: string
+  magnetUrl?: string | null // <-- BURAYA EKLENDİ
   subtitleUrl?: string | null
   subtitleText?: string | null
   subtitleLang: string

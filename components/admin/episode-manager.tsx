@@ -22,7 +22,9 @@ export function EpisodeManager({ catalog }: { catalog: CatalogItem[] }) {
   const [anime, setAnime] = useState<{ id: number; title: string; cover: string | null } | null>(null)
   const [subMode, setSubMode] = useState<'url' | 'text'>('url')
   const [preview, setPreview] = useState(false)
-  const [f, setF] = useState({ number: 1, title: '', videoUrl: '', thumbnail: '', subtitleUrl: '', subtitleText: '', subtitleLang: 'tr' })
+  
+  // magnetUrl state'e eklendi
+  const [f, setF] = useState({ number: 1, title: '', videoUrl: '', magnetUrl: '', thumbnail: '', subtitleUrl: '', subtitleText: '', subtitleLang: 'tr' })
 
   function submit(e: React.FormEvent) {
     e.preventDefault()
@@ -38,6 +40,7 @@ export function EpisodeManager({ catalog }: { catalog: CatalogItem[] }) {
         number: Number(f.number),
         title: f.title,
         videoUrl: f.videoUrl.trim(),
+        magnetUrl: f.magnetUrl.trim(), // Action'a gönderildi
         thumbnail: f.thumbnail.trim(),
         subtitleUrl: subMode === 'url' ? f.subtitleUrl.trim() : '',
         subtitleText: subMode === 'text' ? f.subtitleText : '',
@@ -48,7 +51,7 @@ export function EpisodeManager({ catalog }: { catalog: CatalogItem[] }) {
         return
       }
       toast.success(`${anime.title} · ${f.number}. bölüm eklendi`)
-      setF((x) => ({ ...x, number: x.number + 1, title: '', videoUrl: '', thumbnail: '', subtitleUrl: '', subtitleText: '' }))
+      setF((x) => ({ ...x, number: x.number + 1, title: '', videoUrl: '', magnetUrl: '', thumbnail: '', subtitleUrl: '', subtitleText: '' }))
       setPreview(false)
       router.refresh()
     })
@@ -72,15 +75,23 @@ export function EpisodeManager({ catalog }: { catalog: CatalogItem[] }) {
               <input className={field} value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} />
             </label>
           </div>
+          
           <label className="flex flex-col gap-1.5 text-sm">
-            <span className="text-muted-foreground">Video bağlantısı (MP4 / WebM)</span>
+            <span className="text-muted-foreground">Video bağlantısı (MP4 / WebM - Opsiyonel)</span>
             <div className="flex gap-2">
-              <input type="url" required className={field} placeholder="https://…/bolum-1.mp4" value={f.videoUrl} onChange={(e) => setF({ ...f, videoUrl: e.target.value })} />
+              <input type="url" className={field} placeholder="https://…/bolum-1.mp4" value={f.videoUrl} onChange={(e) => setF({ ...f, videoUrl: e.target.value })} />
               <button type="button" disabled={!f.videoUrl} onClick={() => setPreview((v) => !v)} className="flex h-12 shrink-0 items-center gap-2 rounded-2xl border border-border px-4 text-sm transition hover:border-primary disabled:opacity-40">
                 <Eye className="size-4" /> Test
               </button>
             </div>
           </label>
+
+          {/* MAGNET LİNKİ ALANI BURAYA EKLENDİ */}
+          <label className="flex flex-col gap-1.5 text-sm">
+            <span className="text-muted-foreground">Magnet Linki (WebTorrent - Opsiyonel)</span>
+            <input type="text" className={field} placeholder="magnet:?xt=urn:btih:..." value={f.magnetUrl} onChange={(e) => setF({ ...f, magnetUrl: e.target.value })} />
+          </label>
+
           {preview && f.videoUrl && (
             <video src={f.videoUrl} controls className="aspect-video w-full rounded-2xl bg-black" onError={() => toast.error('Video oynatılamadı: bağlantıyı kontrol et')} />
           )}
@@ -144,7 +155,12 @@ export function EpisodeManager({ catalog }: { catalog: CatalogItem[] }) {
                     <li key={ep.id} className="flex items-center gap-3 py-2 text-sm">
                       <span className="w-12 font-mono text-xs text-ink">#{ep.number}</span>
                       <span className="min-w-0 flex-1 truncate">{ep.title || `${ep.number}. bölüm`}</span>
-                      <span className="hidden font-mono text-[10px] uppercase text-muted-foreground sm:inline">{ep.subtitleUrl || ep.subtitleText ? `${ep.subtitleLang} altyazı` : 'altyazısız'}</span>
+                      
+                      {/* Torrent veya Video etiketi */}
+                      <span className="hidden font-mono text-[10px] uppercase text-muted-foreground sm:inline">
+                        {ep.magnetUrl ? 'Torrent' : (ep.videoUrl ? 'Video' : 'Yok')}
+                      </span>
+
                       <Link href={`/anime/${c.animeId}/izle/${ep.number}`} target="_blank" className="text-xs text-ink hover:underline">
                         İzle
                       </Link>

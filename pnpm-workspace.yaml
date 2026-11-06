@@ -1,3 +1,10 @@
+allowBuilds:
+  bufferutil: true
+  ip-set: true
+  node-datachannel: true
+  utf-8-validate: true
+  utp-native: true
+
 minimumReleaseAgeExclude:
   - '@next/*'
   - next
