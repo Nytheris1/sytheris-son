@@ -22,8 +22,12 @@ export function TorrentPlayer({ magnetURI, subtitleSrc, subtitleLang }: { magnet
         const client = new WebTorrent()
         clientRef.current = client
 
-        client.on('error', (err: Error) => {
-          if (isMounted) setError(`Torrent Hatası: ${err.message}`)
+        // Tip hatası düzeltildi: err değişkeni string veya Error olabilir
+        client.on('error', (err: string | Error) => {
+          if (isMounted) {
+            const msg = typeof err === 'string' ? err : err.message
+            setError(`Torrent Hatası: ${msg}`)
+          }
         })
 
         // WebSocket tracker'ları ekle (Tarayıcıdan bağlantı için şart)
@@ -44,7 +48,7 @@ export function TorrentPlayer({ magnetURI, subtitleSrc, subtitleLang }: { magnet
 
           if (videoRef.current) {
             file.renderTo(videoRef.current, { autoplay: true, muted: false }, (err: any) => {
-              if (err) setError('Video oynatılamadı: ' + err.message)
+              if (err) setError('Video oynatılamadı: ' + (err.message || err))
             })
           }
 
