@@ -6,6 +6,8 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  // WebTorrent ve native modüllerin sunucu tarafında (SSR) derlenmesini engeller
+  serverExternalPackages: ['webtorrent', 'node-datachannel', 'utp-native', 'bufferutil', 'utf-8-validate'],
   outputFileTracingIncludes: {
     '/api/download': [
       './app/**/*',
