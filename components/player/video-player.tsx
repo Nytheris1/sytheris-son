@@ -42,6 +42,15 @@ const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2]
 const SUB_SIZES: Record<Prefs['subtitleSize'], string> = { sm: '1.9cqw', md: '2.4cqw', lg: '3cqw', xl: '3.7cqw' }
 
 export function VideoPlayer({ src, subtitleSrc, subtitleLang, poster, title, episodeLabel, storageKey, nextHref, prevHref }: Props) {
+  // SRC KONTROLÜ (ÇÖKMEYİ ENGELLER)
+  if (!src || src.trim() === '') {
+    return (
+      <div className="flex aspect-video w-full items-center justify-center rounded-3xl bg-black text-sm text-muted-foreground">
+        Geçerli bir video kaynağı bulunamadı.
+      </div>
+    )
+  }
+
   const wrap = useRef<HTMLDivElement>(null)
   const video = useRef<HTMLVideoElement>(null)
   const trackEl = useRef<HTMLTrackElement>(null)

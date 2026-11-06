@@ -1,12 +1,12 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { ArrowLeft, Captions, Play } from 'lucide-react'
+import { ArrowLeft, Captions, Play, AlertCircle } from 'lucide-react'
 import { getAnimeMeta } from '@/lib/anilist'
 import { pickTitle } from '@/lib/format'
 import { listEpisodes } from '@/lib/site'
 import { cn } from '@/lib/utils'
 import { VideoPlayer } from '@/components/player/video-player'
-import { TorrentPlayer } from '@/components/player/torrent-player' // <-- EKLENDİ
+import { TorrentPlayer } from '@/components/player/torrent-player'
 
 type Props = { params: Promise<{ id: string; ep: string }> }
 
@@ -44,8 +44,9 @@ export default async function WatchPage({ params }: Props) {
   const next = episodes[index + 1]
   const subtitleSrc = current.subtitleText || current.subtitleUrl ? `/api/subtitle/${current.id}` : null
 
-  // TORRENT KONTROLÜ EKLENDİ
-  const isTorrent = Boolean(current.magnetUrl)
+  // KONTROL: Magnet mi yoksa normal Video mu?
+  const hasMagnet = Boolean(current.magnetUrl && current.magnetUrl.startsWith('magnet:'))
+  const hasVideo = Boolean(current.videoUrl && current.videoUrl.trim() !== '')
 
   return (
     <div className="mx-auto grid max-w-[1440px] gap-8 px-4 pb-10 pt-6 sm:px-6 lg:grid-cols-[1fr_340px] lg:px-10">
@@ -54,14 +55,14 @@ export default async function WatchPage({ params }: Props) {
           <ArrowLeft className="size-4" /> {title}
         </Link>
         
-        {/* BURADA KOŞULLU OLARAK TORRENT VEYA NORMAL OYNATICI SEÇİLİYOR */}
-        {isTorrent ? (
+        {/* OYNATICI SEÇİMİ VE BOŞ KONTROLÜ */}
+        {hasMagnet ? (
           <TorrentPlayer 
             magnetURI={current.magnetUrl!} 
             subtitleSrc={subtitleSrc} 
             subtitleLang={current.subtitleLang} 
           />
-        ) : (
+        ) : hasVideo ? (
           <VideoPlayer
             key={current.id}
             src={current.videoUrl}
@@ -74,6 +75,13 @@ export default async function WatchPage({ params }: Props) {
             prevHref={prev ? `/anime/${animeId}/izle/${prev.number}` : null}
             nextHref={next ? `/anime/${animeId}/izle/${next.number}` : null}
           />
+        ) : (
+          // NE MAGNET NE DE VİDEO VARSA UYARI GÖSTER
+          <div className="flex aspect-video w-full flex-col items-center justify-center gap-3 rounded-3xl border border-border bg-muted/30 text-center p-6">
+            <AlertCircle className="size-10 text-muted-foreground" />
+            <p className="text-lg font-semibold">Video Kaynağı Bulunamadı</p>
+            <p className="text-sm text-muted-foreground">Bu bölüm için geçerli bir video veya magnet linki eklenmemiş.</p>
+          </div>
         )}
 
         <div className="flex flex-col gap-2">
@@ -83,7 +91,7 @@ export default async function WatchPage({ params }: Props) {
           </h1>
           <p className="flex items-center gap-2 text-sm text-muted-foreground">
             <Captions className="size-4" />
-            {subtitleSrc ? `${current.subtitleLang.toUpperCase()} altyazı mevcut — C tuşuyla aç/kapat` : 'Bu bölümde altyazı yok'}
+            {subtitleSrc ? `${current.subtitleLang.toUpperCase()} altyazı mevcut` : 'Bu bölümde altyazı yok'}
           </p>
           <p className="text-xs text-muted-foreground">Kısayollar: Boşluk / K oynat · J / L 10 sn · F tam ekran · M sessiz</p>
         </div>
