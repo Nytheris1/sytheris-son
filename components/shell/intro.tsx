@@ -3,23 +3,28 @@
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowRight } from 'lucide-react'
-import { THEMES } from '@/lib/themes'
-import { useTheme } from '@/components/providers/theme-provider'
 
 /*
- * SYTHERIS — "Kesik" (The Cut)
- * Act I   : a single blade of light slices the darkness.
- * Act II  : the cut tears open onto a tilted, drifting wall of trending covers.
- * Act III : the title forges itself, an episode card cycles every theme and lands on the visitor's own.
- * Exit    : the whole world folds back into the diagonal slash.
+ * SYTHERIS — "Kare" (The Frame) · v6
+ * Act I   : a counter climbs to 100 while trending covers flip through one centred frame, faster and faster.
+ * Act II  : the last cover bursts out of its frame and becomes the whole screen.
+ * Act III : the title rises out of the floor, the chrome slides in.
+ * Exit    : the curtain lifts upward onto the site.
+ *
+ * Drop-in replacement for components/shell/intro.tsx — same props, same "intro-seen" contract.
  */
 
 const TITLE = 'SYTHERIS'.split('')
 const EXPO = [0.87, 0, 0.13, 1] as const
 const OUT = [0.16, 1, 0.3, 1] as const
-const CYCLE_START_MS = 1800
-const FULL_FRAME = 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)'
-const SLASH_FRAME = 'polygon(0% 58%, 100% 42%, 100% 42%, 0% 58%)'
+const LOAD_MS = 2600
+const TITLE_DELAY_MS = 700
+const HOLD_MS = 2600
+const FLIP_START_MS = 260
+const FLIP_DELAYS = [420, 340, 280, 220, 180, 150, 130, 115, 105]
+const OPEN_CLIP = 'inset(0px 0px 0px 0px round 0px)'
+
+type Phase = 'load' | 'open' | 'title'
 
 type IntroProps = {
   covers: string[]
@@ -29,24 +34,33 @@ type IntroProps = {
   onClose?: () => void
 }
 
+function frameClip() {
+  if (typeof window === 'undefined') return OPEN_CLIP
+  const W = window.innerWidth
+  const H = window.innerHeight
+  const h = Math.min(H * 0.42, W * 0.6)
+  const w = (h * 2) / 3
+  const y = (H - h) / 2
+  const x = (W - w) / 2
+  return `inset(${y}px ${x}px ${y}px ${x}px round 6px)`
+}
+
 export function Intro({ covers, enabled, preview = false, onClose }: IntroProps) {
-  const { theme } = useTheme()
   const reduce = useReducedMotion() ?? false
   const [show, setShow] = useState(true)
-  const [ready, setReady] = useState(false)
-  const [cycle, setCycle] = useState(0)
-  const [elapsed, setElapsed] = useState(0)
+  const [phase, setPhase] = useState<Phase>('load')
+  const [flip, setFlip] = useState(0)
+  const [count, setCount] = useState(0)
   const [clock, setClock] = useState('')
+  const [clip, setClip] = useState(OPEN_CLIP)
   const finished = useRef(false)
   const enterRef = useRef<HTMLButtonElement>(null)
 
-  const targetIndex = Math.max(0, THEMES.findIndex((t) => t.id === theme))
-  const steps = reduce ? 0 : THEMES.length + targetIndex
-  const delays = useMemo(() => Array.from({ length: steps }, (_, i) => 150 + Math.pow(i / Math.max(1, steps), 3) * 420), [steps])
-  const runtime = reduce ? 1600 : CYCLE_START_MS + delays.reduce((a, b) => a + b, 0)
-
-  const landed = reduce || cycle >= steps
-  const current = THEMES[(reduce ? targetIndex : cycle) % THEMES.length]
+  const reel = useMemo(() => {
+    const list = covers.filter(Boolean).slice(0, FLIP_DELAYS.length + 1)
+    return list.length ? list : ['/placeholder.svg']
+  }, [covers])
+  const finalCover = reel[reel.length - 1]
 
   const finish = useCallback(() => {
     if (finished.current) return
@@ -66,22 +80,45 @@ export function Intro({ covers, enabled, preview = false, onClose }: IntroProps)
       setShow(false)
       return
     }
-    setReady(true)
     document.body.style.overflow = 'hidden'
     enterRef.current?.focus({ preventScroll: true })
+    setClip(frameClip())
+
+    const timers: number[] = []
+    const later = (fn: () => void, ms: number) => timers.push(window.setTimeout(fn, ms))
+
+    if (reduce) {
+      setCount(100)
+      setFlip(reel.length - 1)
+      setPhase('title')
+      later(finish, 2400)
+    } else {
+      let at = FLIP_START_MS
+      for (let i = 1; i < reel.length; i++) {
+        at += FLIP_DELAYS[i - 1] ?? 100
+        const index = i
+        later(() => setFlip(index), Math.min(at, LOAD_MS - 120))
+      }
+      later(() => setPhase('open'), LOAD_MS)
+      later(() => setPhase('title'), LOAD_MS + TITLE_DELAY_MS)
+      later(finish, LOAD_MS + TITLE_DELAY_MS + HOLD_MS)
+    }
 
     const start = performance.now()
     let raf = 0
     const tick = (now: number) => {
-      const t = now - start
-      setElapsed(t)
-      if (t < 12000) raf = requestAnimationFrame(tick)
+      const p = Math.min(1, (now - start) / LOAD_MS)
+      const eased = p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2
+      setCount(Math.round(eased * 100))
+      if (p < 1) raf = requestAnimationFrame(tick)
     }
-    raf = requestAnimationFrame(tick)
+    if (!reduce) raf = requestAnimationFrame(tick)
 
     const fmt = () => setClock(new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }))
     fmt()
     const clockId = window.setInterval(fmt, 1000)
+    const onResize = () => setClip(frameClip())
+    window.addEventListener('resize', onResize)
 
     const keys = (e: KeyboardEvent) => {
       if (e.key === 'Enter' || e.key === 'Escape' || e.key === ' ') {
@@ -90,30 +127,19 @@ export function Intro({ covers, enabled, preview = false, onClose }: IntroProps)
       }
     }
     window.addEventListener('keydown', keys)
+
     return () => {
+      timers.forEach(window.clearTimeout)
       cancelAnimationFrame(raf)
       window.clearInterval(clockId)
+      window.removeEventListener('resize', onResize)
       window.removeEventListener('keydown', keys)
       document.body.style.overflow = ''
     }
-  }, [enabled, preview, finish])
+  }, [enabled, preview, reduce, reel.length, finish])
 
-  useEffect(() => {
-    if (!ready || landed) return
-    const id = window.setTimeout(() => setCycle((c) => c + 1), delays[cycle] + (cycle === 0 ? CYCLE_START_MS : 0))
-    return () => window.clearTimeout(id)
-  }, [ready, landed, cycle, delays])
-
-  useEffect(() => {
-    if (!ready || !landed) return
-    const id = window.setTimeout(finish, reduce ? 2200 : 1700)
-    return () => window.clearTimeout(id)
-  }, [ready, landed, reduce, finish])
-
-  const progress = Math.min(1, elapsed / runtime)
-  const seconds = Math.floor(elapsed / 1000)
-  const frames = Math.floor(((elapsed % 1000) / 1000) * 24)
-  const timecode = `00:00:${String(seconds).padStart(2, '0')}:${String(frames).padStart(2, '0')}`
+  const loading = phase === 'load'
+  const titled = phase === 'title'
 
   return (
     <AnimatePresence onExitComplete={onClose}>
@@ -125,235 +151,144 @@ export function Intro({ covers, enabled, preview = false, onClose }: IntroProps)
           aria-modal="true"
           aria-label="SYTHERIS açılış animasyonu"
           className="dark fixed inset-0 z-[100] overflow-hidden bg-scrim text-on-scrim"
-          data-theme={current.id}
-          initial={{ clipPath: FULL_FRAME }}
-          exit={{ clipPath: SLASH_FRAME }}
-          transition={{ duration: reduce ? 0.3 : 0.9, ease: EXPO }}
+          initial={{ clipPath: 'inset(0% 0% 0% 0%)' }}
+          exit={{ clipPath: 'inset(0% 0% 100% 0%)' }}
+          transition={{ duration: reduce ? 0.3 : 0.95, ease: EXPO }}
           suppressHydrationWarning
         >
+          {/* Act I — the reel inside the frame */}
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center" aria-hidden="true">
+            <div className="relative aspect-[2/3] h-[min(42vh,60vw)] overflow-hidden rounded-md">
+              <AnimatePresence initial={false}>
+                <motion.img
+                  key={flip}
+                  src={reel[flip]}
+                  alt=""
+                  decoding="async"
+                  className="absolute inset-0 size-full object-cover"
+                  initial={reduce ? false : { clipPath: 'inset(100% 0% 0% 0%)', scale: 1.25 }}
+                  animate={{ clipPath: 'inset(0% 0% 0% 0%)', scale: 1 }}
+                  exit={{ opacity: 1 }}
+                  transition={{ duration: 0.38, ease: OUT }}
+                />
+              </AnimatePresence>
+            </div>
+          </div>
+
+          {/* Act II — the final cover breaks out of the frame */}
           <motion.div
             className="absolute inset-0"
-            initial={reduce ? false : { clipPath: 'inset(50% 0% 50% 0%)' }}
-            animate={{ clipPath: 'inset(0% 0% 0% 0%)' }}
-            transition={{ delay: 0.6, duration: 1.15, ease: EXPO }}
+            aria-hidden="true"
+            initial={false}
+            animate={{ clipPath: loading ? clip : OPEN_CLIP, opacity: loading ? 0 : 1 }}
+            transition={{ clipPath: { duration: reduce ? 0 : 1.15, ease: EXPO }, opacity: { duration: 0 } }}
           >
-            <CoverTunnel covers={covers} still={reduce} />
-            <div className="absolute inset-0 bg-scrim/55" />
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,var(--scrim)_75%)]" />
+            <motion.img
+              src={finalCover}
+              alt=""
+              decoding="async"
+              className="size-full object-cover"
+              initial={false}
+              animate={{ scale: loading ? 1.35 : 1.04 }}
+              transition={{ duration: reduce ? 0 : 2.4, ease: OUT }}
+            />
+            <div className="absolute inset-0 bg-scrim/45" />
+            <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-scrim via-scrim/70 to-transparent" />
             <div className="grain absolute inset-0" />
           </motion.div>
 
-          {!reduce && <BladeCut />}
-
           <div className="relative flex h-full flex-col">
-            <motion.header
-              initial={reduce ? false : { y: '-100%', opacity: 0 }}
-              animate={{ y: '0%', opacity: 1 }}
-              transition={{ delay: 1.1, duration: 0.8, ease: OUT }}
-              className="flex items-center justify-between border-b border-on-scrim/10 bg-scrim/70 px-5 py-4 font-mono text-[10px] uppercase tracking-[0.3em] text-on-scrim/60 backdrop-blur-md sm:px-10 sm:py-5 sm:text-[11px]"
-            >
-              <span className="flex items-center gap-2">
-                <span className="size-1.5 rounded-full bg-primary transition-colors duration-300" />
-                SYTHERIS / V5.0
-              </span>
-              <span className="hidden sm:inline">Kişisel anime evreni</span>
-              <span className="tabular-nums" suppressHydrationWarning>
+            <header className="flex items-center justify-between gap-4 px-5 py-5 font-mono text-[10px] uppercase tracking-[0.3em] text-on-scrim/70 sm:px-10 sm:text-[11px]">
+              <motion.span
+                className="flex items-center gap-2"
+                animate={{ opacity: 1 }}
+                initial={reduce ? false : { opacity: 0 }}
+                transition={{ delay: 0.2, duration: 0.6 }}
+              >
+                <span className="size-1.5 rounded-full bg-primary" />
+                SYTHERIS / V6.0
+              </motion.span>
+              <motion.span
+                className="hidden tabular-nums md:inline"
+                animate={{ opacity: titled ? 1 : 0, y: titled ? 0 : -8 }}
+                transition={{ duration: 0.6, ease: OUT }}
+                suppressHydrationWarning
+              >
                 TR · {clock || '--:--:--'}
-              </span>
-            </motion.header>
-
-            <div className="flex flex-1 flex-col items-center justify-center px-4">
-              <motion.p
-                initial={reduce ? false : { opacity: 0, letterSpacing: '0.15em' }}
-                animate={{ opacity: 1, letterSpacing: '0.5em' }}
-                transition={{ delay: 1.15, duration: 1.4, ease: OUT }}
-                className="mb-5 flex items-center gap-4 font-mono text-[10px] uppercase text-on-scrim/70 sm:mb-7 sm:text-xs"
-              >
-                <span className="h-px w-8 bg-primary transition-colors duration-300 sm:w-12" />
-                Anime keşif platformu
-                <span className="h-px w-8 bg-primary transition-colors duration-300 sm:w-12" />
-              </motion.p>
-
-              <ForgedTitle still={reduce} />
-
-              <motion.div
-                initial={reduce ? false : { opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.45, duration: 0.8, ease: OUT }}
-                className="mt-7 flex items-center gap-4 sm:mt-10"
-              >
-                <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-on-scrim/60 tabular-nums sm:text-xs">
-                  Ep. {String(((reduce ? targetIndex : cycle) % THEMES.length) + 1).padStart(2, '0')}
-                </span>
-                <span className="h-6 w-px bg-on-scrim/20" />
-                <span className="relative flex h-10 min-w-44 items-center overflow-hidden sm:h-12 sm:min-w-64">
-                  <AnimatePresence mode="popLayout" initial={false}>
-                    <motion.span
-                      key={cycle}
-                      initial={{ y: '100%', opacity: 0, filter: 'blur(8px)' }}
-                      animate={{ y: '0%', opacity: 1, filter: 'blur(0px)' }}
-                      exit={{ y: '-100%', opacity: 0, filter: 'blur(8px)' }}
-                      transition={{ duration: 0.24, ease: OUT }}
-                      className="whitespace-nowrap font-serif text-3xl italic text-primary sm:text-4xl"
-                    >
-                      {current.name}
-                    </motion.span>
-                  </AnimatePresence>
-                </span>
-              </motion.div>
-
-              <motion.p
-                aria-live="polite"
-                animate={{ opacity: landed ? 1 : 0, y: landed ? 0 : 8 }}
-                transition={{ duration: 0.5, ease: OUT }}
-                className="mt-4 font-mono text-[10px] uppercase tracking-[0.3em] text-on-scrim/60"
-              >
-                {landed ? 'Senin temanda — iyi seyirler' : ''}
-              </motion.p>
-            </div>
-
-            <motion.footer
-              initial={reduce ? false : { y: '100%', opacity: 0 }}
-              animate={{ y: '0%', opacity: 1 }}
-              transition={{ delay: 1.1, duration: 0.8, ease: OUT }}
-              className="relative flex items-center justify-between gap-4 border-t border-on-scrim/10 bg-scrim/70 px-5 py-4 backdrop-blur-md sm:px-10 sm:py-5"
-            >
-              <div className="flex flex-col gap-1 font-mono text-[10px] uppercase tracking-[0.3em] sm:text-[11px]">
-                <span className="text-on-scrim/50">TIMECODE</span>
-                <span className="tabular-nums text-on-scrim">{timecode}</span>
-              </div>
-
-              <ol className="hidden items-center gap-2 md:flex" aria-label="Temalar">
-                {THEMES.map((t) => (
-                  <li key={t.id} className="flex items-center gap-2">
-                    <span
-                      className={`block h-1 rounded-full transition-all duration-300 ${t.id === current.id ? 'w-10 bg-primary' : 'w-4 bg-on-scrim/20'}`}
-                    />
-                    <span className="sr-only">{t.name}</span>
-                  </li>
-                ))}
-              </ol>
-
+              </motion.span>
               <button
                 ref={enterRef}
                 type="button"
                 onClick={finish}
-                className="group flex items-center gap-3 rounded-full border border-on-scrim/20 bg-on-scrim/5 py-2.5 pl-5 pr-2.5 font-mono text-[11px] uppercase tracking-[0.25em] text-on-scrim outline-none backdrop-blur-md transition-colors hover:border-primary hover:bg-primary hover:text-primary-foreground focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-scrim"
+                className="group flex items-center gap-3 rounded-full border border-on-scrim/25 bg-scrim/40 py-2 pl-4 pr-2 text-on-scrim outline-none backdrop-blur-md transition-colors hover:border-primary hover:bg-primary hover:text-primary-foreground focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-scrim"
               >
-                İçeri gir
-                <kbd className="hidden rounded-md border border-current/30 px-1.5 py-0.5 text-[9px] tracking-widest opacity-70 sm:inline">ENTER</kbd>
-                <span className="flex size-7 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors group-hover:bg-primary-foreground group-hover:text-primary">
-                  <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
+                {titled ? 'İçeri gir' : 'Atla'}
+                <span className="flex size-6 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors group-hover:bg-primary-foreground group-hover:text-primary">
+                  <ArrowRight className="size-3" aria-hidden="true" />
                 </span>
               </button>
+            </header>
 
-              <div className="absolute inset-x-0 bottom-0 h-0.5 bg-on-scrim/10">
-                <div className="h-full origin-left bg-primary transition-colors duration-200" style={{ transform: `scaleX(${progress})` }} />
-              </div>
-            </motion.footer>
+            <div className="relative flex-1">
+              <motion.p
+                className="absolute bottom-6 left-5 max-w-40 font-mono sm:bottom-auto sm:top-1/2 sm:-translate-y-1/2 text-[10px] uppercase leading-relaxed tracking-[0.3em] text-on-scrim/60 sm:left-10 sm:text-[11px]"
+                animate={{ opacity: loading ? 1 : 0 }}
+                transition={{ duration: 0.4 }}
+              >
+                Trend kapaklar
+                <br />
+                yükleniyor
+              </motion.p>
+
+              <motion.div
+                className="absolute bottom-0 right-5 font-bold leading-none tracking-[-0.06em] tabular-nums text-[22vw] sm:right-10 sm:text-[11rem]"
+                animate={{ opacity: loading ? 1 : 0, y: loading ? 0 : 40 }}
+                transition={{ duration: 0.5, ease: OUT }}
+                aria-live="polite"
+              >
+                {String(count).padStart(3, '0')}
+                <span className="sr-only">%</span>
+              </motion.div>
+
+              <motion.div
+                className="absolute inset-x-5 bottom-4 flex items-end justify-between gap-6 sm:inset-x-10"
+                animate={{ opacity: titled ? 1 : 0, y: titled ? 0 : 16 }}
+                transition={{ delay: titled ? 0.55 : 0, duration: 0.7, ease: OUT }}
+              >
+                <p className="max-w-xs text-pretty text-base leading-relaxed text-on-scrim/85 sm:text-lg">
+                  Bir sonraki favori animen burada.
+                </p>
+                <p className="hidden font-mono text-[10px] uppercase tracking-[0.3em] text-on-scrim/60 sm:block sm:text-[11px]">
+                  Anime keşif platformu
+                </p>
+              </motion.div>
+            </div>
+
+            <h1 className="relative px-3 pb-3 sm:px-8 sm:pb-6" aria-label="SYTHERIS">
+              <span
+                className="flex justify-between overflow-hidden font-bold leading-[0.8] tracking-[-0.05em] text-[23.5vw]"
+                aria-hidden="true"
+              >
+                {TITLE.map((letter, i) => (
+                  <motion.span
+                    key={i}
+                    className="inline-block pt-[0.08em]"
+                    initial={false}
+                    animate={{ y: titled ? '0%' : '110%' }}
+                    transition={{ delay: titled ? i * 0.045 : 0, duration: reduce ? 0 : 1.05, ease: OUT }}
+                  >
+                    {letter}
+                  </motion.span>
+                ))}
+              </span>
+            </h1>
+
+            <div className="absolute inset-x-0 bottom-0 h-0.5 bg-on-scrim/10" aria-hidden="true">
+              <div className="h-full origin-left bg-primary" style={{ transform: `scaleX(${count / 100})` }} />
+            </div>
           </div>
         </motion.div>
       )}
     </AnimatePresence>
-  )
-}
-
-function BladeCut() {
-  return (
-    <div className="pointer-events-none absolute inset-0 z-10" aria-hidden="true">
-      <motion.p
-        initial={{ opacity: 0, y: 6 }}
-        animate={{ opacity: [0, 1, 1, 0], y: [6, 0, 0, -6] }}
-        transition={{ duration: 1.3, times: [0, 0.25, 0.7, 1], ease: 'easeOut' }}
-        className="absolute inset-x-0 top-1/2 -mt-10 text-center font-mono text-[10px] uppercase tracking-[0.6em] text-on-scrim/60 sm:text-xs"
-      >
-        SYTHERIS SUNAR
-      </motion.p>
-      <motion.div
-        className="absolute inset-x-0 top-1/2 h-0.5 origin-left bg-primary"
-        style={{ boxShadow: '0 0 18px 2px var(--primary), 0 0 60px 6px var(--primary)' }}
-        initial={{ scaleX: 0, opacity: 1 }}
-        animate={{ scaleX: [0, 1, 1], opacity: [1, 1, 0], scaleY: [1, 1, 6] }}
-        transition={{ duration: 1.5, times: [0, 0.4, 1], ease: EXPO }}
-      />
-    </div>
-  )
-}
-
-function ForgedTitle({ still }: { still: boolean }) {
-  const size = 'text-[19vw] font-bold leading-[0.85] tracking-[-0.04em] sm:text-[15vw] lg:text-[11rem]'
-  return (
-    <h1 className="relative" aria-label="SYTHERIS">
-      <span className={`flex overflow-hidden ${size}`} aria-hidden="true">
-        {TITLE.map((l, i) => (
-          <motion.span
-            key={i}
-            initial={still ? false : { y: '110%', opacity: 0, filter: 'blur(14px)' }}
-            animate={{ y: '0%', opacity: 1, filter: 'blur(0px)' }}
-            transition={{ delay: 0.95 + i * 0.055, duration: 1, ease: OUT }}
-            className="inline-block"
-          >
-            {l}
-          </motion.span>
-        ))}
-      </span>
-      {!still && (
-        <motion.span
-          aria-hidden="true"
-          className={`pointer-events-none absolute inset-0 flex text-primary mix-blend-screen ${size}`}
-          initial={{ opacity: 0, x: -18 }}
-          animate={{ opacity: [0, 0.85, 0], x: [-18, 6, 0] }}
-          transition={{ delay: 1.35, duration: 0.9, times: [0, 0.35, 1], ease: OUT }}
-        >
-          {TITLE.join('')}
-        </motion.span>
-      )}
-    </h1>
-  )
-}
-
-function CoverTunnel({ covers, still }: { covers: string[]; still: boolean }) {
-  const columns = 7
-  const cols = useMemo(
-    () =>
-      Array.from({ length: columns }, (_, c) => {
-        const list = covers.filter((_, i) => i % columns === c)
-        const filled = list.length ? list : covers.slice(0, 5)
-        return [...filled, ...filled]
-      }),
-    [covers],
-  )
-
-  if (!covers.length) return null
-
-  return (
-    <motion.div
-      aria-hidden="true"
-      className="absolute inset-[-45%] flex gap-4 opacity-80"
-      style={{ transformPerspective: 1600 }}
-      initial={still ? false : { rotateX: 58, rotateZ: -26, scale: 1.5 }}
-      animate={{ rotateX: 46, rotateZ: -18, scale: 1.05 }}
-      transition={{ duration: 6, ease: OUT }}
-    >
-      {cols.map((list, c) => (
-        <div
-          key={c}
-          className="flex min-w-0 flex-1 flex-col gap-4"
-          style={
-            still
-              ? undefined
-              : {
-                  animation: `marquee ${46 + (c % 3) * 12}s linear infinite`,
-                  animationDirection: c % 2 ? 'reverse' : 'normal',
-                }
-          }
-        >
-          {list.map((src, i) => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img key={i} src={src || '/placeholder.svg'} alt="" loading="eager" decoding="async" className="aspect-[2/3] w-full rounded-lg object-cover" />
-          ))}
-        </div>
-      ))}
-    </motion.div>
   )
 }
