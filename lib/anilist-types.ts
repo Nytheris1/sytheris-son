@@ -55,3 +55,44 @@ export type MediaDetail = MediaCard & {
   externalLinks?: { id: number; site: string; url: string; type?: string; color?: string | null; icon?: string | null }[]
   rankings?: { id: number; rank: number; type: string; allTime: boolean; context: string; year?: number | null; season?: string | null }[]
 }
+
+export type CharacterDetail = {
+  id: number
+  name: { full: string; native?: string | null; alternative?: string[] }
+  image: { large?: string | null }
+  description?: string | null
+  gender?: string | null
+  age?: string | null
+  bloodType?: string | null
+  dateOfBirth?: { year?: number | null; month?: number | null; day?: number | null }
+  favourites?: number | null
+  media: {
+    edges: {
+      characterRole: string
+      node: MediaCard
+      voiceActors: { id: number; name: { full: string }; image: { large?: string | null }; languageV2?: string }[]
+    }[]
+  }
+}
+
+export type StaffDetail = {
+  id: number
+  name: { full: string; native?: string | null }
+  image: { large?: string | null }
+  description?: string | null
+  primaryOccupations?: string[]
+  gender?: string | null
+  age?: number | null
+  homeTown?: string | null
+  languageV2?: string | null
+  yearsActive?: number[]
+  dateOfBirth?: { year?: number | null; month?: number | null; day?: number | null }
+  favourites?: number | null
+  characterMedia: {
+    edges: {
+      characterRole: string
+      node: MediaCard
+      characters: { id: number; name: { full: string }; image: { large?: string | null } }[]
+    }[]
+  }
+}

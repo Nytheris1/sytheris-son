@@ -7,5 +7,9 @@ export const metadata: Metadata = { title: 'Yönetim paneli', robots: { index: f
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const admin = await isAdmin()
   if (!admin) return <AdminLogin configured={Boolean(process.env.ADMIN_PASSWORD)} />
-  return <div className="min-h-dvh bg-background">{children}</div>
+  return (
+    <div className="min-h-dvh bg-background" suppressHydrationWarning>
+      {children}
+    </div>
+  )
 }

@@ -1,5 +1,10 @@
+// SSL sertifika doğrulama hatasını aşmak için (Vercel ortamı için)
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+
 import { NextResponse } from 'next/server'
-import { ANIME } from '@genga-movie/aniwatch'
+import { ANIME } from '@consumet/extensions'
+
+const provider = new ANIME.AnimePahe()
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
@@ -11,37 +16,53 @@ export async function GET(request: Request) {
   }
 
   try {
-    const hianime = new ANIME.HiAnime()
-
     // 1. Animeyi ara
-    const searchResults = await hianime.search(title)
-    
-    if (!searchResults.animes || searchResults.animes.length === 0) {
-      return NextResponse.json({ error: 'Anime HiAnime üzerinde bulunamadı.' }, { status: 404 })
+    const searchResults = await provider.search(title)
+
+    if (!searchResults.results || searchResults.results.length === 0) {
+      return NextResponse.json({ error: 'Anime AnimePahe üzerinde bulunamadı.' }, { status: 404 })
     }
 
-    const anime = searchResults.animes[0]
-    
-    // 2. Bölüm linkini oluştur ve kaynakları çek
-    const episodeId = `${anime.id}?ep=${epNum}`
-    const sources = await hianime.getEpisodeSources(episodeId, "hd-1", "sub")
-    
+    const anime = searchResults.results[0]
+
+    // 2. Bölüm listesini al
+    const info = await provider.fetchAnimeInfo(anime.id)
+
+    if (!info.episodes || info.episodes.length === 0) {
+      return NextResponse.json({ error: 'Bu anime için bölüm listesi bulunamadı.' }, { status: 404 })
+    }
+
+    // 3. İstenen bölümü bul
+    const episode = info.episodes.find((e: any) => e.number === Number(epNum))
+    if (!episode) {
+      return NextResponse.json({ error: `Bölüm ${epNum} bulunamadı.` }, { status: 404 })
+    }
+
+    // 4. Bölümün video kaynaklarını çek
+    const sources = await provider.fetchEpisodeSources(episode.id)
+
     if (!sources || !sources.sources || sources.sources.length === 0) {
       return NextResponse.json({ error: 'Video kaynakları çekilemedi.' }, { status: 404 })
     }
 
-    // 3. HLS (m3u8) kaynağını bul
+    // 5. M3U8 formatındaki kaynağı bul
     const source = sources.sources.find((s: any) => s.isM3U8) || sources.sources[0]
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       streamUrl: `/api/proxy?url=${encodeURIComponent(source.url)}`,
-      originalUrl: source.url 
+      originalUrl: source.url
     })
 
   } catch (error: any) {
     console.error('Stream API Hatası:', error)
-    return NextResponse.json({ 
-      error: 'Sunucu Hatası: Vercel IP engeli veya API çökmesi. Detay: ' + (error.message || 'Bilinmeyen hata.') 
+
+    let errorMessage = 'Bilinmeyen bir hata.'
+    if (error.message) errorMessage = error.message
+    else if (typeof error === 'string') errorMessage = error
+    else if (error.toString) errorMessage = error.toString()
+
+    return NextResponse.json({
+      error: 'Sağlayıcı Hatası: ' + errorMessage
     }, { status: 500 })
   }
 }

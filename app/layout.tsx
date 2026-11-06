@@ -2,13 +2,12 @@ import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import { Bricolage_Grotesque, Instrument_Serif, JetBrains_Mono } from 'next/font/google'
 import { headers } from 'next/headers'
-import Script from 'next/script'
 import { AppProviders } from '@/components/providers/app-providers'
 import { MaintenanceScreen } from '@/components/shell/maintenance-screen'
 import { getSettings } from '@/lib/site'
 import { isAdmin } from '@/lib/session'
 import { THEME_SCRIPT } from '@/lib/themes'
-import { FloatingInstall } from '@/components/ui/floating-install' // 🚨 YENİ EKLENDİ
+import { FloatingInstall } from '@/components/ui/floating-install'
 import './globals.css'
 
 const bricolage = Bricolage_Grotesque({ subsets: ['latin', 'latin-ext'], variable: '--font-bricolage', display: 'swap' })
@@ -45,7 +44,7 @@ export const metadata: Metadata = {
     ],
     apple: '/apple-icon.png',
   },
-  manifest: '/manifest.json', // 🚨 PWA Manifest Eklendi
+  manifest: '/manifest.json',
 }
 
 export const viewport: Viewport = {
@@ -70,33 +69,20 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
       suppressHydrationWarning
       className={`${bricolage.variable} ${instrument.variable} ${jetbrains.variable} bg-background`}
     >
-      <body className="min-h-dvh overflow-x-hidden" suppressHydrationWarning>
-        <Script
-          id="sy-boot-script"
-          strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{ __html: BOOT_SCRIPT }}
-        />
-        
-        {/* 🚨 Service Worker Kaydı (PWA için gerekli) */}
-        <Script
+      <head>
+        <script id="sy-boot-script" dangerouslySetInnerHTML={{ __html: BOOT_SCRIPT }} />
+        <script
           id="sw-register"
-          strategy="afterInteractive"
           dangerouslySetInnerHTML={{
-            __html: `
-              if ('serviceWorker' in navigator) {
-                window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('/sw.js');
-                });
-              }
-            `,
+            __html: `if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js')})}`,
           }}
         />
-
+      </head>
+      <body className="min-h-dvh overflow-x-hidden" suppressHydrationWarning>
         <AppProviders introEnabled={settings.introEnabled}>
           {showMaintenance ? <MaintenanceScreen settings={settings} /> : children}
         </AppProviders>
-        
-        {/* 🚨 Yüzen Animasyonlu Uygulama İndirme Butonu */}
+
         <FloatingInstall />
 
         {process.env.NODE_ENV === 'production' && <Analytics />}

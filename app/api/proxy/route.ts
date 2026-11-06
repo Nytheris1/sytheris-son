@@ -17,7 +17,7 @@ export async function GET(request: Request) {
     })
 
     const data = await res.text()
-    
+
     // Eğer m3u8 dosyasıysa içindeki alt linkleri de proxy'e çevir
     let finalData = data
     if (url.includes('.m3u8') || data.includes('#EXTM3U')) {

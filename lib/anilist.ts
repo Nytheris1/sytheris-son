@@ -118,25 +118,6 @@ export async function getAnimeMeta(id: number) {
   return data?.Media ?? null
 }
 
-export type CharacterDetail = {
-  id: number
-  name: { full: string; native?: string | null; alternative?: string[] }
-  image: { large?: string | null }
-  description?: string | null
-  gender?: string | null
-  age?: string | null
-  bloodType?: string | null
-  dateOfBirth?: { year?: number | null; month?: number | null; day?: number | null }
-  favourites?: number | null
-  media: {
-    edges: {
-      characterRole: string
-      node: MediaCard
-      voiceActors: { id: number; name: { full: string }; image: { large?: string | null }; languageV2?: string }[]
-    }[]
-  }
-}
-
 export async function getCharacter(id: number) {
   const query = `
     query ($id: Int) {
@@ -150,28 +131,6 @@ export async function getCharacter(id: number) {
     }`
   const data = await anilist<{ Character: CharacterDetail }>(query, { id }, 86400)
   return data?.Character ?? null
-}
-
-export type StaffDetail = {
-  id: number
-  name: { full: string; native?: string | null }
-  image: { large?: string | null }
-  description?: string | null
-  primaryOccupations?: string[]
-  gender?: string | null
-  age?: number | null
-  homeTown?: string | null
-  languageV2?: string | null
-  yearsActive?: number[]
-  dateOfBirth?: { year?: number | null; month?: number | null; day?: number | null }
-  favourites?: number | null
-  characterMedia: {
-    edges: {
-      characterRole: string
-      node: MediaCard
-      characters: { id: number; name: { full: string }; image: { large?: string | null } }[]
-    }[]
-  }
 }
 
 export async function getStaff(id: number) {

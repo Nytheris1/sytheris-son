@@ -163,7 +163,7 @@ export function VideoPlayer({ src, subtitleSrc, subtitleLang, poster, title, epi
     const v = video.current
     if (!v) return
     const saved = Number(localStorage.getItem(`sy-pos-${storageKey}`))
-    
+
     const onMeta = () => {
       setDuration(v.duration)
       if (saved && saved < v.duration - 15) v.currentTime = saved
@@ -202,7 +202,7 @@ export function VideoPlayer({ src, subtitleSrc, subtitleLang, poster, title, epi
         setError('Video yüklenemedi. Bağlantı geçersiz olabilir ya da kaynak erişime kapalı.')
       }
     }
-    
+
     v.addEventListener('loadedmetadata', onMeta)
     v.addEventListener('timeupdate', onTime)
     v.addEventListener('progress', onTime)
@@ -214,10 +214,10 @@ export function VideoPlayer({ src, subtitleSrc, subtitleLang, poster, title, epi
     v.addEventListener('volumechange', onVolume)
     v.addEventListener('ended', onEnded)
     v.addEventListener('error', onError)
-    
+
     const onFs = () => setFullscreen(Boolean(document.fullscreenElement))
     document.addEventListener('fullscreenchange', onFs)
-    
+
     return () => {
       v.removeEventListener('loadedmetadata', onMeta)
       v.removeEventListener('timeupdate', onTime)

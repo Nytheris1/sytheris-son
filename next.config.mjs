@@ -6,16 +6,15 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  // Sunucu tarafında derlenirken hata vermemesi için gerekli paketler
   serverExternalPackages: [
-    'webtorrent', 
-    'node-datachannel', 
-    'utp-native', 
-    'bufferutil', 
+    'webtorrent',
+    'node-datachannel',
+    'utp-native',
+    'bufferutil',
     'utf-8-validate',
     '@consumet/extensions',
     'axios',
-    'cheerio'
+    'cheerio',
   ],
   outputFileTracingIncludes: {
     '/api/download': [
