@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
-import { ExternalLink, Eye, Loader2, Plus, Trash2, Wand2 } from 'lucide-react'
+import { ExternalLink, Eye, Loader2, Plus, Trash2, Wand2, Tv } from 'lucide-react'
 import { toast } from 'sonner'
 import { addEpisodeAction, deleteEpisodeAction } from '@/app/admin/actions'
 import type { Episode } from '@/lib/site'
@@ -22,16 +22,14 @@ export function EpisodeManager({ catalog }: { catalog: CatalogItem[] }) {
   const [anime, setAnime] = useState<{ id: number; title: string; cover: string | null } | null>(null)
   const [subMode, setSubMode] = useState<'url' | 'text'>('url')
   const [preview, setPreview] = useState(false)
-  const [searching, setSearching] = useState(false)
+  const [searchingTorrent, setSearchingTorrent] = useState(false)
+  const [searchingStream, setSearchingStream] = useState(false)
   
   const [f, setF] = useState({ number: 1, title: '', videoUrl: '', magnetUrl: '', thumbnail: '', subtitleUrl: '', subtitleText: '', subtitleLang: 'tr' })
 
   function submit(e: React.FormEvent) {
     e.preventDefault()
-    if (!anime) {
-      toast.error('Önce bir anime seç')
-      return
-    }
+    if (!anime) return toast.error('Önce bir anime seç')
     start(async () => {
       const res = await addEpisodeAction({
         animeId: anime.id,
@@ -46,24 +44,52 @@ export function EpisodeManager({ catalog }: { catalog: CatalogItem[] }) {
         subtitleText: subMode === 'text' ? f.subtitleText : '',
         subtitleLang: f.subtitleLang,
       })
-      if (!res.ok) {
-        toast.error(res.error)
-        return
-      }
+      if (!res.ok) return toast.error(res.error)
       toast.success(`${anime.title} · ${f.number}. bölüm eklendi`)
       setF((x) => ({ ...x, number: x.number + 1, title: '', videoUrl: '', magnetUrl: '', thumbnail: '', subtitleUrl: '', subtitleText: '' }))
-      setPreview(false)
       router.refresh()
     })
   }
 
-  const handleAutoFind = async () => {
-    if (!anime || !f.number) return toast.error('Önce anime seçin ve bölüm numarasını girin')
-    setSearching(true)
-    const q = `${anime.title} ${f.number < 10 ? '0'+f.number : f.number}`
+  const handleFindStream = async () => {
+    if (!anime || !f.number) return toast.error('Anime ve bölüm numarası gerekli')
+    setSearchingStream(true)
+    toast.loading('HLS/MP4 Akış linki aranıyor...', { id: 'stream' })
+    
+    try {
+      const res = await fetch(`/api/stream?title=${encodeURIComponent(anime.title)}&ep=${f.number}`)
+      
+      // Güvenli okuma: Eğer sunucu JSON yerine HTML hata sayfası dönerse çökmeyi engeller
+      const text = await res.text()
+      let data
+      try {
+        data = JSON.parse(text)
+      } catch {
+        throw new Error('Sunucu geçersiz yanıt döndürdü (HTML veya boş sayfa). Vercel loglarına bakın.')
+      }
+      
+      if (data.streamUrl) {
+        setF((prev) => ({ ...prev, videoUrl: data.streamUrl }))
+        toast.success('Akış linki bulundu ve eklendi!', { id: 'stream' })
+      } else {
+        toast.error(data.error || 'Bulunamadı', { id: 'stream', duration: 6000 })
+        console.log('Detaylı Hata:', data)
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Bağlantı hatası', { id: 'stream', duration: 8000 })
+      console.error(error)
+    } finally {
+      setSearchingStream(false)
+    }
+  }
+
+  const handleFindTorrent = async () => {
+    if (!anime || !f.number) return toast.error('Anime ve bölüm numarası gerekli')
+    setSearchingTorrent(true)
     toast.loading('Torrent aranıyor...', { id: 'torrent' })
     
     try {
+      const q = `${anime.title} ${f.number < 10 ? '0'+f.number : f.number}`
       const res = await fetch(`/api/torrents?q=${encodeURIComponent(q)}`)
       const data = await res.json()
       
@@ -74,14 +100,14 @@ export function EpisodeManager({ catalog }: { catalog: CatalogItem[] }) {
           title: prev.title || data.title || `${prev.number}. bölüm`,
           thumbnail: prev.thumbnail || anime.cover || ''
         }))
-        toast.success(`Bulundu! (${data.seeders} seed)`, { id: 'torrent' })
+        toast.success(`Torrent bulundu! (${data.seeders} seed)`, { id: 'torrent' })
       } else {
-        toast.error(data.error || 'Uygun torrent bulunamadı', { id: 'torrent' })
+        toast.error(data.error || 'Bulunamadı', { id: 'torrent' })
       }
     } catch {
-      toast.error('Arama sırasında bağlantı hatası', { id: 'torrent' })
+      toast.error('Arama hatası', { id: 'torrent' })
     } finally {
-      setSearching(false)
+      setSearchingTorrent(false)
     }
   }
 
@@ -100,43 +126,46 @@ export function EpisodeManager({ catalog }: { catalog: CatalogItem[] }) {
               <input type="number" min={1} required className={field} value={f.number} onChange={(e) => setF({ ...f, number: Number(e.target.value) })} />
             </label>
             <label className="flex flex-col gap-1.5 text-sm">
-              <span className="text-muted-foreground">Bölüm başlığı (opsiyonel)</span>
+              <span className="text-muted-foreground">Bölüm başlığı</span>
               <input className={field} value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} />
             </label>
           </div>
 
-          <div className="flex flex-col gap-2 rounded-2xl border border-primary/20 bg-primary/5 p-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">Magnet Linki (WebTorrent)</span>
-              <button 
-                type="button" 
-                onClick={handleAutoFind}
-                disabled={searching}
-                className="flex items-center gap-2 rounded-full bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground transition hover:brightness-110 disabled:opacity-50"
-              >
-                {searching ? <Loader2 className="size-3.5 animate-spin" /> : <Wand2 className="size-3.5" />}
-                Otomatik Bul
-              </button>
-            </div>
-            <input type="text" className={field} placeholder="magnet:?xt=urn:btih:..." value={f.magnetUrl} onChange={(e) => setF({ ...f, magnetUrl: e.target.value })} />
-          </div>
-
-          <div className="border-t border-border my-2 pt-4">
-            <p className="mb-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Alternatif: Direkt Video</p>
-            <label className="flex flex-col gap-1.5 text-sm">
-              <span className="text-muted-foreground">Video bağlantısı (MP4 / WebM)</span>
-              <div className="flex gap-2">
-                <input type="url" className={field} placeholder="https://…/bolum-1.mp4" value={f.videoUrl} onChange={(e) => setF({ ...f, videoUrl: e.target.value })} />
-                <button type="button" disabled={!f.videoUrl} onClick={() => setPreview((v) => !v)} className="flex h-12 shrink-0 items-center gap-2 rounded-2xl border border-border px-4 text-sm transition hover:border-primary disabled:opacity-40">
-                  <Eye className="size-4" /> Test
+          <div className="grid gap-4 sm:grid-cols-2">
+            {/* MP4 / HLS */}
+            <div className="flex flex-col gap-2 rounded-2xl border border-primary/20 bg-primary/5 p-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">HLS / MP4 Linki</span>
+                <button 
+                  type="button" 
+                  onClick={handleFindStream}
+                  disabled={searchingStream}
+                  className="flex items-center gap-2 rounded-full bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground transition hover:brightness-110 disabled:opacity-50"
+                >
+                  {searchingStream ? <Loader2 className="size-3.5 animate-spin" /> : <Tv className="size-3.5" />}
+                  Akış Bul
                 </button>
               </div>
-            </label>
-          </div>
+              <input type="text" className={field} placeholder="https://.../master.m3u8" value={f.videoUrl} onChange={(e) => setF({ ...f, videoUrl: e.target.value })} />
+            </div>
 
-          {preview && f.videoUrl && (
-            <video src={f.videoUrl} controls className="aspect-video w-full rounded-2xl bg-black" onError={() => toast.error('Video oynatılamadı: bağlantıyı kontrol et')} />
-          )}
+            {/* Magnet */}
+            <div className="flex flex-col gap-2 rounded-2xl border border-border p-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Magnet Linki</span>
+                <button 
+                  type="button" 
+                  onClick={handleFindTorrent}
+                  disabled={searchingTorrent}
+                  className="flex items-center gap-2 rounded-full bg-secondary px-4 py-1.5 text-xs font-semibold transition hover:brightness-110 disabled:opacity-50"
+                >
+                  {searchingTorrent ? <Loader2 className="size-3.5 animate-spin" /> : <Wand2 className="size-3.5" />}
+                  Torrent Bul
+                </button>
+              </div>
+              <input type="text" className={field} placeholder="magnet:?xt=urn:btih:..." value={f.magnetUrl} onChange={(e) => setF({ ...f, magnetUrl: e.target.value })} />
+            </div>
+          </div>
 
           <label className="flex flex-col gap-1.5 text-sm">
             <span className="text-muted-foreground">Küçük resim (opsiyonel)</span>
@@ -145,17 +174,17 @@ export function EpisodeManager({ catalog }: { catalog: CatalogItem[] }) {
 
           <div className="flex flex-col gap-2 rounded-2xl border border-border p-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <span className="text-sm font-medium">Altyazı (SRT, VTT veya ASS)</span>
+              <span className="text-sm font-medium">Altyazı (SRT, VTT)</span>
               <div className="flex items-center gap-2">
-                <select aria-label="Altyazı dili" value={f.subtitleLang} onChange={(e) => setF({ ...f, subtitleLang: e.target.value })} className="h-9 rounded-xl border border-border bg-background px-2 text-sm">
+                <select value={f.subtitleLang} onChange={(e) => setF({ ...f, subtitleLang: e.target.value })} className="h-9 rounded-xl border border-border bg-background px-2 text-sm">
                   <option value="tr">Türkçe</option>
                   <option value="en">İngilizce</option>
                   <option value="ja">Japonca</option>
                 </select>
                 <div className="grid grid-cols-2 gap-1 rounded-xl bg-muted p-1">
                   {(['url', 'text'] as const).map((m) => (
-                    <button key={m} type="button" aria-pressed={subMode === m} onClick={() => setSubMode(m)} className={cn('rounded-lg px-3 py-1 text-xs transition', subMode === m ? 'bg-card shadow-sm' : 'text-muted-foreground')}>
-                      {m === 'url' ? 'Bağlantı' : 'Metin yapıştır'}
+                    <button key={m} type="button" onClick={() => setSubMode(m)} className={cn('rounded-lg px-3 py-1 text-xs transition', subMode === m ? 'bg-card shadow-sm' : 'text-muted-foreground')}>
+                      {m === 'url' ? 'Bağlantı' : 'Metin'}
                     </button>
                   ))}
                 </div>
@@ -164,16 +193,14 @@ export function EpisodeManager({ catalog }: { catalog: CatalogItem[] }) {
             {subMode === 'url' ? (
               <input type="url" className={field} placeholder="https://…/bolum-1.tr.srt" value={f.subtitleUrl} onChange={(e) => setF({ ...f, subtitleUrl: e.target.value })} />
             ) : (
-              <textarea className="min-h-40 rounded-2xl border border-border bg-background p-4 font-mono text-xs outline-none focus:border-primary" placeholder={'1\n00:00:01,000 --> 00:00:03,000\nMerhaba dünya'} value={f.subtitleText} onChange={(e) => setF({ ...f, subtitleText: e.target.value })} />
+              <textarea className="min-h-40 rounded-2xl border border-border bg-background p-4 font-mono text-xs outline-none focus:border-primary" value={f.subtitleText} onChange={(e) => setF({ ...f, subtitleText: e.target.value })} />
             )}
-            <p className="text-xs text-muted-foreground">Altyazılar sunucu üzerinden otomatik olarak WebVTT formatına dönüştürülür; CORS sorunu yaşanmaz.</p>
           </div>
 
-          <button type="submit" disabled={pending} className="flex h-13 items-center justify-center gap-2 rounded-2xl bg-primary font-semibold text-primary-foreground transition hover:brightness-110 disabled:opacity-70">
+          <button type="submit" disabled={pending} className="flex h-13 items-center justify-center gap-2 rounded-2xl bg-foreground font-semibold text-background transition hover:opacity-90 disabled:opacity-70">
             {pending ? <Loader2 className="size-4 animate-spin" /> : <Plus className="size-4" />}
             Bölümü ekle
           </button>
-          <p className="text-xs text-muted-foreground">Aynı numarada bir bölüm varsa güncellenir.</p>
         </form>
       </Card>
 
@@ -189,9 +216,8 @@ export function EpisodeManager({ catalog }: { catalog: CatalogItem[] }) {
                   <img src={c.cover || '/placeholder.svg'} alt="" className="h-14 w-10 rounded-lg object-cover" />
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-medium">{c.title}</p>
-                    <p className="font-mono text-xs text-muted-foreground">{c.count} bölüm</p>
                   </div>
-                  <Link href={`/anime/${c.animeId}`} target="_blank" className="grid size-9 place-items-center rounded-full border border-border hover:border-primary" aria-label="Anime sayfasını aç">
+                  <Link href={`/anime/${c.animeId}`} target="_blank" className="grid size-9 place-items-center rounded-full border border-border hover:border-primary">
                     <ExternalLink className="size-4" />
                   </Link>
                 </div>
@@ -201,7 +227,7 @@ export function EpisodeManager({ catalog }: { catalog: CatalogItem[] }) {
                       <span className="w-12 font-mono text-xs text-ink">#{ep.number}</span>
                       <span className="min-w-0 flex-1 truncate">{ep.title || `${ep.number}. bölüm`}</span>
                       <span className="hidden font-mono text-[10px] uppercase text-muted-foreground sm:inline">
-                        {ep.magnetUrl ? 'Torrent' : (ep.videoUrl ? 'Video' : 'Yok')}
+                        {ep.videoUrl ? 'HLS/MP4' : (ep.magnetUrl ? 'Torrent' : 'Yok')}
                       </span>
                       <Link href={`/anime/${c.animeId}/izle/${ep.number}`} target="_blank" className="text-xs text-ink hover:underline">
                         İzle
@@ -216,7 +242,6 @@ export function EpisodeManager({ catalog }: { catalog: CatalogItem[] }) {
                             router.refresh()
                           })
                         }}
-                        aria-label={`${ep.number}. bölümü sil`}
                         className="grid size-8 place-items-center rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                       >
                         <Trash2 className="size-4" />
