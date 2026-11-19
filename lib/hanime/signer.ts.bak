@@ -44,6 +44,7 @@ async function buildSigner(): Promise<Signer> {
   ].filter(Boolean)
 
   let code = ''
+  let vendorUrl = ''
   for (const url of known) {
     try {
       const res = await fetch(url, { headers: SCRIPT_HEADERS })
@@ -51,6 +52,7 @@ async function buildSigner(): Promise<Signer> {
       const text = await res.text()
       if (text.length > 100_000) {
         code = text
+        vendorUrl = url
         break
       }
     } catch {
@@ -72,6 +74,7 @@ async function buildSigner(): Promise<Signer> {
       html.match(/\/js\/vendor\.[a-z0-9]+\.min\.js/i)
     if (!found) throw new Error('vendor script bulunamadi (status ' + status + ', uzunluk ' + html.length + ')')
     const url = new URL(found[0], ORIGIN).toString()
+    vendorUrl = url
     const res = await fetch(url, { headers: SCRIPT_HEADERS })
     if (!res.ok) throw new Error('vendor indirilemedi ' + res.status)
     code = await res.text()

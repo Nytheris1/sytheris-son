@@ -9,7 +9,8 @@ export async function GET() {
     const signer = await getSigner()
     out.signer = /^[0-9a-f]{64}$/.test(signer.sign().signature) ? 'ok' : 'boş imza'
   } catch (err) {
-    out.signer = err instanceof Error ? err.message : 'hata'
+    const e = err as { message?: string; stack?: string }
+    out.signer = ((e && e.message) || String(err)) + ' | ' + ((e && e.stack) || '').split('\n').slice(0, 3).join(' ~ ').slice(0, 300)
   }
   try {
     out.csrf = (await getCsrf()).token ? 'ok' : 'boş'

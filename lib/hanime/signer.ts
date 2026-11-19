@@ -129,7 +129,12 @@ async function buildSigner(): Promise<Signer> {
   win.globalThis = win
 
   const ctx = createContext(win, { name: 'hanime-signer' })
-  runInContext(code, ctx, { timeout: 30_000, filename: vendorUrl })
+  try {
+    runInContext(code, ctx, { timeout: 30_000, filename: vendorUrl })
+  } catch (err) {
+    const e = err as { message?: string }
+    throw new Error('vendor calistirilamadi: ' + (e?.message || String(err)))
+  }
 
   const sign = () => {
     win.ssignature = ''
