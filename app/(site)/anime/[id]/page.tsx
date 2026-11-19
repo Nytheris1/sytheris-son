@@ -178,7 +178,7 @@ export default async function AnimePage({ params }: Props) {
           <section id="bolumler" className="flex scroll-mt-36 flex-col gap-6">
             <SectionHeading eyebrow="Sytheris oynatıcı" title="Bölümler" accent="izle" description="Türkçe altyazılı bölümler doğrudan sitede." />
             <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {(episodes.length ? episodes : syntheticEpisodes((media as { episodes?: number | null } | null)?.episodes ?? 0, ((media as { episodes?: number | null } | null)?.episodes ?? 0) === 1).map((n) => ({ number: n, title: '' }))).map((ep) => (
+              {(episodes.length ? episodes : syntheticEpisodes((media as { episodes?: number | null } | null)?.episodes ?? 0, ((media as { episodes?: number | null } | null)?.episodes ?? 0) === 1).map((n) => ({ id: 'a' + animeId + '-e' + n, number: n, title: '', thumbnail: null }))).map((ep) => (
                 <li key={ep.id}>
                   <Link href={`/anime/${animeId}/izle/${ep.number}`} className="group flex items-center gap-4 rounded-2xl border border-border bg-card p-3 transition hover:-translate-y-0.5 hover:border-primary">
                     <span className="relative grid aspect-video w-32 shrink-0 place-items-center overflow-hidden rounded-xl bg-muted">
