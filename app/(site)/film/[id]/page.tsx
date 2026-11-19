@@ -11,6 +11,8 @@ import { FilmCast } from '@/components/film/film-cast'
 import { DetailHero, taglineOf, type HeroFact } from '@/components/cine/detail-hero'
 import { CastCreditsSkeleton, CineHeading } from '@/components/cine/cast-credits'
 import { CreditsSheet } from '@/components/cine/credits-sheet'
+import { FilmWatch } from '@/components/film/film-watch'
+import { DUB_PROVIDERS, SUB_PROVIDERS, hasKey, resolveTmdbId } from '@/lib/film-source'
 
 type Props = { params: Promise<{ id: string }> }
 
@@ -26,6 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 const SECTIONS = [
+  { id: 'izle', label: 'İzle' },
   { id: 'fragman', label: 'Fragman & konu' },
   { id: 'oyuncular', label: 'Oyuncular' },
   { id: 'kunye', label: 'Künye' },
@@ -41,6 +44,7 @@ export default async function FilmPage({ params }: Props) {
   const similar = (genreId ? await getFilmsByGenre(genreId, 30) : await getTopFilms(30)).filter((f) => f.id !== film.id).slice(0, 18)
   const release = film.release ? new Date(film.release).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }) : null
   const runtime = runtimeTr(film.runtime)
+  const tmdb = await resolveTmdbId(film.title, film.year)
 
   const facts = [
     film.director && { label: 'Yönetmen', value: film.director },
@@ -74,6 +78,9 @@ export default async function FilmPage({ params }: Props) {
         stub={film.year ? { label: 'Yıl', value: String(film.year) } : null}
         actions={
           <>
+            <a href="#izle" className="flex h-12 items-center gap-2.5 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground transition hover:brightness-110">
+              <Play className="size-4 fill-current" aria-hidden="true" /> Filmi izle
+            </a>
             {film.trailer && (
               <a href="#fragman" className="flex h-12 items-center gap-2.5 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground transition hover:brightness-110">
                 <Play className="size-4 fill-current" aria-hidden="true" /> Fragmanı izle
@@ -87,6 +94,27 @@ export default async function FilmPage({ params }: Props) {
         sections={SECTIONS}
       />
 
+      <section id="izle" aria-labelledby="izle-baslik" className="mx-auto flex w-full max-w-[1440px] scroll-mt-24 flex-col gap-6 px-4 sm:px-6 lg:px-10">
+        <CineHeading
+          id="izle-baslik"
+          eyebrow="Sinema modu"
+          title="Filmi"
+          accent="izle"
+          aside={<p className="font-mono text-[10px] uppercase tracking-[0.24em] text-muted-foreground">Altyazılı ya da dublajlı</p>}
+        />
+        {tmdb ? (
+          <FilmWatch
+            tmdb={tmdb}
+            title={film.title}
+            sub={SUB_PROVIDERS.map((p) => ({ id: p.id, label: p.label, url: p.build(String(tmdb)) }))}
+            dub={DUB_PROVIDERS.map((p) => ({ id: p.id, label: p.label, url: p.build(String(tmdb)) }))}
+          />
+        ) : (
+          <p className="rounded-3xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
+            {hasKey ? 'Bu film için eşleşme bulunamadı. Fragmanı aşağıda izleyebilirsin.' : 'Tam film için TMDB_API_KEY tanımlanmalı.'}
+          </p>
+        )}
+      </section>
       <section id="fragman" aria-label="Fragman ve konu" className="mx-auto grid w-full max-w-[1440px] scroll-mt-24 gap-12 px-4 sm:px-6 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)] lg:items-start lg:px-10">
         {film.trailer ? (
           <FilmTrailer src={film.trailer} poster={film.posterLg} title={film.title} />
