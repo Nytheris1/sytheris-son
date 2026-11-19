@@ -41,7 +41,7 @@ export async function GET() {
     const target = list[0].url
     const up = await fetch(proxyUrl(target), { headers: UPSTREAM_HEADERS })
     const text = await up.text()
-    out.chain = { status: up.status, ctype: up.headers.get('content-type'), head: text.slice(0, 120) }
+    out.chain = { target: target, status: up.status, ctype: up.headers.get('content-type'), head: text.slice(0, 120) }
   } catch (err) {
     const e = err as { message?: string }
     out.chain = (e && e.message) || String(err)
