@@ -201,3 +201,9 @@ export async function getStats() {
   const all = await safeLoad()
   return { total: all.length }
 }
+
+export async function randomSlug() {
+  const all = await safeLoad()
+  if (!all.length) return null
+  return all[Math.floor(Math.random() * all.length)].slug
+}

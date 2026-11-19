@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { getViewer } from '@/lib/viewer'
 import { getContentMode } from '@/lib/content-mode'
+import { randomSlug } from '@/lib/hanime/catalog'
+import { redirect } from 'next/navigation'
 import { getFilmHome, runtimeTr } from '@/lib/films'
 import { getSeriesIndex } from '@/lib/series'
 import { SectionHeading } from '@/components/anime/section-heading'
@@ -43,6 +45,11 @@ async function cinemaPool() {
 
 export default async function RandomPage() {
   const mode = await getContentMode()
+
+  if (mode === 'hentai') {
+    const slug = await randomSlug()
+    if (slug) redirect('/hentai/' + slug)
+  }
 
   if (mode === 'film') {
     const { pool, genres } = await cinemaPool()
