@@ -1,22 +1,22 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { ArrowLeft, ArrowRight, Search } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Play, Search, Sparkles } from 'lucide-react'
 import { getTopTags, searchHanime, type HanimeSort } from '@/lib/hanime/catalog'
+import { compactNumber } from '@/lib/hanime/format'
 import { HanimeCard } from '@/components/hentai/hanime-card'
-import { SectionHeading } from '@/components/anime/section-heading'
 import { cn } from '@/lib/utils'
 
 export const metadata: Metadata = {
   title: 'Hentai',
-  description: 'hanime.tv kataloğu: trend, yeni ve en beğenilen yetişkin animeler. Doğrudan sitede izle.',
+  description: 'Yetiskin anime katalogu: trend, yeni ve en begenilenler. Dogrudan sitede izle.',
   robots: { index: false, follow: false },
 }
 
 const SORTS: { id: HanimeSort; label: string }[] = [
   { id: 'trending', label: 'Trend' },
   { id: 'new', label: 'Yeni' },
-  { id: 'top', label: 'Beğeni' },
-  { id: 'az', label: 'A–Z' },
+  { id: 'top', label: 'Begeni' },
+  { id: 'az', label: 'A-Z' },
 ]
 
 type SP = Promise<Record<string, string | undefined>>
@@ -33,7 +33,7 @@ export default async function HentaiPage({ searchParams }: { searchParams: SP })
     const p = new URLSearchParams()
     for (const [k, v] of Object.entries(merged)) if (v) p.set(k, v)
     const q = p.toString()
-    return q ? `/hentai?${q}` : '/hentai'
+    return q ? '/hentai?' + q : '/hentai'
   }
 
   if (!filtered) {
@@ -41,60 +41,85 @@ export default async function HentaiPage({ searchParams }: { searchParams: SP })
       searchHanime({ sort: 'trending' }),
       searchHanime({ sort: 'new' }),
       searchHanime({ sort: 'top' }),
-      getTopTags(),
+      getTopTags(30),
     ])
     const hero = trending.items[0]
+    const spotlight = trending.items.slice(0, 3)
 
     return (
-      <div className="dark bg-scrim pb-16 text-foreground">
+      <div className="dark min-h-screen bg-[#08070a] pb-24 text-white">
         <section className="relative isolate overflow-hidden">
           {hero?.cover && (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={hero.cover} alt="" aria-hidden="true" className="absolute inset-0 -z-20 size-full scale-110 object-cover opacity-25 blur-2xl" />
+            <img src={hero.cover} alt="" aria-hidden="true" className="absolute inset-0 -z-20 size-full scale-110 object-cover opacity-30 blur-[2px]" />
           )}
-          <div className="absolute inset-0 -z-10 bg-gradient-to-b from-scrim/60 via-scrim/85 to-scrim" aria-hidden="true" />
-          <div className="mx-auto flex max-w-[1440px] flex-col gap-6 px-4 pb-12 pt-16 sm:px-6 lg:px-10">
-            <p className="label-mono flex items-center gap-3 text-rose-400">
-              <span className="h-px w-8 bg-rose-500" /> Yetişkin · 18+
+          <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_-10%,rgba(244,63,94,0.28),transparent_55%),linear-gradient(to_bottom,rgba(8,7,10,0.55),rgba(8,7,10,0.92)_60%,#08070a)]" aria-hidden="true" />
+
+          <div className="mx-auto flex max-w-[1440px] flex-col gap-8 px-4 pb-16 pt-20 sm:px-6 lg:px-10">
+            <p className="flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.3em] text-rose-400">
+              <span className="h-px w-10 bg-rose-500" /> 18+ · Yetiskin
             </p>
-            <h1 className="text-balance text-5xl font-bold tracking-[-0.05em] sm:text-7xl">
-              Gece <span className="accent-serif">seansı</span>
-            </h1>
-            <form action="/hentai" className="flex w-full max-w-xl gap-2">
-              <input name="q" placeholder="Başlık, alternatif isim, slug…" className="h-12 flex-1 rounded-full border border-foreground/15 bg-foreground/5 px-5 text-sm outline-none placeholder:text-foreground/35 focus:border-rose-500" />
-              <button className="grid size-12 place-items-center rounded-full bg-rose-600 text-white" aria-label="Ara"><Search className="size-4" /></button>
+
+            <div className="flex flex-col gap-4">
+              <h1 className="max-w-3xl text-balance text-6xl font-bold leading-[0.92] tracking-[-0.055em] sm:text-8xl">
+                Gece <span className="accent-serif italic text-rose-400">seansi</span>
+              </h1>
+              <p className="max-w-md text-pretty text-sm leading-relaxed text-white/55">
+                Binlerce yetiskin anime, tek yerde. Sec, kaliteyi belirle, kaldigin yerden devam et.
+              </p>
+            </div>
+
+            <form action="/hentai" className="flex w-full max-w-xl items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] p-1.5 pl-5 backdrop-blur">
+              <Search className="size-4 shrink-0 text-white/35" aria-hidden="true" />
+              <input name="q" placeholder="Baslik, alternatif isim, studyo..." className="h-10 flex-1 bg-transparent text-sm outline-none placeholder:text-white/30" />
+              <button className="h-10 rounded-full bg-rose-600 px-6 text-sm font-semibold transition hover:bg-rose-500">Ara</button>
             </form>
-            {hero && (
-              <Link href={`/hentai/${hero.slug}`} className="group flex w-fit items-center gap-4 rounded-2xl border border-foreground/15 bg-foreground/5 p-2 pr-5 transition hover:border-rose-500/60">
-                {(hero.poster ?? hero.cover) && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={(hero.poster ?? hero.cover)!} alt="" className="h-16 w-28 rounded-lg object-cover" />
-                )}
-                <span className="flex flex-col gap-0.5">
-                  <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-rose-400">Şu an trend</span>
-                  <span className="line-clamp-1 font-semibold">{hero.name}</span>
-                </span>
-              </Link>
+
+            {spotlight.length > 0 && (
+              <div className="grid gap-3 sm:grid-cols-3">
+                {spotlight.map((v, i) => (
+                  <Link
+                    key={v.slug}
+                    href={'/hentai/' + v.slug}
+                    className="group relative isolate flex items-end gap-4 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] p-3 transition hover:border-rose-500/60"
+                  >
+                    <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-rose-600/15 font-mono text-xs text-rose-400">
+                      0{i + 1}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-semibold">{v.name}</span>
+                      <span className="font-mono text-[10px] uppercase tracking-wider text-white/35">
+                        {compactNumber(v.views)} izlenme
+                      </span>
+                    </span>
+                    <Play className="size-4 shrink-0 text-rose-400 opacity-0 transition group-hover:opacity-100" aria-hidden="true" />
+                  </Link>
+                ))}
+              </div>
             )}
           </div>
         </section>
 
-        <div className="mx-auto flex max-w-[1440px] flex-col gap-14 px-4 pt-10 sm:px-6 lg:px-10">
+        <div className="mx-auto flex max-w-[1440px] flex-col gap-16 px-4 sm:px-6 lg:px-10">
           <section className="flex flex-col gap-4">
-            <SectionHeading eyebrow="Etiketler" title="Ne izlemek" accent="istiyorsun" />
+            <div className="flex items-center gap-2">
+              <Sparkles className="size-4 text-rose-400" aria-hidden="true" />
+              <h2 className="font-mono text-[11px] uppercase tracking-[0.28em] text-white/40">Etiketler</h2>
+            </div>
             <ul className="flex flex-wrap gap-2">
               {tags.map((t) => (
                 <li key={t.text}>
-                  <Link href={href({ etiket: t.text })} className="flex items-center gap-1.5 rounded-full border border-border px-3.5 py-1.5 text-xs transition hover:border-rose-500">
-                    {t.text} <span className="font-mono text-[10px] text-muted-foreground">{t.count}</span>
+                  <Link href={href({ etiket: t.text })} className="flex items-center gap-1.5 rounded-full border border-white/10 px-3.5 py-1.5 text-xs text-white/65 transition hover:border-rose-500 hover:text-white">
+                    {t.text} <span className="font-mono text-[10px] text-white/25">{t.count}</span>
                   </Link>
                 </li>
               ))}
             </ul>
           </section>
-          <Row title="Trend" accent="olanlar" videos={trending.items} badge="TREND" />
-          <Row title="Yeni" accent="eklenenler" videos={fresh.items} badge="YENİ" />
-          <Row title="En çok" accent="beğenilenler" videos={top.items} />
+
+          <Rail title="Trend" accent="olanlar" videos={trending.items} badge="TREND" />
+          <Rail title="Yeni" accent="eklenenler" videos={fresh.items} badge="YENI" />
+          <Rail title="En cok" accent="begenilenler" videos={top.items} />
         </div>
       </div>
     )
@@ -109,57 +134,72 @@ export default async function HentaiPage({ searchParams }: { searchParams: SP })
   })
 
   return (
-    <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-8 px-4 pb-16 pt-12 sm:px-6 lg:px-10">
-      <SectionHeading as="h1" eyebrow="18+ katalog" title={sp.etiket ?? sp.studyo ?? (sp.q ? `“${sp.q}”` : 'Tüm')} accent={sp.etiket || sp.studyo || sp.q ? 'sonuçlar' : 'kitaplık'} />
-      <form action="/hentai" className="flex w-full max-w-xl gap-2">
-        <input name="q" defaultValue={sp.q ?? ''} placeholder="Ara…" className="h-11 flex-1 rounded-full border border-border px-5 text-sm outline-none focus:border-primary" />
-        <button className="grid size-11 place-items-center rounded-full bg-foreground text-background" aria-label="Ara"><Search className="size-4" /></button>
-      </form>
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="flex items-center gap-1 rounded-full bg-muted p-1" role="group" aria-label="Sıralama">
-          {SORTS.map((s) => (
-            <Link key={s.id} href={href({ sira: s.id })} className={cn('rounded-full px-3.5 py-1.5 text-xs font-medium transition', (sp.sira ?? 'trending') === s.id ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}>
-              {s.label}
-            </Link>
-          ))}
+    <div className="dark min-h-screen bg-[#08070a] pb-24 text-white">
+      <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-8 px-4 pt-16 sm:px-6 lg:px-10">
+        <div className="flex flex-col gap-2">
+          <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-rose-400">18+ katalog</p>
+          <h1 className="text-4xl font-bold tracking-[-0.04em] sm:text-5xl">
+            {sp.etiket ?? sp.studyo ?? (sp.q ? '"' + sp.q + '"' : 'Tum')}{' '}
+            <span className="accent-serif italic text-white/35">{sp.etiket || sp.studyo || sp.q ? 'sonuclar' : 'kitaplik'}</span>
+          </h1>
         </div>
-        <p className="ml-auto font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">{result.total.toLocaleString('tr-TR')} sonuç</p>
+
+        <form action="/hentai" className="flex w-full max-w-xl items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] p-1.5 pl-5">
+          <Search className="size-4 shrink-0 text-white/35" aria-hidden="true" />
+          <input name="q" defaultValue={sp.q ?? ''} placeholder="Ara..." className="h-10 flex-1 bg-transparent text-sm outline-none placeholder:text-white/30" />
+          <button className="h-10 rounded-full bg-white/10 px-5 text-sm font-medium">Ara</button>
+        </form>
+
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-1 rounded-full border border-white/10 p-1" role="group" aria-label="Siralama">
+            {SORTS.map((s) => (
+              <Link key={s.id} href={href({ sira: s.id })} className={cn('rounded-full px-3.5 py-1.5 text-xs font-medium transition', (sp.sira ?? 'trending') === s.id ? 'bg-rose-600 text-white' : 'text-white/45 hover:text-white')}>
+                {s.label}
+              </Link>
+            ))}
+          </div>
+          <p className="ml-auto font-mono text-[11px] uppercase tracking-[0.2em] text-white/30">{result.total.toLocaleString('tr-TR')} sonuc</p>
+        </div>
+
+        {result.items.length ? (
+          <ul className="grid grid-cols-2 gap-x-4 gap-y-9 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6">
+            {result.items.map((v) => (
+              <li key={v.slug}><HanimeCard video={v} /></li>
+            ))}
+          </ul>
+        ) : (
+          <p className="rounded-3xl border border-dashed border-white/15 p-16 text-center text-white/40">Sonuc yok. Filtreleri gevsetmeyi dene.</p>
+        )}
+
+        <nav className="flex items-center justify-center gap-3 pt-4" aria-label="Sayfalama">
+          {page > 1 && (
+            <Link href={href({ sayfa: String(page - 1) })} className="flex h-12 items-center gap-2 rounded-full border border-white/15 px-6 text-sm transition hover:border-rose-500">
+              <ArrowLeft className="size-4" /> Onceki
+            </Link>
+          )}
+          {result.hasNext && (
+            <Link href={href({ sayfa: String(page + 1) })} className="flex h-12 items-center gap-2 rounded-full bg-rose-600 px-6 text-sm font-semibold">
+              Sonraki <ArrowRight className="size-4" />
+            </Link>
+          )}
+        </nav>
       </div>
-
-      {result.items.length ? (
-        <ul className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-          {result.items.map((v) => (
-            <li key={v.slug}><HanimeCard video={v} /></li>
-          ))}
-        </ul>
-      ) : (
-        <p className="rounded-3xl border border-dashed border-border p-12 text-center text-muted-foreground">Sonuç yok.</p>
-      )}
-
-      <nav className="flex items-center justify-center gap-3" aria-label="Sayfalama">
-        {page > 1 && (
-          <Link href={href({ sayfa: String(page - 1) })} className="flex h-12 items-center gap-2 rounded-full border border-border px-6 transition hover:border-primary">
-            <ArrowLeft className="size-4" /> Önceki
-          </Link>
-        )}
-        {result.hasNext && (
-          <Link href={href({ sayfa: String(page + 1) })} className="flex h-12 items-center gap-2 rounded-full bg-primary px-6 font-medium text-primary-foreground">
-            Sonraki <ArrowRight className="size-4" />
-          </Link>
-        )}
-      </nav>
     </div>
   )
 }
 
-function Row({ title, accent, videos, badge }: { title: string; accent: string; videos: import('@/lib/hanime/catalog').HanimeVideo[]; badge?: string }) {
+function Rail({ title, accent, videos, badge }: { title: string; accent: string; videos: import('@/lib/hanime/catalog').HanimeVideo[]; badge?: string }) {
   if (!videos.length) return null
   return (
     <section className="flex flex-col gap-5">
-      <SectionHeading eyebrow="Seçki" title={title} accent={accent} />
-      <ul className="scrollbar-none -mx-4 flex snap-x gap-4 overflow-x-auto px-4 sm:mx-0 sm:grid sm:grid-cols-4 sm:overflow-visible sm:px-0 lg:grid-cols-5">
-        {videos.slice(0, 10).map((v) => (
-          <li key={v.slug} className="w-[220px] shrink-0 snap-start sm:w-auto">
+      <div className="flex items-end justify-between gap-4">
+        <h2 className="text-2xl font-semibold tracking-[-0.03em]">
+          {title} <span className="accent-serif italic text-white/35">{accent}</span>
+        </h2>
+      </div>
+      <ul className="scrollbar-none -mx-4 flex snap-x gap-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-4 sm:overflow-visible sm:px-0 lg:grid-cols-6">
+        {videos.slice(0, 12).map((v) => (
+          <li key={v.slug} className="w-[46%] shrink-0 snap-start sm:w-auto">
             <HanimeCard video={v} badge={badge} />
           </li>
         ))}
