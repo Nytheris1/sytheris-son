@@ -42,6 +42,7 @@ export const UPSTREAM_HEADERS = {
   Referer: 'https://hanime.tv/',
   Origin: 'https://hanime.tv',
   Accept: '*/*',
+  'Accept-Encoding': 'identity',
   'Accept-Language': 'en-US,en;q=0.9',
   'sec-fetch-dest': 'empty',
   'sec-fetch-mode': 'cors',

@@ -298,6 +298,7 @@ async function handle(req) {
       const fwd = new Headers()
       for (const [k, v] of req.headers) if (!skip.includes(k.toLowerCase())) fwd.set(k, v)
 
+      fwd.set('accept-encoding', 'identity')
       const body = req.method === 'GET' || req.method === 'HEAD' ? undefined : await req.arrayBuffer()
       const up = await fetch(target, { method: req.method, headers: fwd, body, redirect: 'follow' })
 
