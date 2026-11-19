@@ -29,6 +29,13 @@ export const FILM_NAV: { href: string; label: string; plus?: boolean }[] = [
   { href: '/korku', label: 'Korku' },
 ]
 
+export const HENTAI_NAV: { href: string; label: string; plus?: boolean }[] = [
+  { href: '/hentai', label: 'Hentai' },
+  { href: '/galeri', label: 'Rule34' },
+  { href: '/porno', label: 'Porno' },
+  { href: '/rastgele', label: 'Rastgele' },
+]
+
 export function isActive(pathname: string, href: string, search?: URLSearchParams | null) {
   const [path, query] = href.split('?')
   if (query) return pathname === path && (search?.toString() ?? '') === query
@@ -38,7 +45,7 @@ export function isActive(pathname: string, href: string, search?: URLSearchParam
 }
 
 export function SiteHeader({ user, mode = 'anime' }: { user: HeaderUser | null; mode?: ContentMode }) {
-  const items = mode === 'film' ? FILM_NAV : NAV
+  const items = mode === 'film' ? FILM_NAV : mode === 'hentai' ? HENTAI_NAV : NAV
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const router = useRouter()

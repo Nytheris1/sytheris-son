@@ -20,9 +20,17 @@ export async function HentaiHome() {
           <p className="mt-4 max-w-md text-sm leading-relaxed text-white/55">
             Yetiskin katalog onunde. Anime ve sinemaya donmek icin yukaridaki anahtari kullan.
           </p>
-          <Link href="/hentai" className="mt-6 inline-flex h-11 items-center rounded-full bg-rose-600 px-6 text-sm font-semibold">
-            Tumunu gor
-          </Link>
+          <div className="mt-6 flex flex-wrap gap-2">
+            <Link href="/hentai" className="inline-flex h-11 items-center rounded-full bg-rose-600 px-6 text-sm font-semibold">
+              Tumunu gor
+            </Link>
+            <Link href="/galeri" className="inline-flex h-11 items-center rounded-full border border-white/15 px-5 text-sm">
+              Galeri
+            </Link>
+            <Link href="/porno" className="inline-flex h-11 items-center rounded-full border border-white/15 px-5 text-sm">
+              Porno
+            </Link>
+          </div>
         </div>
       </section>
 
