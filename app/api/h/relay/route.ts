@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { decodeRelay, rewritePlaylist, UPSTREAM_HEADERS } from '@/lib/hanime/relay'
+import { decodeRelay, rewritePlaylist, proxyUrl, UPSTREAM_HEADERS } from '@/lib/hanime/relay'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
   if (!target) return new Response('imza geçersiz', { status: 400 })
 
   const range = req.headers.get('range')
-  const upstream = await fetch(target, {
+  const upstream = await fetch(proxyUrl(target), {
     headers: { ...UPSTREAM_HEADERS, ...(range ? { Range: range } : {}) },
     cache: 'no-store',
   })
