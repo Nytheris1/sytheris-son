@@ -1,6 +1,7 @@
 import 'server-only'
 import { createHash, createCipheriv, createDecipheriv, randomBytes } from 'node:crypto'
 import { createContext, runInContext } from 'node:vm'
+import { proxyUrl } from './relay'
 
 const ORIGIN = 'https://hanime.tv'
 const UA =
@@ -204,7 +205,7 @@ export function resetSigner() {
 type Csrf = { token: string; proof: string }
 
 export async function getCsrf(): Promise<Csrf> {
-  const res = await fetch('https://ct.hanime.tv/csrf-token', {
+  const res = await fetch(proxyUrl('https://ct.hanime.tv/csrf-token'), {
     headers: { 'User-Agent': UA, Origin: ORIGIN, Referer: ORIGIN + '/' },
     cache: 'no-store',
   })
@@ -225,7 +226,7 @@ export async function signedFetch(url: string, init: RequestInit = {}) {
   const { sign } = await getSigner()
   const { signature, time } = sign()
   const csrf = await getCsrf()
-  return fetch(url, {
+  return fetch(proxyUrl(url), {
     ...init,
     headers: {
       ...(init.headers as Record<string, string>),

@@ -42,3 +42,9 @@ export const UPSTREAM_HEADERS = {
   Referer: 'https://hanime.tv/',
   Origin: 'https://hanime.tv',
 }
+const WORKER = (process.env.HANIME_WORKER_URL || '').replace(/\/$/, '')
+
+export function proxyUrl(url: string) {
+  if (!WORKER) return url
+  return WORKER + '/proxy?u=' + Buffer.from(url).toString('base64url') + '&s=' + mac(url)
+}

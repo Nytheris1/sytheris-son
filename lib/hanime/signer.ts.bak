@@ -272,9 +272,12 @@ function open(token: string) {
 
 export type HanimeSource = { url: string; height: number; label: string }
 
-export async function getSources(slug: string): Promise<HanimeSource[]> {
+export async function getSources(
+  slug: string,
+  base = process.env.HANIME_AUTH_BASE || 'https://auth.hanime.tv',
+): Promise<HanimeSource[]> {
   const token = seal({ timestamp_unix: Math.floor(Date.now() / 1000), directive: 'htv_player_handshake', slug })
-  const res = await signedFetch('https://auth.hanime.tv/api/v11/handshake', {
+  const res = await signedFetch(base + '/api/v11/handshake', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
     body: JSON.stringify({ token }),
