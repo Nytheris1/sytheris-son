@@ -307,6 +307,8 @@ async function handle(req) {
         const v = up.headers.get(k)
         if (v) out.set(k, v)
       }
+      const cookies = up.headers.getSetCookie ? up.headers.getSetCookie() : []
+      for (const ck of cookies) out.append('set-cookie', ck)
       return new Response(up.body, { status: up.status, headers: out })
     }
 

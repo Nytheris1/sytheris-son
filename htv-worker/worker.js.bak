@@ -212,9 +212,8 @@ async function rewrite(text, base, origin) {
   return out.join('\n')
 }
 
-export default {
-  async fetch(req, env) {
-    SECRET = (env && env.RELAY_SECRET) || 'dev'
+async function handle(req) {
+    SECRET = globalThis.RELAY_SECRET || 'dev'
     const url = new URL(req.url)
     const cors = { 'Access-Control-Allow-Origin': '*' }
     const origin = url.origin
@@ -271,6 +270,49 @@ export default {
       return new Response(up.body, { status: up.status, headers: out })
     }
 
+    if (url.pathname === '/vendor-peek') {
+      const page = await fetch(ORIGIN + '/', { headers: { 'User-Agent': UA } })
+      const html = await page.text()
+      const m = html.match(/https:\/\/hanime-cdn\.com\/js\/vendor\.[a-z0-9]+\.min\.js/i)
+      if (!m) return new Response('vendor yok', { headers: cors })
+      const code = await (await fetch(m[0], { headers: { 'User-Agent': UA, Referer: ORIGIN + '/' } })).text()
+      const i = code.indexOf('ssignature')
+      return new Response(
+        JSON.stringify({ len: code.length, url: m[0], at: i, around: i > 0 ? code.slice(Math.max(0, i - 900), i + 900) : code.slice(0, 1800) }),
+        { headers: { ...cors, 'content-type': 'application/json' } },
+      )
+    }
+
+    if (url.pathname === '/proxy') {
+      const u = url.searchParams.get('u') || ''
+      const s = url.searchParams.get('s') || ''
+      let target = ''
+      try {
+        target = dec.decode(unb64u(u))
+      } catch {
+        return new Response('u', { status: 400, headers: cors })
+      }
+      if ((await hmac(target)) !== s) return new Response('imza', { status: 400, headers: cors })
+
+      const skip = ['host','cf-connecting-ip','cf-ray','cf-ipcountry','cf-visitor','x-forwarded-proto','x-forwarded-for','accept-encoding','connection']
+      const fwd = new Headers()
+      for (const [k, v] of req.headers) if (!skip.includes(k.toLowerCase())) fwd.set(k, v)
+
+      const body = req.method === 'GET' || req.method === 'HEAD' ? undefined : await req.arrayBuffer()
+      const up = await fetch(target, { method: req.method, headers: fwd, body, redirect: 'follow' })
+
+      const out = new Headers(cors)
+      out.set('access-control-expose-headers', 'x-token')
+      for (const k of ['content-type','x-token','content-length','content-range','accept-ranges']) {
+        const v = up.headers.get(k)
+        if (v) out.set(k, v)
+      }
+      return new Response(up.body, { status: up.status, headers: out })
+    }
+
     return new Response('yok', { status: 404, headers: cors })
-  },
 }
+
+addEventListener('fetch', (event) => {
+  event.respondWith(handle(event.request))
+})
