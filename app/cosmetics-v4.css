@@ -1,0 +1,594 @@
+/* ============================================================
+   SYTHERIS — cosmetics v4
+   11 frames, 4 banner effects, 6 profile effects, 6 name styles.
+   Builds on the primitives in cosmetics.css (fx-ring, fx-spinner, …).
+   ============================================================ */
+
+/* ================================================= FRAMES — free */
+.fx-frame-sumi {
+  --glow: oklch(0.3 0 0);
+}
+.fx-frame-sumi .fx-ring {
+  --fw: max(2px, 6.5%);
+  background: conic-gradient(from 200deg, oklch(0.16 0 0) 0 62%, oklch(0.16 0 0 / 0.55) 70%, transparent 78% 92%, oklch(0.16 0 0 / 0.7) 96%, oklch(0.16 0 0));
+  filter: drop-shadow(0 0 0.5px oklch(0.16 0 0));
+}
+.dark .fx-frame-sumi .fx-ring,
+.fx-frame-sumi:where(.dark *) .fx-ring {
+  background: conic-gradient(from 200deg, oklch(0.96 0 0) 0 62%, oklch(0.96 0 0 / 0.55) 70%, transparent 78% 92%, oklch(0.96 0 0 / 0.7) 96%, oklch(0.96 0 0));
+}
+.fx-frame-sumi .fx-ring2 {
+  background: conic-gradient(from 30deg, transparent 0 70%, oklch(0.55 0.2 27 / 0.9) 72% 76%, transparent 78%);
+}
+.fx-frame-pixel {
+  --glow: var(--primary);
+}
+.fx-frame-pixel .fx-ring {
+  background: repeating-conic-gradient(from var(--fx-a), var(--primary) 0 15deg, color-mix(in oklch, var(--primary) 40%, black) 15deg 30deg);
+  animation: fx-spin 4s steps(12) infinite;
+  image-rendering: pixelated;
+}
+.fx-frame-pixel .fx-glow {
+  opacity: 0.5;
+}
+
+/* ================================================= FRAMES — plus */
+.fx-frame-matcha {
+  --glow: oklch(0.78 0.13 135);
+}
+.fx-frame-matcha .fx-ring {
+  background: conic-gradient(from var(--fx-a), oklch(0.62 0.12 135), oklch(0.88 0.1 120), oklch(0.5 0.1 140), oklch(0.93 0.06 110), oklch(0.62 0.12 135));
+  animation: fx-spin 8s linear infinite;
+}
+.fx-frame-matcha .fx-rise {
+  border: 1px solid oklch(0.95 0.06 120 / 0.85);
+  background: radial-gradient(circle at 30% 30%, oklch(1 0 0 / 0.8), transparent 50%);
+}
+.fx-frame-candy {
+  --glow: oklch(0.85 0.1 340);
+}
+.fx-frame-candy .fx-ring {
+  background: repeating-conic-gradient(from var(--fx-a), oklch(0.88 0.1 350) 0 20deg, oklch(0.98 0.01 90) 20deg 40deg, oklch(0.86 0.1 200) 40deg 60deg);
+  animation: fx-spin 5s linear infinite;
+}
+.fx-frame-koi {
+  --glow: oklch(0.72 0.12 220);
+}
+.fx-frame-koi .fx-ring {
+  background: conic-gradient(from var(--fx-a), oklch(0.6 0.1 225), oklch(0.85 0.06 200), oklch(0.5 0.12 235), oklch(0.85 0.06 200), oklch(0.6 0.1 225));
+  animation: fx-spin 9s linear infinite;
+}
+.fx-koi {
+  width: 15%;
+  aspect-ratio: 1 / 2.2;
+  border-radius: 50% 50% 45% 45% / 60% 60% 40% 40%;
+  background:
+    radial-gradient(circle at 50% 30%, oklch(0.98 0.01 90) 0 22%, transparent 24%),
+    linear-gradient(180deg, oklch(0.72 0.19 40) 0 46%, oklch(0.98 0.01 90) 46% 64%, oklch(0.72 0.19 40) 64%);
+  box-shadow: 0 1px 3px oklch(0 0 0 / 0.35);
+  rotate: 90deg;
+  animation: fx-koi-swim 1.2s ease-in-out infinite alternate;
+}
+.fx-koi-alt {
+  background:
+    radial-gradient(circle at 50% 30%, oklch(0.2 0 0) 0 18%, transparent 20%),
+    linear-gradient(180deg, oklch(0.98 0.01 90) 0 40%, oklch(0.62 0.2 28) 40% 70%, oklch(0.98 0.01 90) 70%);
+  animation-delay: -0.6s;
+}
+.fx-frame-vinyl {
+  --glow: oklch(0.6 0.02 260);
+}
+.fx-frame-vinyl .fx-ring {
+  --fw: max(2.5px, 8%);
+  background:
+    conic-gradient(from var(--fx-a), transparent 0 20%, oklch(1 0 0 / 0.35) 25%, transparent 30% 70%, oklch(1 0 0 / 0.25) 75%, transparent 80%),
+    repeating-radial-gradient(circle, oklch(0.14 0 0) 0 1.5px, oklch(0.24 0 0) 1.5px 3px);
+  animation: fx-spin 3s linear infinite;
+}
+.fx-frame-vinyl .fx-ring2 {
+  background: var(--primary);
+}
+
+/* ================================================= FRAMES — ultra */
+.fx-frame-tomoe {
+  --glow: oklch(0.55 0.23 27);
+}
+.fx-frame-tomoe .fx-ring {
+  background: oklch(0.55 0.23 27);
+  box-shadow: inset 0 0 0 1px oklch(0.15 0 0);
+}
+.fx-frame-tomoe .fx-glow {
+  opacity: 1;
+  animation: fx-pulse 1.8s ease-in-out infinite;
+}
+.fx-frame-tomoe .fx-spinner {
+  inset: -7%;
+}
+.fx-tomoe {
+  width: 13%;
+  aspect-ratio: 1;
+  border-radius: 50% 50% 50% 0;
+  background: radial-gradient(circle at 60% 40%, oklch(0.12 0 0) 0 48%, oklch(0.12 0 0) 49%);
+  box-shadow: 0 0 4px oklch(0.55 0.23 27);
+  rotate: 135deg;
+}
+.fx-frame-nebula {
+  --glow: oklch(0.65 0.2 300);
+}
+.fx-frame-nebula .fx-ring {
+  background: conic-gradient(from var(--fx-a), oklch(0.45 0.2 300), oklch(0.82 0.13 200), oklch(0.3 0.12 280), oklch(0.75 0.17 330), oklch(0.45 0.2 300));
+  filter: blur(0.4px);
+  animation: fx-spin 7s linear infinite;
+}
+.fx-frame-nebula .fx-ring2 {
+  background: repeating-conic-gradient(from var(--fx-a), oklch(0.95 0.05 200 / 0.85) 0 1.5deg, transparent 1.5deg 17deg);
+  animation: fx-spin 24s linear infinite reverse;
+}
+.fx-frame-nebula .fx-glow {
+  inset: -34%;
+  opacity: 1;
+  background:
+    radial-gradient(circle at 30% 35%, oklch(0.65 0.2 300 / 0.55), transparent 45%),
+    radial-gradient(circle at 70% 65%, oklch(0.75 0.14 200 / 0.5), transparent 45%);
+  filter: blur(6px);
+  animation: fx-rotate 14s linear infinite;
+}
+.fx-frame-oni {
+  --glow: oklch(0.55 0.24 25);
+}
+.fx-frame-oni .fx-ring {
+  background: conic-gradient(from var(--fx-a), oklch(0.2 0.05 25), oklch(0.58 0.24 27), oklch(0.2 0.05 25), oklch(0.8 0.15 60), oklch(0.2 0.05 25));
+  animation:
+    fx-spin 3.6s linear infinite,
+    fx-flicker 1.4s steps(2) infinite;
+}
+.fx-frame-oni .fx-glow {
+  opacity: 1;
+  animation: fx-pulse 2s ease-in-out infinite;
+}
+.fx-horn {
+  top: -22%;
+  left: 14%;
+  width: 18%;
+  aspect-ratio: 1 / 1.7;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  background: linear-gradient(180deg, oklch(0.97 0.02 90), oklch(0.72 0.05 70) 60%, oklch(0.45 0.08 40));
+  filter: drop-shadow(0 1px 1.5px oklch(0 0 0 / 0.5));
+  rotate: -22deg;
+}
+.fx-horn-r {
+  left: auto;
+  right: 14%;
+  rotate: 22deg;
+}
+.fx-frame-solar {
+  --glow: oklch(0.82 0.17 70);
+}
+.fx-frame-solar .fx-ring {
+  background: conic-gradient(from var(--fx-a), oklch(0.9 0.15 90), oklch(0.7 0.21 45), oklch(0.95 0.1 95), oklch(0.7 0.21 45), oklch(0.9 0.15 90));
+  animation: fx-spin 4s linear infinite;
+}
+.fx-frame-solar .fx-ring2 {
+  background: oklch(0.9 0.15 90 / 0.6);
+}
+.fx-frame-solar .fx-glow {
+  opacity: 1;
+  animation: fx-pulse 2.4s ease-in-out infinite;
+}
+.fx-frame-solar .fx-spinner {
+  inset: -24%;
+}
+.fx-ray {
+  width: 5%;
+  aspect-ratio: 1 / 3.2;
+  border-radius: 9999px;
+  background: linear-gradient(180deg, oklch(0.99 0.05 95), oklch(0.75 0.2 50 / 0));
+  animation: fx-ray 1.6s ease-in-out infinite alternate;
+}
+.fx-frame-spectral {
+  --glow: oklch(0.82 0.08 220);
+}
+.fx-frame-spectral .fx-ring {
+  background: conic-gradient(from var(--fx-a), oklch(0.9 0.05 210 / 0.9), oklch(0.45 0.08 250 / 0.6), oklch(0.98 0.02 200), oklch(0.45 0.08 250 / 0.6), oklch(0.9 0.05 210 / 0.9));
+  animation: fx-spin 6s linear infinite;
+}
+.fx-frame-spectral .fx-glow {
+  animation: fx-pulse 3s ease-in-out infinite;
+}
+.fx-frame-spectral .fx-flame > i {
+  background: radial-gradient(circle at 35% 65%, oklch(0.99 0.01 200), oklch(0.82 0.08 210 / 0.8) 45%, oklch(0.5 0.1 240 / 0.05) 80%);
+  box-shadow: 0 0 12px oklch(0.85 0.08 210);
+  opacity: 0.85;
+}
+
+/* ================================================= BANNER EFFECTS */
+.sy-ov-vhs {
+  background:
+    repeating-linear-gradient(0deg, transparent 0 3px, oklch(0 0 0 / 0.14) 3px 4px),
+    linear-gradient(90deg, oklch(0.65 0.25 25 / 0.07), transparent 30% 70%, oklch(0.7 0.15 220 / 0.08));
+  animation: sy-vhs-jitter 4s steps(1) infinite;
+}
+.sy-vhs-band {
+  position: absolute;
+  inset-inline: 0;
+  height: 14%;
+  background: linear-gradient(180deg, transparent, oklch(1 0 0 / 0.14) 40%, oklch(0.7 0.2 25 / 0.12) 60%, transparent);
+  mix-blend-mode: screen;
+  animation: sy-vhs-band 6s linear infinite;
+}
+.sy-vhs-rec {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: oklch(0.97 0 0 / 0.9);
+  text-shadow: 0 0 4px oklch(0 0 0 / 0.6);
+}
+.sy-vhs-rec::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  background: oklch(0.62 0.24 27);
+  animation: fx-pulse 1s steps(2) infinite;
+}
+.sy-ov-moonlight {
+  background: radial-gradient(60% 80% at 0% 0%, oklch(0.9 0.04 240 / 0.28), transparent 70%);
+}
+.sy-ov-moonlight > span {
+  position: absolute;
+  top: -30%;
+  width: 12%;
+  height: 160%;
+  background: linear-gradient(180deg, oklch(0.95 0.03 240 / 0.28), transparent 80%);
+  filter: blur(6px);
+  transform: rotate(-24deg);
+  transform-origin: top;
+  mix-blend-mode: screen;
+  animation: sy-moonbeam 7s ease-in-out infinite;
+}
+.sy-ov-fog::before {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  height: 50%;
+  background: linear-gradient(0deg, oklch(0.92 0.01 250 / 0.35), transparent);
+}
+.sy-ov-fog > span {
+  position: absolute;
+  bottom: -10%;
+  left: -50%;
+  width: 200%;
+  height: 70%;
+  background:
+    radial-gradient(30% 50% at 20% 60%, oklch(0.95 0.01 250 / 0.4), transparent 70%),
+    radial-gradient(25% 45% at 55% 70%, oklch(0.95 0.01 250 / 0.35), transparent 70%),
+    radial-gradient(30% 50% at 85% 55%, oklch(0.95 0.01 250 / 0.38), transparent 70%);
+  filter: blur(10px);
+  animation: sy-fog 22s linear infinite;
+}
+.sy-ov-fireworks > span {
+  position: absolute;
+  width: 70px;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 9999px;
+  background: repeating-conic-gradient(oklch(0.85 0.18 var(--fw-h)) 0 4deg, transparent 4deg 22deg);
+  -webkit-mask: radial-gradient(circle, transparent 30%, #000 32% 48%, transparent 50%);
+  mask: radial-gradient(circle, transparent 30%, #000 32% 48%, transparent 50%);
+  filter: drop-shadow(0 0 4px oklch(0.85 0.18 var(--fw-h)));
+  opacity: 0;
+  animation: sy-firework 3.4s ease-out infinite;
+}
+
+/* ================================================= PROFILE EFFECTS */
+.pfx-leaves > span {
+  top: -5%;
+  width: calc(16px * var(--s));
+  aspect-ratio: 1;
+  clip-path: polygon(50% 0, 62% 30%, 95% 22%, 75% 50%, 100% 72%, 62% 68%, 54% 100%, 46% 100%, 38% 68%, 0 72%, 25% 50%, 5% 22%, 38% 30%);
+  background: oklch(0.66 0.18 calc(30 + var(--h) / 12));
+  animation-name: pfx-petal;
+  animation-timing-function: linear;
+}
+.pfx-rain > span {
+  top: -12%;
+  width: 1px;
+  height: calc(70px * var(--s));
+  background: linear-gradient(180deg, transparent, oklch(0.92 0.03 230 / 0.55));
+  animation-name: pfx-rain;
+  animation-timing-function: linear;
+}
+.pfx-butterflies > span,
+.pfx-bats > span {
+  display: flex;
+  width: calc(26px * var(--s));
+  aspect-ratio: 2 / 1;
+  perspective: 80px;
+}
+.pfx-butterflies > span {
+  bottom: -6%;
+  animation-name: pfx-flutter;
+  animation-timing-function: ease-in-out;
+  filter: drop-shadow(0 0 6px oklch(0.8 0.15 var(--h) / 0.8));
+}
+.pfx-butterflies > span > i,
+.pfx-bats > span > i {
+  flex: 1;
+  transform-origin: right center;
+  animation: pfx-wing 0.28s ease-in-out infinite alternate;
+}
+.pfx-butterflies > span > i {
+  border-radius: 80% 10% 60% 30%;
+  background: linear-gradient(135deg, oklch(0.88 0.13 var(--h)), oklch(0.62 0.2 calc(var(--h) + 40)));
+}
+.pfx-butterflies > span > i + i,
+.pfx-bats > span > i + i {
+  transform-origin: left center;
+  scale: -1 1;
+}
+.pfx-bats > span {
+  top: var(--y);
+  left: 0;
+  animation-name: pfx-bat;
+  animation-timing-function: linear;
+}
+.pfx-bats > span > i {
+  clip-path: polygon(100% 30%, 70% 0, 55% 30%, 30% 10%, 20% 40%, 0 35%, 25% 70%, 55% 60%, 100% 75%);
+  background: oklch(0.14 0.02 300);
+  animation-duration: 0.18s;
+}
+.pfx-notes > span {
+  bottom: -8%;
+  font-size: calc(26px * var(--s));
+  font-weight: 700;
+  line-height: 1;
+  color: color-mix(in oklch, var(--primary) 60%, white);
+  text-shadow: 0 0 12px var(--primary);
+  animation-name: pfx-kanji;
+  animation-timing-function: ease-out;
+}
+.pfx-nebula {
+  mix-blend-mode: screen;
+}
+.pfx-nebula::before,
+.pfx-nebula::after {
+  content: '';
+  position: absolute;
+  inset: -30%;
+  background:
+    radial-gradient(25% 30% at 30% 40%, oklch(0.55 0.22 300 / 0.45), transparent 70%),
+    radial-gradient(22% 28% at 68% 58%, oklch(0.7 0.14 200 / 0.4), transparent 70%),
+    radial-gradient(18% 22% at 52% 30%, oklch(0.7 0.18 340 / 0.35), transparent 70%);
+  filter: blur(30px);
+  animation: fx-rotate 60s linear infinite;
+}
+.pfx-nebula::after {
+  inset: 0;
+  background-image:
+    radial-gradient(1.5px 1.5px at 12% 20%, oklch(1 0 0), transparent),
+    radial-gradient(1px 1px at 32% 70%, oklch(1 0 0), transparent),
+    radial-gradient(1.5px 1.5px at 58% 14%, oklch(1 0 0), transparent),
+    radial-gradient(1px 1px at 76% 48%, oklch(1 0 0), transparent),
+    radial-gradient(2px 2px at 88% 82%, oklch(1 0 0), transparent),
+    radial-gradient(1px 1px at 22% 88%, oklch(1 0 0), transparent),
+    radial-gradient(1.5px 1.5px at 46% 42%, oklch(1 0 0), transparent);
+  filter: none;
+  animation: fx-pulse 4s ease-in-out infinite;
+}
+
+/* ================================================= NAME STYLES */
+.sy-name-brush {
+  font-family: var(--font-instrument), ui-serif, Georgia, serif;
+  font-style: italic;
+  letter-spacing: 0.01em;
+  text-decoration: underline;
+  text-decoration-color: oklch(0.58 0.22 27 / 0.75);
+  text-decoration-thickness: 0.14em;
+  text-underline-offset: 0.18em;
+}
+.sy-name-pastel {
+  background: linear-gradient(90deg, oklch(0.86 0.09 350), oklch(0.88 0.08 80), oklch(0.86 0.09 170), oklch(0.84 0.09 260), oklch(0.86 0.09 350));
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: sy-name-flow 7s linear infinite;
+}
+.sy-name-ocean {
+  background: linear-gradient(180deg, oklch(0.88 0.08 200), oklch(0.55 0.14 240));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 8px oklch(0.6 0.14 230 / 0.45));
+}
+.sy-name-ember {
+  background: linear-gradient(0deg, oklch(0.62 0.23 30), oklch(0.85 0.17 70));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 6px oklch(0.7 0.2 45 / 0.55));
+  animation: fx-flicker 1.6s steps(2) infinite;
+}
+.sy-name-tokyo {
+  color: oklch(0.96 0.04 350);
+  text-shadow:
+    0 0 2px oklch(1 0 0),
+    0 0 8px oklch(0.7 0.25 350),
+    0 0 18px oklch(0.65 0.25 350),
+    0 0 34px oklch(0.6 0.2 300);
+  animation: sy-tokyo 3.2s steps(1) infinite;
+}
+.sy-name-iridescent {
+  background: linear-gradient(110deg, oklch(0.92 0.06 200), oklch(0.9 0.08 320), oklch(0.94 0.08 90), oklch(0.9 0.08 160), oklch(0.92 0.06 200));
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 1px 0 oklch(0 0 0 / 0.3));
+  animation: sy-name-flow 5s ease-in-out infinite alternate;
+}
+
+/* ================================================= KEYFRAMES */
+@keyframes fx-koi-swim {
+  from {
+    transform: rotate(-12deg);
+  }
+  to {
+    transform: rotate(12deg);
+  }
+}
+@keyframes fx-ray {
+  from {
+    transform: scaleY(0.6);
+    opacity: 0.55;
+  }
+  to {
+    transform: scaleY(1.15);
+    opacity: 1;
+  }
+}
+@keyframes sy-vhs-band {
+  from {
+    top: -15%;
+  }
+  to {
+    top: 110%;
+  }
+}
+@keyframes sy-vhs-jitter {
+  0%,
+  100% {
+    transform: none;
+  }
+  47% {
+    transform: translateX(1px);
+  }
+  48% {
+    transform: translateX(-2px);
+  }
+  49% {
+    transform: none;
+  }
+}
+@keyframes sy-moonbeam {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+@keyframes sy-fog {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(25%);
+  }
+}
+@keyframes sy-firework {
+  0% {
+    transform: scale(0.1);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  55% {
+    transform: scale(1);
+    opacity: 0.85;
+  }
+  100% {
+    transform: scale(1.25) translateY(8px);
+    opacity: 0;
+  }
+}
+@keyframes pfx-rain {
+  from {
+    transform: translate(0, 0) rotate(8deg);
+  }
+  to {
+    transform: translate(-14vh, 120vh) rotate(8deg);
+  }
+}
+@keyframes pfx-flutter {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  33% {
+    transform: translate(40px, -35vh);
+  }
+  66% {
+    transform: translate(-30px, -70vh);
+  }
+  100% {
+    transform: translate(20px, -110vh);
+    opacity: 0;
+  }
+}
+@keyframes pfx-wing {
+  from {
+    transform: rotateY(0deg);
+  }
+  to {
+    transform: rotateY(70deg);
+  }
+}
+@keyframes pfx-bat {
+  0% {
+    transform: translate(-10vw, 0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  50% {
+    transform: translate(50vw, -30px);
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(112vw, 20px);
+    opacity: 0;
+  }
+}
+@keyframes sy-tokyo {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  72% {
+    opacity: 0.55;
+  }
+  73% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 0.7;
+  }
+  76% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sy-name-pastel,
+  .sy-name-ember,
+  .sy-name-tokyo,
+  .sy-name-iridescent,
+  .sy-ov-vhs {
+    animation: none;
+  }
+}

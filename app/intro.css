@@ -1,0 +1,293 @@
+/*
+ * Boot intro. The whole timeline (load → expand → exit) is CSS so it plays from first paint and never waits on
+ * hydration; JS only unmounts it afterwards and handles skip. Unlayered so @property / @counter-style stay top-level.
+ */
+@property --intro-n {
+  syntax: '<integer>';
+  initial-value: 0;
+  inherits: true;
+}
+
+@counter-style intro-pad {
+  system: extends decimal;
+  pad: 3 '0';
+}
+
+.intro {
+  --intro-load: 1900ms;
+  --intro-expand-at: 2170ms;
+  --intro-exit-at: 3070ms;
+  --intro-ease: cubic-bezier(0.65, 0, 0.35, 1);
+  --intro-snap: cubic-bezier(0.83, 0, 0.17, 1);
+  animation:
+    intro-count var(--intro-load) var(--intro-ease) 150ms both,
+    intro-exit 850ms var(--intro-snap) var(--intro-exit-at) forwards;
+}
+.intro[data-phase='exit'] {
+  animation:
+    intro-count var(--intro-load) var(--intro-ease) 150ms both,
+    intro-exit 650ms var(--intro-snap) forwards;
+}
+@keyframes intro-count {
+  to {
+    --intro-n: 100;
+  }
+}
+@keyframes intro-exit {
+  from {
+    clip-path: inset(0 0 0 0);
+  }
+  to {
+    clip-path: inset(0 0 100% 0);
+    visibility: hidden;
+  }
+}
+
+.intro-counter::after {
+  counter-reset: intro var(--intro-n);
+  content: counter(intro, intro-pad);
+}
+
+.intro-stage {
+  animation: intro-stage-in 1.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes intro-stage-in {
+  from {
+    opacity: 0;
+    translate: 0 60px;
+  }
+}
+
+.intro-window {
+  transform: rotateX(18deg) scale(1);
+  border-radius: 28px;
+  padding: 10px;
+  animation:
+    intro-window-in 1.2s cubic-bezier(0.16, 1, 0.3, 1) backwards,
+    intro-window-expand 900ms var(--intro-snap) var(--intro-expand-at) forwards;
+}
+@keyframes intro-window-in {
+  from {
+    transform: rotateX(38deg) scale(0.9);
+  }
+}
+@keyframes intro-window-expand {
+  from {
+    transform: rotateX(18deg) scale(1);
+    border-radius: 28px;
+    padding: 10px;
+  }
+  to {
+    transform: rotateX(0deg) scale(3.2);
+    border-radius: 0;
+    padding: 0;
+  }
+}
+
+.intro-reveal {
+  animation: intro-reveal var(--intro-load) var(--intro-ease) 150ms both;
+}
+@keyframes intro-reveal {
+  from {
+    clip-path: inset(100% 0 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.intro-scan {
+  animation: intro-scan var(--intro-load) var(--intro-ease) 150ms both;
+}
+@keyframes intro-scan {
+  from {
+    bottom: 0%;
+    opacity: 1;
+  }
+  96% {
+    opacity: 1;
+  }
+  to {
+    bottom: 100%;
+    opacity: 0;
+  }
+}
+
+.intro-bar {
+  transform-origin: left;
+  animation: intro-bar var(--intro-load) var(--intro-ease) 150ms both;
+}
+@keyframes intro-bar {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+.intro-glow {
+  animation:
+    intro-glow var(--intro-load) var(--intro-ease) both,
+    intro-fade 600ms ease var(--intro-expand-at) forwards;
+}
+@keyframes intro-glow {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.intro-chrome {
+  animation: intro-fade 350ms ease var(--intro-expand-at) forwards;
+}
+@keyframes intro-fade {
+  to {
+    opacity: 0;
+  }
+}
+
+.intro-status > span {
+  grid-area: 1 / 1;
+  opacity: 0;
+  animation: intro-status calc(var(--intro-load) / 4) linear both;
+  animation-delay: calc(150ms + var(--i) * var(--intro-load) / 4);
+}
+.intro-status > span:last-child {
+  animation-name: intro-status-last;
+}
+@keyframes intro-status {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  12%,
+  88% {
+    opacity: 1;
+  }
+}
+@keyframes intro-status-last {
+  0% {
+    opacity: 0;
+  }
+  12%,
+  100% {
+    opacity: 1;
+  }
+}
+
+.intro-strip > * {
+  opacity: 0.15;
+  animation: intro-strip 400ms ease-out both;
+  animation-delay: calc(150ms + var(--i) * var(--intro-load) / var(--n));
+}
+@keyframes intro-strip {
+  from {
+    opacity: 0.15;
+    translate: -10px 0;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro,
+  .intro * {
+    animation: none !important;
+  }
+}
+
+/*
+ * Welcome film slate (/hosgeldin). Same idea as the boot intro: CSS owns the whole timeline, so the slate
+ * plays from first paint and always leaves by itself — even if the page never hydrates.
+ */
+@property --film-n {
+  syntax: '<integer>';
+  initial-value: 0;
+  inherits: true;
+}
+
+.film-boot {
+  --film-load: 1700ms;
+  --film-exit-at: 2050ms;
+  --film-snap: cubic-bezier(0.83, 0, 0.17, 1);
+  --film-ease: cubic-bezier(0.65, 0, 0.35, 1);
+  animation:
+    film-boot-count var(--film-load) var(--film-ease) 120ms both,
+    film-boot-exit 900ms var(--film-snap) var(--film-exit-at) forwards;
+}
+.film-boot[data-phase='skip'] {
+  animation:
+    film-boot-count var(--film-load) var(--film-ease) 120ms both,
+    film-boot-exit 600ms var(--film-snap) forwards;
+}
+.film-seen .film-boot {
+  display: none;
+}
+@keyframes film-boot-count {
+  to {
+    --film-n: 100;
+  }
+}
+@keyframes film-boot-exit {
+  from {
+    clip-path: inset(0 0 0 0);
+  }
+  to {
+    clip-path: inset(0 0 100% 0);
+    visibility: hidden;
+  }
+}
+
+.film-boot-counter::after {
+  counter-reset: film var(--film-n);
+  content: counter(film, intro-pad);
+}
+
+.film-boot-frame {
+  rotate: -3deg;
+  animation: film-boot-frame 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes film-boot-frame {
+  from {
+    opacity: 0;
+    rotate: -6deg;
+    scale: 0.9;
+  }
+}
+
+.film-boot-reveal {
+  animation: film-boot-reveal var(--film-load) var(--film-ease) 120ms both;
+}
+@keyframes film-boot-reveal {
+  from {
+    clip-path: inset(100% 0 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.film-boot-scan {
+  animation: film-boot-scan var(--film-load) var(--film-ease) 120ms both;
+}
+@keyframes film-boot-scan {
+  from {
+    bottom: 0%;
+    opacity: 1;
+  }
+  96% {
+    opacity: 1;
+  }
+  to {
+    bottom: 100%;
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .film-boot {
+    display: none;
+  }
+}

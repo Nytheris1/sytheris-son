@@ -1,0 +1,694 @@
+/* =====================================================================
+   Cosmetics v5 — Discord-style avatar decorations, profile effects and
+   the new nameplate category. Builds on the primitives in cosmetics.css.
+   ===================================================================== */
+
+/* ---------------------------------------------------------- Frames */
+
+.fx-frame-stitch {
+  --glow: var(--primary);
+}
+.fx-frame-stitch .fx-ring {
+  background: linear-gradient(160deg, color-mix(in oklch, var(--primary) 80%, black), color-mix(in oklch, var(--primary) 55%, black));
+}
+.fx-frame-stitch .fx-ring2 {
+  inset: calc((var(--fw) + var(--gap)) * -1 + var(--fw) * 0.36);
+  padding: max(1px, calc(var(--fw) * 0.28));
+  background: repeating-conic-gradient(oklch(0.96 0.02 85) 0 5deg, transparent 5deg 11deg);
+}
+
+.fx-frame-rgb {
+  --glow: oklch(0.7 0.22 300);
+}
+.fx-frame-rgb .fx-ring {
+  background: conic-gradient(
+    from var(--fx-a),
+    oklch(0.68 0.25 25),
+    oklch(0.86 0.18 95),
+    oklch(0.8 0.22 150),
+    oklch(0.72 0.16 230),
+    oklch(0.64 0.26 300),
+    oklch(0.68 0.25 25)
+  );
+  animation: fx-spin 2.8s linear infinite;
+}
+.fx-frame-rgb .fx-glow {
+  background: conic-gradient(from 0deg, oklch(0.68 0.25 25 / 0.6), oklch(0.8 0.22 150 / 0.6), oklch(0.64 0.26 300 / 0.6), oklch(0.68 0.25 25 / 0.6));
+  -webkit-mask: radial-gradient(circle, transparent 44%, #000 54%, transparent 70%);
+  mask: radial-gradient(circle, transparent 44%, #000 54%, transparent 70%);
+  animation: fx-rotate 2.8s linear infinite;
+}
+
+.fx-frame-catears .fx-ring {
+  background: linear-gradient(160deg, color-mix(in oklch, var(--primary) 75%, white), var(--primary));
+}
+.fx-ear {
+  top: -15%;
+  left: 6%;
+  width: 32%;
+  aspect-ratio: 1;
+  rotate: -22deg;
+  transform-origin: 50% 100%;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  background:
+    linear-gradient(transparent 38%, oklch(0.84 0.09 355) 38%) 50% 100% / 46% 64% no-repeat,
+    linear-gradient(165deg, color-mix(in oklch, var(--primary) 80%, white), color-mix(in oklch, var(--primary) 70%, black));
+  animation: v5-ear 4.2s ease-in-out infinite;
+}
+.fx-ear-r {
+  left: auto;
+  right: 6%;
+  rotate: 22deg;
+  animation-delay: -2.1s;
+}
+
+.fx-frame-headphones {
+  --glow: var(--primary);
+}
+.fx-frame-headphones .fx-ring {
+  background: linear-gradient(160deg, oklch(0.34 0.02 260), oklch(0.2 0.02 260));
+}
+.fx-frame-headphones .fx-glow {
+  animation: fx-pulse 1.1s ease-in-out infinite;
+}
+.fx-band {
+  top: -17%;
+  left: 2%;
+  width: 96%;
+  aspect-ratio: 2 / 1;
+  background: radial-gradient(farthest-side at 50% 100%, transparent 84%, oklch(0.26 0.02 260) 85% 98%, transparent 99%);
+}
+.fx-cup {
+  top: 32%;
+  left: -11%;
+  width: 22%;
+  height: 40%;
+  border-radius: 42%;
+  background: linear-gradient(90deg, oklch(0.2 0.02 260), oklch(0.36 0.02 260));
+  box-shadow: inset 0 0 0 2px color-mix(in oklch, var(--primary) 85%, transparent);
+  animation: v5-beat 1.1s ease-in-out infinite;
+}
+.fx-cup-r {
+  left: auto;
+  right: -11%;
+  background: linear-gradient(270deg, oklch(0.2 0.02 260), oklch(0.36 0.02 260));
+}
+
+.fx-frame-lovebirds {
+  --glow: oklch(0.74 0.18 0);
+}
+.fx-frame-lovebirds .fx-ring {
+  background: linear-gradient(160deg, oklch(0.86 0.09 355), oklch(0.68 0.19 5));
+}
+.fx-heart {
+  width: 17%;
+  aspect-ratio: 1;
+  color: oklch(0.72 0.2 5);
+  filter: drop-shadow(0 0 4px oklch(0.78 0.18 5 / 0.8));
+  animation: fx-bob 1.8s ease-in-out infinite;
+}
+.fx-heart svg {
+  fill: currentColor;
+}
+
+.fx-frame-wings {
+  --glow: oklch(0.95 0.03 230);
+}
+.fx-frame-wings .fx-ring {
+  background: linear-gradient(160deg, oklch(0.99 0.01 230), oklch(0.82 0.04 230));
+}
+.fx-wing {
+  top: 4%;
+  left: -40%;
+  width: 46%;
+  aspect-ratio: 1 / 1.15;
+  transform-origin: 100% 50%;
+  clip-path: polygon(100% 20%, 70% 0, 35% 4%, 0 22%, 18% 34%, 2% 48%, 24% 58%, 10% 74%, 36% 80%, 30% 96%, 62% 92%, 100% 70%);
+  background: linear-gradient(100deg, oklch(0.86 0.03 230), oklch(0.99 0.005 230) 60%);
+  animation: v5-flap-l 2.4s ease-in-out infinite;
+}
+.fx-wing-r {
+  left: auto;
+  right: -40%;
+  transform-origin: 0 50%;
+  clip-path: polygon(0 20%, 30% 0, 65% 4%, 100% 22%, 82% 34%, 98% 48%, 76% 58%, 90% 74%, 64% 80%, 70% 96%, 38% 92%, 0 70%);
+  background: linear-gradient(260deg, oklch(0.86 0.03 230), oklch(0.99 0.005 230) 60%);
+  animation-name: v5-flap-r;
+}
+
+.fx-frame-witch {
+  --glow: oklch(0.6 0.2 305);
+}
+.fx-frame-witch .fx-ring {
+  background: conic-gradient(from var(--fx-a), oklch(0.42 0.17 300), oklch(0.68 0.2 320), oklch(0.32 0.12 290), oklch(0.42 0.17 300));
+  animation: fx-spin 6s linear infinite;
+}
+.fx-frame-witch .fx-ring2 {
+  background: oklch(0.86 0.14 88 / 0.7);
+}
+.fx-hat {
+  top: -50%;
+  left: 14%;
+  width: 76%;
+  aspect-ratio: 1;
+  rotate: 12deg;
+  clip-path: polygon(62% 0, 71% 6%, 66% 18%, 80% 64%, 100% 72%, 100% 80%, 0 80%, 0 72%, 20% 64%, 46% 22%);
+  background:
+    linear-gradient(transparent 0 57%, oklch(0.84 0.15 85) 57% 63%, transparent 63%),
+    linear-gradient(170deg, oklch(0.44 0.15 300), oklch(0.2 0.08 290));
+  animation: v5-hat 3.6s ease-in-out infinite;
+}
+
+.fx-frame-butterfly {
+  --glow: oklch(0.78 0.12 230);
+}
+.fx-frame-butterfly .fx-ring {
+  background: linear-gradient(160deg, oklch(0.88 0.08 220), oklch(0.72 0.14 300));
+}
+.fx-fly {
+  display: flex;
+  width: 20%;
+  aspect-ratio: 1.35;
+  animation: fx-bob 2.2s ease-in-out infinite;
+}
+.fx-fly > i {
+  flex: 1;
+  border-radius: 62% 38% 52% 48%;
+  transform-origin: 100% 50%;
+  background: radial-gradient(circle at 30% 40%, oklch(0.96 0.06 210), oklch(0.68 0.18 240) 58%, oklch(0.42 0.16 270));
+  animation: v5-wing 0.32s ease-in-out infinite alternate;
+}
+.fx-fly > i + i {
+  border-radius: 38% 62% 48% 52%;
+  transform-origin: 0 50%;
+}
+.fx-fly-alt > i {
+  background: radial-gradient(circle at 30% 40%, oklch(0.97 0.04 350), oklch(0.74 0.16 350) 58%, oklch(0.48 0.17 330));
+}
+
+/* ------------------------------------------------- Profile effects */
+
+.pfx-feathers > span {
+  top: -6%;
+  width: calc(10px * var(--s));
+  aspect-ratio: 1 / 2.6;
+  border-radius: 50% 50% 50% 50% / 70% 70% 30% 30%;
+  background: linear-gradient(90deg, oklch(1 0 0 / 0.85) 46%, oklch(0.82 0.01 240 / 0.9) 50%, oklch(1 0 0 / 0.85) 54%);
+  opacity: 0.8;
+  animation-name: pfx-petal;
+  animation-timing-function: ease-in-out;
+}
+
+.pfx-lanterns > span {
+  bottom: -10%;
+  width: calc(18px * var(--s));
+  aspect-ratio: 0.78;
+  border-radius: 42% 42% 30% 30%;
+  background: radial-gradient(circle at 50% 62%, oklch(0.96 0.11 88), oklch(0.72 0.19 45) 72%);
+  box-shadow: 0 0 calc(20px * var(--s)) oklch(0.8 0.17 60 / 0.7);
+  animation-name: v5-lantern;
+  animation-timing-function: linear;
+}
+.pfx-lanterns > span > i {
+  position: absolute;
+  inset: auto 28% -8%;
+  height: 10%;
+  border-radius: 2px;
+  background: oklch(0.36 0.08 40);
+}
+
+.pfx-matrix > span {
+  top: -70%;
+  white-space: pre;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: calc(14px * var(--s));
+  line-height: 1.15;
+  color: color-mix(in oklch, var(--primary) 70%, white);
+  text-shadow: 0 0 8px var(--primary);
+  opacity: 0.5;
+  -webkit-mask: linear-gradient(transparent, #000 75%);
+  mask: linear-gradient(transparent, #000 75%);
+  animation-name: v5-code;
+  animation-timing-function: linear;
+}
+
+.pfx-fireworks > span {
+  top: calc(var(--y) * 0.6);
+  width: calc(130px * var(--s));
+  aspect-ratio: 1;
+  margin-left: calc(-65px * var(--s));
+  border-radius: 50%;
+  background: repeating-conic-gradient(oklch(0.88 0.18 var(--h)) 0 3deg, transparent 3deg 20deg);
+  -webkit-mask: radial-gradient(circle, transparent 18%, #000 36%, #000 58%, transparent 70%);
+  mask: radial-gradient(circle, transparent 18%, #000 36%, #000 58%, transparent 70%);
+  opacity: 0;
+  animation-name: v5-burst;
+  animation-timing-function: cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+.pfx-glitch > span {
+  left: 0;
+  right: 0;
+  top: var(--y);
+  height: calc(10px + 26px * var(--s));
+  background: linear-gradient(90deg, oklch(0.68 0.24 25 / 0.32), oklch(0.78 0.14 200 / 0.32));
+  mix-blend-mode: screen;
+  opacity: 0;
+  animation-name: v5-glitch;
+  animation-timing-function: steps(1);
+}
+
+/* ------------------------------------------------------ Nameplates */
+
+.sy-plate {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 0.1em 0.6em;
+  overflow: hidden;
+  vertical-align: middle;
+  border-radius: 0.5em;
+  line-height: 1.35;
+  color: oklch(0.98 0 0);
+}
+.sy-plate-bg {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  border-radius: inherit;
+}
+.sy-plate-bg > i {
+  position: absolute;
+  left: calc(6% + var(--i) * 21%);
+}
+.sy-plate-bg::before,
+.sy-plate-bg::after {
+  content: '';
+  position: absolute;
+}
+.sy-plate-text {
+  position: relative;
+  min-width: 0;
+  /* Room for bold/italic glyph overhang so short names never ellipsize at fit-content width. */
+  padding-inline-end: 0.06em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sy-plate-text > span:not([class*='sy-name-']) {
+  text-shadow: 0 1px 2px oklch(0 0 0 / 0.45);
+}
+.sy-plate-washi,
+.sy-plate-holo,
+.sy-plate-gold {
+  color: oklch(0.2 0.02 60);
+}
+.sy-plate-washi .sy-plate-text > span,
+.sy-plate-holo .sy-plate-text > span,
+.sy-plate-gold .sy-plate-text > span {
+  text-shadow: none;
+}
+
+/* free */
+.sy-plate-washi .sy-plate-bg {
+  background:
+    repeating-linear-gradient(77deg, oklch(0.8 0.03 75 / 0.25) 0 1px, transparent 1px 7px),
+    repeating-linear-gradient(-13deg, oklch(0.8 0.03 75 / 0.2) 0 1px, transparent 1px 11px),
+    linear-gradient(oklch(0.94 0.025 85), oklch(0.88 0.03 78));
+  box-shadow: inset 0 0 0 1px oklch(0.75 0.04 70 / 0.5);
+}
+
+.sy-plate-ink .sy-plate-bg {
+  background: oklch(0.17 0 0);
+}
+.sy-plate-ink .sy-plate-bg::before {
+  inset: 12% -6% 8% -4%;
+  border-radius: 40% 60% 55% 45% / 60% 40% 60% 40%;
+  background: linear-gradient(95deg, transparent, oklch(0.34 0 0) 18%, oklch(0.28 0 0) 70%, transparent);
+  rotate: -2deg;
+}
+.sy-plate-ink .sy-plate-bg::after {
+  top: 50%;
+  right: 0.35em;
+  width: 0.42em;
+  aspect-ratio: 1;
+  translate: 0 -50%;
+  border-radius: 0.08em;
+  background: oklch(0.55 0.2 27);
+}
+.sy-plate-ink {
+  padding-right: 1.1em;
+}
+
+.sy-plate-dusk .sy-plate-bg {
+  background: linear-gradient(100deg, oklch(0.34 0.12 295), oklch(0.56 0.17 15) 60%, oklch(0.7 0.15 55));
+}
+
+/* plus */
+.sy-plate-sakura .sy-plate-bg {
+  background: linear-gradient(100deg, oklch(0.5 0.15 350), oklch(0.64 0.14 8));
+}
+.sy-plate-sakura .sy-plate-bg > i {
+  top: -30%;
+  width: 0.4em;
+  aspect-ratio: 1 / 1.3;
+  border-radius: 80% 0 80% 0;
+  background: oklch(0.93 0.06 355);
+  opacity: 0.85;
+  animation: v5-plate-fall 4.6s linear infinite;
+  animation-delay: calc(var(--i) * -0.92s);
+}
+
+.sy-plate-neonsign .sy-plate-bg {
+  background: oklch(0.15 0.02 270);
+  box-shadow:
+    inset 0 0 0 1.5px var(--primary),
+    inset 0 0 12px color-mix(in oklch, var(--primary) 60%, transparent);
+  animation: v5-neon 5s steps(1) infinite;
+}
+.sy-plate-neonsign .sy-plate-text > span:not([class*='sy-name-']) {
+  text-shadow: 0 0 6px var(--primary);
+}
+
+.sy-plate-vapor .sy-plate-bg {
+  background:
+    radial-gradient(circle at 82% 105%, oklch(0.82 0.17 55) 0 0.75em, transparent 0.78em),
+    linear-gradient(oklch(0.24 0.12 300), oklch(0.44 0.2 340));
+}
+.sy-plate-vapor .sy-plate-bg::after {
+  inset: 52% -60% -60%;
+  background:
+    repeating-linear-gradient(90deg, oklch(0.82 0.2 330 / 0.55) 0 1px, transparent 1px 14px),
+    repeating-linear-gradient(0deg, oklch(0.82 0.2 330 / 0.55) 0 1px, transparent 1px 9px);
+  transform: perspective(40px) rotateX(50deg);
+  animation: v5-grid 1.1s linear infinite;
+}
+.sy-plate-vapor .sy-plate-bg > i {
+  top: calc(12% + var(--i) * 6%);
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: oklch(0.98 0 0);
+  animation: fx-twinkle 2.4s ease-in-out infinite;
+  animation-delay: calc(var(--i) * -0.5s);
+}
+
+.sy-plate-tide .sy-plate-bg {
+  background: linear-gradient(oklch(0.3 0.08 245), oklch(0.44 0.1 215));
+}
+.sy-plate-tide .sy-plate-bg::before,
+.sy-plate-tide .sy-plate-bg::after {
+  inset: auto 0 0;
+  height: 55%;
+  background: radial-gradient(0.9em 0.6em at 50% 100%, oklch(0.62 0.11 205 / 0.75) 98%, transparent) 0 0 / 1.6em 100% repeat-x;
+  animation: v5-tide 3.2s linear infinite;
+}
+.sy-plate-tide .sy-plate-bg::after {
+  height: 38%;
+  background-image: radial-gradient(0.9em 0.6em at 50% 100%, oklch(0.78 0.09 200 / 0.6) 98%, transparent);
+  animation-duration: 2.1s;
+  animation-direction: reverse;
+}
+
+.sy-plate-starry .sy-plate-bg {
+  background: radial-gradient(ellipse at 80% 0%, oklch(0.34 0.1 280), transparent 60%), oklch(0.19 0.06 265);
+}
+.sy-plate-starry .sy-plate-bg > i {
+  top: 22%;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: oklch(0.97 0.04 90);
+  box-shadow: 0 0 4px oklch(0.97 0.04 90);
+  animation: fx-twinkle 2.2s ease-in-out infinite;
+  animation-delay: calc(var(--i) * -0.45s);
+}
+.sy-plate-starry .sy-plate-bg > i:nth-child(even) {
+  top: 66%;
+}
+
+/* ultra */
+.sy-plate-aurora .sy-plate-bg {
+  background: oklch(0.17 0.05 250);
+}
+.sy-plate-aurora .sy-plate-bg::before {
+  inset: -40% -20%;
+  background: linear-gradient(100deg, oklch(0.72 0.14 170 / 0.85), oklch(0.6 0.2 300 / 0.8), oklch(0.75 0.14 190 / 0.85), oklch(0.6 0.2 300 / 0.8)) 0 0 / 220% 100%;
+  filter: blur(8px);
+  animation: v5-pan 7s ease-in-out infinite alternate;
+}
+
+.sy-plate-holo .sy-plate-bg {
+  background: linear-gradient(115deg, oklch(0.84 0.1 200), oklch(0.84 0.11 300), oklch(0.9 0.1 90), oklch(0.84 0.1 160), oklch(0.84 0.1 200)) 0 0 / 300% 100%;
+  animation: v5-pan 6s linear infinite alternate;
+}
+.sy-plate-holo .sy-plate-bg::after {
+  inset: 0 auto 0 0;
+  width: 40%;
+  background: linear-gradient(100deg, transparent, oklch(1 0 0 / 0.7), transparent);
+  animation: v5-sheen 3.4s ease-in-out infinite;
+}
+
+.sy-plate-inferno .sy-plate-bg {
+  background: linear-gradient(0deg, oklch(0.52 0.2 38), oklch(0.32 0.14 28) 55%, oklch(0.16 0.04 25));
+}
+.sy-plate-inferno .sy-plate-bg::before {
+  inset: 40% -10% -20%;
+  background: radial-gradient(0.7em 1em at 50% 100%, oklch(0.8 0.18 65 / 0.8), transparent 70%) 0 100% / 1.3em 100% repeat-x;
+  animation: v5-flame 0.9s ease-in-out infinite alternate;
+}
+.sy-plate-inferno .sy-plate-bg > i {
+  bottom: -10%;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: oklch(0.9 0.16 75);
+  box-shadow: 0 0 4px oklch(0.85 0.18 55);
+  animation: v5-plate-rise 2.4s linear infinite;
+  animation-delay: calc(var(--i) * -0.48s);
+}
+
+.sy-plate-gold .sy-plate-bg {
+  background: linear-gradient(100deg, oklch(0.62 0.11 72), oklch(0.85 0.13 90) 45%, oklch(0.66 0.12 74));
+  box-shadow: inset 0 0 0 1px oklch(0.92 0.1 92 / 0.8), inset 0 -2px 0 oklch(0.5 0.09 65 / 0.6);
+}
+.sy-plate-gold .sy-plate-bg::after {
+  inset: 0 auto 0 0;
+  width: 35%;
+  background: linear-gradient(100deg, transparent, oklch(1 0.03 95 / 0.8), transparent);
+  animation: v5-sheen 4s ease-in-out infinite;
+}
+
+.sy-plate-void .sy-plate-bg {
+  background: radial-gradient(circle at 88% 50%, oklch(0.06 0.01 280) 0 0.5em, transparent 1.6em), oklch(0.12 0.03 280);
+}
+.sy-plate-void .sy-plate-bg::before {
+  top: 50%;
+  right: -0.9em;
+  width: 3em;
+  aspect-ratio: 1;
+  translate: 0 -50%;
+  border-radius: 50%;
+  background: conic-gradient(from var(--fx-a), oklch(0.62 0.2 290), transparent 30%, oklch(0.74 0.14 205), transparent 70%, oklch(0.62 0.2 290));
+  -webkit-mask: radial-gradient(circle, transparent 26%, #000 32%, transparent 70%);
+  mask: radial-gradient(circle, transparent 26%, #000 32%, transparent 70%);
+  animation: fx-spin 4s linear infinite;
+}
+
+/* ------------------------------------------------------ Keyframes */
+
+@keyframes v5-ear {
+  0%,
+  86%,
+  100% {
+    transform: rotate(0deg);
+  }
+  90% {
+    transform: rotate(-10deg);
+  }
+  94% {
+    transform: rotate(6deg);
+  }
+}
+@keyframes v5-beat {
+  0%,
+  100% {
+    scale: 1;
+  }
+  20% {
+    scale: 1.07;
+  }
+}
+@keyframes v5-flap-l {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-16deg) translateY(-3%);
+  }
+}
+@keyframes v5-flap-r {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(16deg) translateY(-3%);
+  }
+}
+@keyframes v5-hat {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -5%;
+  }
+}
+@keyframes v5-wing {
+  to {
+    transform: scaleX(0.3);
+  }
+}
+@keyframes v5-lantern {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(40px, -118vh);
+    opacity: 0.15;
+  }
+}
+@keyframes v5-code {
+  to {
+    transform: translateY(180vh);
+  }
+}
+@keyframes v5-burst {
+  0% {
+    transform: scale(0.1);
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  70% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1.12) translateY(14px);
+    opacity: 0;
+  }
+}
+@keyframes v5-glitch {
+  0%,
+  86% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+  88% {
+    opacity: 1;
+    transform: translateX(-22px);
+  }
+  91% {
+    transform: translateX(26px);
+  }
+  94% {
+    opacity: 1;
+    transform: translateX(-6px);
+  }
+  95% {
+    opacity: 0;
+  }
+}
+@keyframes v5-plate-fall {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  100% {
+    transform: translate(0.8em, 3.2em) rotate(260deg);
+  }
+}
+@keyframes v5-plate-rise {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(0.3em, -2.4em);
+    opacity: 0;
+  }
+}
+@keyframes v5-neon {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  71% {
+    opacity: 0.45;
+  }
+  73% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 0.6;
+  }
+  77% {
+    opacity: 1;
+  }
+}
+@keyframes v5-grid {
+  to {
+    background-position: 0 9px;
+  }
+}
+@keyframes v5-tide {
+  to {
+    background-position-x: 1.6em;
+  }
+}
+@keyframes v5-pan {
+  to {
+    background-position: 100% 0;
+  }
+}
+@keyframes v5-sheen {
+  0% {
+    translate: -120% 0;
+  }
+  60%,
+  100% {
+    translate: 320% 0;
+  }
+}
+@keyframes v5-flame {
+  to {
+    transform: scaleY(1.25) translateX(0.2em);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sy-plate *,
+  .sy-plate *::before,
+  .sy-plate *::after {
+    animation: none !important;
+  }
+}
+html.reduce-motion .sy-plate *,
+html.reduce-motion .sy-plate *::before,
+html.reduce-motion .sy-plate *::after {
+  animation: none !important;
+}

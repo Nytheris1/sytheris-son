@@ -1,0 +1,3 @@
+AppData\Local\docker-secrets-engine
+docker-secrets-engine
+*.sock

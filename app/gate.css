@@ -1,0 +1,151 @@
+/* Mist scenes — locked site (/kapi) and maintenance. Pale fog, ink type, an ornamental rule.
+   Palette is fixed (independent of the site theme) so both screens feel like one quiet place. */
+
+.mist {
+  --mist-bg: oklch(0.93 0.004 220);
+  --mist-ink: oklch(0.22 0.012 230);
+  --mist-soft: oklch(0.45 0.012 230);
+  --mist-line: oklch(0.22 0.012 230 / 0.28);
+  color-scheme: light;
+  background: var(--mist-bg);
+  color: var(--mist-ink);
+}
+
+.mist-art {
+  position: absolute;
+  inset: -4%;
+  z-index: -30;
+  background-size: cover;
+  background-position: center 62%;
+  animation: mist-breathe 38s ease-in-out infinite alternate;
+}
+.mist-wash {
+  position: absolute;
+  inset: 0;
+  z-index: -20;
+  background:
+    radial-gradient(60% 46% at 50% 46%, oklch(0.95 0.004 220 / 0.92) 0%, oklch(0.95 0.004 220 / 0.55) 55%, transparent 100%),
+    linear-gradient(180deg, oklch(0.95 0.004 220 / 0.55), transparent 30%, transparent 70%, oklch(0.95 0.004 220 / 0.6));
+}
+.mist-fog {
+  position: absolute;
+  inset-inline: -50%;
+  z-index: -10;
+  height: 55%;
+  pointer-events: none;
+  background:
+    radial-gradient(40% 60% at 25% 60%, oklch(0.97 0.003 220 / 0.85), transparent 70%),
+    radial-gradient(35% 50% at 70% 50%, oklch(0.97 0.003 220 / 0.7), transparent 70%),
+    radial-gradient(30% 45% at 50% 70%, oklch(0.97 0.003 220 / 0.6), transparent 70%);
+  filter: blur(14px);
+}
+.mist-fog-a {
+  bottom: -8%;
+  animation: mist-drift 46s linear infinite alternate;
+}
+.mist-fog-b {
+  bottom: 12%;
+  opacity: 0.55;
+  animation: mist-drift 64s linear infinite alternate-reverse;
+}
+
+.mist-title {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  line-height: 0.95;
+}
+.mist-numeral {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  line-height: 1;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+.mist-field {
+  border-bottom: 1px solid var(--mist-line);
+  transition: border-color 300ms ease;
+}
+.mist-field:focus-within {
+  border-color: var(--mist-ink);
+}
+.mist-field[data-error='true'] {
+  border-color: oklch(0.55 0.2 25);
+}
+
+.gate-rise {
+  opacity: 0;
+  translate: 0 14px;
+  filter: blur(6px);
+  animation: gate-rise 1100ms cubic-bezier(0.2, 0.7, 0.2, 1) var(--d, 0ms) forwards;
+}
+.mist-rule-line {
+  transform-origin: center;
+  scale: 0 1;
+  animation: mist-rule 1400ms cubic-bezier(0.7, 0, 0.2, 1) 500ms forwards;
+}
+
+/* Unlock: the fog rolls in to white, then the site loads. */
+.mist-veil {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 55%, oklch(0.99 0.002 220), oklch(0.95 0.004 220));
+  opacity: 0;
+  transition: opacity 900ms ease;
+}
+.gate-open .mist-veil {
+  opacity: 1;
+}
+.gate-open .mist-art {
+  scale: 1.12;
+  transition: scale 1200ms cubic-bezier(0.7, 0, 0.2, 1);
+}
+
+@keyframes gate-rise {
+  to {
+    opacity: 1;
+    translate: 0 0;
+    filter: blur(0);
+  }
+}
+@keyframes mist-rule {
+  to {
+    scale: 1 1;
+  }
+}
+@keyframes mist-breathe {
+  from {
+    scale: 1;
+    translate: 0 0;
+  }
+  to {
+    scale: 1.07;
+    translate: -1% -1%;
+  }
+}
+@keyframes mist-drift {
+  from {
+    translate: -8% 0;
+  }
+  to {
+    translate: 8% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gate-rise,
+  .mist-rule-line {
+    opacity: 1;
+    translate: 0 0;
+    scale: 1 1;
+    filter: none;
+    animation: none;
+  }
+  .mist-art,
+  .mist-fog {
+    animation: none;
+  }
+}

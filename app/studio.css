@@ -1,0 +1,56 @@
+/* SYTHERIS — Çizim Atölyesi & intro helpers */
+.studio-checker {
+  background-color: oklch(0.97 0 0);
+  background-image:
+    linear-gradient(45deg, oklch(0.9 0 0) 25%, transparent 25%),
+    linear-gradient(-45deg, oklch(0.9 0 0) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, oklch(0.9 0 0) 75%),
+    linear-gradient(-45deg, transparent 75%, oklch(0.9 0 0) 75%);
+  background-size: 16px 16px;
+  background-position:
+    0 0,
+    0 8px,
+    8px -8px,
+    -8px 0;
+}
+.studio-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 9999px;
+  background: color-mix(in oklch, var(--foreground) 14%, transparent);
+  outline: none;
+}
+.studio-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 9999px;
+  background: var(--primary);
+  border: 2px solid var(--background);
+  box-shadow: 0 0 0 1px var(--primary);
+  cursor: pointer;
+}
+.studio-range::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 9999px;
+  background: var(--primary);
+  border: 2px solid var(--background);
+  cursor: pointer;
+}
+.studio-range:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--primary) 40%, transparent);
+}
+.studio-hue {
+  background: linear-gradient(90deg, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00);
+}
+
+/* Intro: image living inside letters */
+.intro-fill {
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  background-size: cover;
+  background-position: center 30%;
+}

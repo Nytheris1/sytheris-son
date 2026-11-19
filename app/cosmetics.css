@@ -1,0 +1,583 @@
+/* ============================================================
+   SYTHERIS — rozetler ve gece sineması dokuları.
+   Profil kozmetikleri (Kızıl Kurdele seti) components/membership/ribbon-*.tsx
+   içinde SVG olarak çizilir; bu dosyada yalnızca rozet ve korku katmanı stilleri var.
+   ============================================================ */
+
+@property --fx-a {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+/* ================================================= BADGES */
+.bx {
+  --bx-size: 1.75rem;
+  position: relative;
+  display: inline-grid;
+  width: var(--bx-size);
+  height: var(--bx-size);
+  flex-shrink: 0;
+  place-items: center;
+  filter: drop-shadow(0 2px 3px oklch(0 0 0 / 0.35));
+}
+.bx-shape,
+.bx-core {
+  position: absolute;
+  display: grid;
+  place-items: center;
+}
+.bx-shape {
+  inset: 0;
+}
+.bx-core {
+  inset: 9%;
+  color: oklch(0.96 0.06 var(--bh));
+}
+.bx-core svg {
+  width: 52%;
+  height: 52%;
+  stroke-width: 2.25;
+  filter: drop-shadow(0 1px 0 oklch(0 0 0 / 0.35));
+}
+.bx-core::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, oklch(1 0 0 / 0.28), transparent 48%);
+  pointer-events: none;
+}
+
+.bx-common .bx-shape,
+.bx-common .bx-core {
+  border-radius: 30%;
+}
+.bx-rare .bx-shape,
+.bx-rare .bx-core {
+  clip-path: polygon(50% 0, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+}
+.bx-epic .bx-shape,
+.bx-epic .bx-core {
+  clip-path: polygon(50% 0, 96% 14%, 92% 60%, 50% 100%, 8% 60%, 4% 14%);
+}
+.bx-epic .bx-core svg {
+  margin-top: -8%;
+}
+.bx-legendary .bx-shape,
+.bx-legendary .bx-core {
+  clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%);
+}
+.bx-mythic .bx-shape,
+.bx-mythic .bx-core {
+  clip-path: polygon(50% 0, 65.7% 12.1%, 85.4% 14.6%, 87.9% 34.3%, 100% 50%, 87.9% 65.7%, 85.4% 85.4%, 65.7% 87.9%, 50% 100%, 34.3% 87.9%, 14.6% 85.4%, 12.1% 65.7%, 0 50%, 12.1% 34.3%, 14.6% 14.6%, 34.3% 12.1%);
+}
+.bx-mythic .bx-core {
+  inset: 11%;
+}
+.bx-mythic .bx-core svg {
+  width: 46%;
+  height: 46%;
+}
+
+.bx-common .bx-shape {
+  background: linear-gradient(160deg, oklch(0.62 0.05 var(--bh)), oklch(0.36 0.05 var(--bh)));
+}
+.bx-common .bx-core {
+  background: linear-gradient(165deg, oklch(0.42 0.08 var(--bh)), oklch(0.27 0.06 var(--bh)));
+}
+.bx-rare .bx-shape {
+  background: linear-gradient(160deg, oklch(0.85 0.12 var(--bh)), oklch(0.5 0.14 var(--bh)) 60%, oklch(0.75 0.13 var(--bh)));
+}
+.bx-rare .bx-core {
+  background: radial-gradient(120% 90% at 50% 0%, oklch(0.55 0.17 var(--bh)), oklch(0.27 0.11 var(--bh)));
+}
+.bx-epic .bx-shape {
+  background: linear-gradient(160deg, oklch(0.97 0.02 var(--bh)), oklch(0.62 0.12 var(--bh)) 45%, oklch(0.92 0.05 var(--bh)) 70%, oklch(0.5 0.12 var(--bh)));
+}
+.bx-epic .bx-core {
+  background: radial-gradient(120% 100% at 50% 0%, oklch(0.58 0.2 var(--bh)), oklch(0.22 0.1 var(--bh)) 85%);
+}
+.bx-legendary .bx-shape {
+  background: linear-gradient(115deg, oklch(0.58 0.12 70) 0%, oklch(0.86 0.15 88) 35%, oklch(0.99 0.04 95) 50%, oklch(0.86 0.15 88) 65%, oklch(0.58 0.12 70) 100%);
+  background-size: 250% 100%;
+  animation: fx-sheen 3.4s linear infinite;
+}
+.bx-legendary .bx-core {
+  background: radial-gradient(120% 100% at 50% 10%, oklch(0.62 0.2 var(--bh)), oklch(0.2 0.1 var(--bh)) 85%);
+  color: oklch(0.95 0.08 90);
+}
+.bx-legendary .bx-core::after,
+.bx-mythic .bx-core::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 35%, oklch(1 0 0 / 0.55) 50%, transparent 65%);
+  background-size: 260% 100%;
+  animation: fx-sheen 2.8s linear infinite;
+  pointer-events: none;
+}
+.bx-mythic {
+  filter: drop-shadow(0 0 5px oklch(0.75 0.18 var(--bh) / 0.75)) drop-shadow(0 2px 3px oklch(0 0 0 / 0.4));
+  animation: fx-mythic-glow 2.6s ease-in-out infinite;
+}
+.bx-mythic .bx-shape {
+  background: conic-gradient(from var(--fx-a), #ff6b8b, #ffcf6b, #f4ff8a, #6bffd8, #6bc4ff, #b58bff, #ff6b8b);
+  animation: fx-spin 3s linear infinite;
+}
+.bx-mythic .bx-core {
+  background: radial-gradient(110% 100% at 50% 0%, oklch(0.5 0.2 var(--bh)), oklch(0.16 0.06 var(--bh)) 80%);
+  color: oklch(0.98 0.04 var(--bh));
+}
+.bx-spark {
+  position: absolute;
+  width: 32%;
+  aspect-ratio: 1;
+  clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
+  background: oklch(1 0 0);
+  pointer-events: none;
+  animation: fx-twinkle 1.6s ease-in-out infinite;
+}
+.bx-spark:nth-of-type(1) {
+  top: -10%;
+  right: -12%;
+}
+.bx-spark:nth-of-type(2) {
+  bottom: -6%;
+  left: -12%;
+  width: 24%;
+  animation-delay: -0.8s;
+}
+.bx-locked {
+  filter: grayscale(1) brightness(0.7);
+  opacity: 0.55;
+  animation: none;
+}
+.bx-locked .bx-shape,
+.bx-locked .bx-core::after {
+  animation: none;
+}
+
+.bx-tip {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  z-index: 60;
+  display: flex;
+  width: max-content;
+  max-width: 220px;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid oklch(1 0 0 / 0.12);
+  background: oklch(0.16 0.01 var(--bh) / 0.96);
+  color: oklch(0.97 0 0);
+  text-align: left;
+  box-shadow: 0 12px 30px -10px oklch(0 0 0 / 0.6);
+  opacity: 0;
+  transform: translate(-50%, 4px);
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
+  pointer-events: none;
+}
+.group\/badge:hover .bx-tip,
+.group\/badge:focus-visible .bx-tip {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+
+/* ================================================= GECE YARISI SİNEMASI */
+.hx-grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.5 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.14;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  animation: fx-grain 0.5s steps(3) infinite;
+}
+.hx-scan {
+  background: repeating-linear-gradient(0deg, transparent 0 3px, oklch(0 0 0 / 0.18) 3px 4px);
+  pointer-events: none;
+}
+.hx-drift {
+  animation: hx-drift 26s ease-in-out infinite alternate;
+}
+.hx-flicker {
+  text-shadow: 0 0 28px color-mix(in oklch, var(--hx) 70%, transparent);
+  animation: hx-flicker 5.5s linear infinite;
+}
+@keyframes hx-drift {
+  from {
+    transform: scale(1.04) translate(0, 0);
+  }
+  to {
+    transform: scale(1.12) translate(-2%, 1%);
+  }
+}
+@keyframes hx-flicker {
+  0%,
+  18%,
+  22%,
+  62%,
+  64%,
+  100% {
+    opacity: 1;
+  }
+  20% {
+    opacity: 0.25;
+  }
+  63% {
+    opacity: 0.5;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hx-grain,
+  .hx-drift,
+  .hx-flicker {
+    animation: none;
+  }
+}
+
+
+@keyframes fx-mythic-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 3px oklch(0.75 0.18 var(--bh) / 0.6)) drop-shadow(0 2px 3px oklch(0 0 0 / 0.4));
+  }
+  50% {
+    filter: drop-shadow(0 0 9px oklch(0.8 0.18 var(--bh) / 0.95)) drop-shadow(0 2px 3px oklch(0 0 0 / 0.4));
+  }
+}
+
+@keyframes fx-sheen {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -50% 0;
+  }
+}
+
+@keyframes fx-spin {
+  to {
+    --fx-a: 360deg;
+  }
+}
+
+@keyframes fx-twinkle {
+  0%,
+  100% {
+    transform: scale(0.4) rotate(0deg);
+    opacity: 0.2;
+  }
+  50% {
+    transform: scale(1) rotate(45deg);
+    opacity: 1;
+  }
+}
+
+@keyframes fx-grain {
+  0% {
+    background-position: 0 0;
+  }
+  33% {
+    background-position: -40px 25px;
+  }
+  66% {
+    background-position: 30px -35px;
+  }
+}
+
+@keyframes hx-drift {
+  from {
+    transform: scale(1.04) translate(0, 0);
+  }
+  to {
+    transform: scale(1.12) translate(-2%, 1%);
+  }
+}
+
+@keyframes hx-flicker {
+  0%,
+  18%,
+  22%,
+  62%,
+  64%,
+  100% {
+    opacity: 1;
+  }
+  20% {
+    opacity: 0.25;
+  }
+  63% {
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bx,
+  .bx * {
+    animation-duration: 0s !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/* ================================================= KIZIL KURDELE — avatar */
+.rb-frame {
+  position: relative;
+  display: inline-grid;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  container-type: size;
+  isolation: isolate;
+}
+.rb-media {
+  width: 100%;
+  height: 100%;
+  border-radius: 9999px;
+  object-fit: cover;
+  box-shadow: 0 0 0 1px oklch(0 0 0 / 0.1);
+}
+.rb-frame-on .rb-media {
+  box-shadow: 0 0 0 max(1px, 2%) oklch(0.28 0.06 20 / 0.55);
+}
+.rb-avatar {
+  position: absolute;
+  inset: -25%;
+  width: 150%;
+  height: 150%;
+  pointer-events: none;
+  overflow: visible;
+  filter: drop-shadow(0 1px 0.6px oklch(0.2 0.05 20 / 0.45));
+}
+.rb-avatar .rb-detail {
+  transform-origin: 60px 60px;
+}
+@container (max-width: 52px) {
+  .rb-avatar .rb-detail {
+    display: none;
+  }
+}
+
+/* ================================================= KIZIL KURDELE — nameplate */
+.rb-plate {
+  --rb-gold: linear-gradient(115deg, #fff3dc, #efc597 22%, #b9814f 48%, #f6d9b0 70%, #94592f);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  margin-inline: 0.7em;
+  padding: 0.12em 0.85em 0.16em;
+  border-radius: 9999px;
+  background: linear-gradient(180deg, #fff6f1 0%, #f7dcd6 55%, #efc9c2 100%);
+  color: #571a24;
+  line-height: 1.25;
+  box-shadow:
+    inset 0 1px 0 #fff,
+    inset 0 -1px 0 oklch(0.55 0.08 20 / 0.25),
+    0 1px 2px oklch(0.25 0.06 20 / 0.35);
+  -webkit-text-fill-color: currentColor;
+}
+.rb-plate::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: max(1.5px, 0.09em);
+  border-radius: inherit;
+  background: var(--rb-gold);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+.rb-plate::after {
+  content: '';
+  position: absolute;
+  inset: 0.22em 0.5em;
+  border-radius: inherit;
+  border: 1px solid oklch(0.72 0.09 45 / 0.45);
+  pointer-events: none;
+}
+.rb-plate-text {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rb-plate-text > * {
+  color: inherit;
+}
+.rb-plate-cap {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  width: 1.3em;
+  height: 1.3em;
+  translate: 0 -50%;
+  overflow: visible;
+  filter: drop-shadow(0 1px 0.5px oklch(0.2 0.05 20 / 0.5));
+}
+.rb-plate-cap-l {
+  left: -0.68em;
+}
+.rb-plate-cap-r {
+  right: -0.68em;
+}
+.rb-plate-drop {
+  position: absolute;
+  left: 50%;
+  bottom: -0.95em;
+  z-index: 2;
+  width: 0.45em;
+  height: 1.05em;
+  translate: -50% 0;
+  overflow: visible;
+}
+
+/* ================================================= KIZIL KURDELE — banner */
+.rb-banner {
+  --rb-gold: linear-gradient(115deg, #fff3dc, #efc597 22%, #b9814f 48%, #f6d9b0 70%, #94592f);
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  container-type: size;
+}
+.rb-banner-mould,
+.rb-banner-line {
+  position: absolute;
+  border-radius: clamp(6px, 2.4cqh, 14px);
+}
+.rb-banner-mould {
+  inset: clamp(6px, 4cqh, 14px);
+  padding: clamp(2px, 1.1cqh, 3.5px);
+  background: var(--rb-gold);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  filter: drop-shadow(0 1px 1px oklch(0.15 0.04 20 / 0.6));
+}
+.rb-banner-line {
+  inset: calc(clamp(6px, 4cqh, 14px) + clamp(5px, 3cqh, 9px));
+  border: 1px solid oklch(0.86 0.07 60 / 0.55);
+}
+.rb-banner svg {
+  position: absolute;
+  overflow: visible;
+  filter: drop-shadow(0 2px 2px oklch(0.12 0.04 20 / 0.55));
+}
+.rb-banner-crest {
+  top: clamp(-4px, 0cqh, 2px);
+  left: 50%;
+  width: clamp(22px, 15cqh, 38px);
+  translate: -50% 0;
+}
+.rb-banner-streamer {
+  top: clamp(20px, 26cqh, 60px);
+  left: clamp(-2px, 0.4cqw, 6px);
+  height: clamp(60px, 70cqh, 200px);
+  width: auto;
+  aspect-ratio: 24 / 104;
+}
+.rb-banner-tl {
+  top: clamp(-6px, -1cqh, 0px);
+  left: clamp(-6px, -1cqw, 0px);
+  width: clamp(56px, 46cqh, 120px);
+}
+.rb-banner-tr {
+  top: clamp(4px, 3cqh, 12px);
+  right: clamp(4px, 1.4cqw, 12px);
+  width: clamp(28px, 22cqh, 56px);
+}
+.rb-banner-bl {
+  bottom: clamp(4px, 3cqh, 12px);
+  left: clamp(4px, 1.4cqw, 12px);
+  width: clamp(30px, 24cqh, 60px);
+}
+.rb-banner-br {
+  bottom: clamp(-10px, -6cqh, 0px);
+  right: clamp(-4px, -0.5cqw, 4px);
+  width: clamp(54px, 44cqh, 116px);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .rb-banner-tr g:nth-of-type(2),
+  .rb-banner-br g:nth-of-type(1),
+  .rb-banner-br g:nth-of-type(2) {
+    transform-box: fill-box;
+    transform-origin: 50% 0;
+    animation: rb-sway 4.8s ease-in-out infinite;
+  }
+  .rb-banner-br g:nth-of-type(2) {
+    animation-delay: -1.6s;
+  }
+}
+@keyframes rb-sway {
+  0%,
+  100% {
+    rotate: -3deg;
+  }
+  50% {
+    rotate: 3deg;
+  }
+}
+
+/* ================================================= YORUM MÜREKKEPLERİ
+   Comment colour paints the words, not the bubble. Two-tone gradient ink,
+   optional gilded sheen that sweeps through every few seconds. */
+.sy-ink {
+  background-image: linear-gradient(100deg, var(--ink-a), var(--ink-b));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  font-weight: 500;
+}
+.dark .sy-ink {
+  background-image: linear-gradient(100deg, color-mix(in oklch, var(--ink-a) 78%, white), color-mix(in oklch, var(--ink-b) 78%, white));
+}
+.sy-ink-sheen {
+  background-image:
+    linear-gradient(100deg, transparent 0 40%, oklch(1 0 0 / 0.75) 48%, transparent 56% 100%),
+    linear-gradient(100deg, var(--ink-a), var(--ink-b));
+  background-size:
+    250% 100%,
+    100% 100%;
+  background-repeat: no-repeat;
+  animation: sy-ink-sheen 5.5s ease-in-out infinite;
+}
+.dark .sy-ink-sheen {
+  background-image:
+    linear-gradient(100deg, transparent 0 40%, oklch(1 0 0 / 0.85) 48%, transparent 56% 100%),
+    linear-gradient(100deg, color-mix(in oklch, var(--ink-a) 78%, white), color-mix(in oklch, var(--ink-b) 78%, white));
+}
+.sy-ink ::selection,
+.sy-ink::selection {
+  -webkit-text-fill-color: var(--foreground);
+}
+@keyframes sy-ink-sheen {
+  0%,
+  55% {
+    background-position:
+      150% 0,
+      0 0;
+  }
+  100% {
+    background-position:
+      -60% 0,
+      0 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sy-ink-sheen,
+  .rb-banner * {
+    animation: none !important;
+  }
+}

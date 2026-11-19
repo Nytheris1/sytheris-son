@@ -1,0 +1,233 @@
+/* v6 — Gece Sineması rail, manga catalog, library, atelier and refined cosmetics */
+
+/* ---------- Gece Sineması: one continuous left-to-right poster rail ---------- */
+.gs-track {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, black 6%, black 94%, transparent);
+  mask-image: linear-gradient(90deg, transparent, black 6%, black 94%, transparent);
+}
+.gs-rail {
+  animation: gs-rail 90s linear infinite;
+  will-change: transform;
+}
+.gs-track:hover .gs-rail,
+.gs-track:focus-within .gs-rail {
+  animation-play-state: paused;
+}
+@keyframes gs-rail {
+  from {
+    transform: translateX(calc(-50% - 0.5rem));
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gs-track {
+    overflow-x: auto;
+  }
+  .gs-rail {
+    animation: none;
+  }
+}
+
+/* ---------- Manga catalog ---------- */
+.mg-spine::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 7%;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(90deg, oklch(0 0 0 / 0.35), oklch(1 0 0 / 0.08) 45%, transparent);
+}
+.mg-card:hover .mg-spine,
+.mg-card:focus-visible .mg-spine {
+  box-shadow: 0 22px 40px -18px oklch(0 0 0 / 0.55);
+}
+.mg-fan-item {
+  transform: translate(-50%, -50%) translateX(calc(var(--i) * 30%)) rotate(calc(var(--i) * 6deg)) translateY(calc(var(--i) * var(--i) * 4%));
+  transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: mg-deal 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc((var(--i) + 3) * 70ms);
+}
+.mg-fan:hover .mg-fan-item {
+  transform: translate(-50%, -50%) translateX(calc(var(--i) * 38%)) rotate(calc(var(--i) * 8deg)) translateY(calc(var(--i) * var(--i) * 5%));
+}
+.mg-fan .mg-fan-item:hover,
+.mg-fan .mg-fan-item:focus-visible {
+  z-index: 20 !important;
+  transform: translate(-50%, -54%) translateX(calc(var(--i) * 38%)) rotate(0deg) scale(1.04);
+}
+@keyframes mg-deal {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -30%) rotate(0deg);
+  }
+}
+.mg-page-in {
+  animation: mg-page-in 0.35s ease-out both;
+}
+@keyframes mg-page-in {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mg-fan-item,
+  .mg-page-in {
+    animation: none;
+  }
+}
+
+/* ---------- Library ---------- */
+.lib-cover {
+  box-shadow: 0 0 0 0 transparent;
+  transition-property: transform, box-shadow;
+}
+.group:hover .lib-cover {
+  box-shadow: 0 24px 46px -22px color-mix(in oklch, var(--lh) 70%, transparent);
+}
+
+/* ---------- Atölye: museum hall, gilded frames, passe-partout ---------- */
+:root {
+  --at-gold: oklch(0.8 0.11 82);
+  --at-gold-deep: oklch(0.52 0.09 70);
+  --at-mat: oklch(0.96 0.008 85);
+}
+.at-hall {
+  background:
+    radial-gradient(70% 55% at 72% 0%, color-mix(in oklch, var(--at-gold) 10%, transparent), transparent 70%),
+    linear-gradient(180deg, var(--scrim), color-mix(in oklch, var(--scrim) 85%, var(--at-gold-deep)));
+}
+.at-wainscot {
+  background:
+    repeating-linear-gradient(90deg, transparent 0 119px, color-mix(in oklch, var(--at-gold) 14%, transparent) 119px 120px),
+    linear-gradient(180deg, color-mix(in oklch, var(--at-gold) 22%, transparent) 0 1px, transparent 1px);
+  opacity: 0.55;
+}
+.at-spot {
+  background: conic-gradient(from 180deg at 50% 0%, transparent 160deg, color-mix(in oklch, var(--at-gold) 16%, transparent) 180deg, transparent 200deg);
+  filter: blur(18px);
+  animation: at-spot 6s ease-in-out infinite alternate;
+}
+@keyframes at-spot {
+  from {
+    opacity: 0.7;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.at-frame {
+  padding: 14px;
+  border-radius: 3px;
+  background:
+    linear-gradient(135deg, oklch(0.86 0.1 85), var(--at-gold-deep) 22%, oklch(0.9 0.09 88) 45%, var(--at-gold-deep) 70%, oklch(0.78 0.1 80));
+  box-shadow:
+    inset 0 0 0 1px oklch(1 0 0 / 0.35),
+    inset 0 0 0 5px oklch(0.35 0.05 65 / 0.55),
+    inset 0 0 0 6px oklch(1 0 0 / 0.25),
+    0 60px 110px -40px oklch(0 0 0 / 0.9),
+    0 0 0 1px oklch(0 0 0 / 0.4);
+}
+.at-frame-sm {
+  padding: 7px;
+  box-shadow:
+    inset 0 0 0 1px oklch(1 0 0 / 0.3),
+    inset 0 0 0 3px oklch(0.35 0.05 65 / 0.5),
+    0 26px 50px -28px oklch(0 0 0 / 0.6);
+}
+.at-mat {
+  padding: 8%;
+  background: var(--at-mat);
+  box-shadow: inset 0 2px 6px oklch(0 0 0 / 0.25);
+}
+.at-frame-sm .at-mat {
+  padding: 7%;
+}
+.at-placard {
+  background: linear-gradient(180deg, oklch(1 0 0 / 0.05), oklch(1 0 0 / 0.02));
+  border: 1px solid color-mix(in oklch, var(--at-gold) 28%, transparent);
+  border-radius: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .at-spot {
+    animation: none;
+  }
+}
+.studio-lux-bar::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 -1px 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, color-mix(in oklch, var(--at-gold) 55%, transparent) 30%, color-mix(in oklch, var(--at-gold) 55%, transparent) 70%, transparent);
+  pointer-events: none;
+}
+.studio-lux-wall {
+  background:
+    radial-gradient(ellipse at 50% 45%, color-mix(in oklch, var(--at-gold) 6%, transparent), transparent 65%),
+    radial-gradient(circle, color-mix(in oklch, var(--foreground) 8%, transparent) 1px, transparent 1px);
+  background-size:
+    100% 100%,
+    22px 22px;
+}
+
+.bx {
+  filter: drop-shadow(0 1px 0 oklch(0 0 0 / 0.35)) drop-shadow(0 2px 2px oklch(0 0 0 / 0.2));
+}
+
+/* ---------- Portfolio zine (/portfolyo) — black canvas, paper prints, hot-pink marker ---------- */
+.folio-zine {
+  --fo-bg: oklch(0.13 0.004 280);
+  --fo-ink: oklch(0.96 0.008 85);
+  --fo-paper: oklch(0.95 0.012 85);
+  --fo-hot: oklch(0.64 0.25 8);
+  color-scheme: dark;
+  background-color: var(--fo-bg);
+  background-image:
+    linear-gradient(oklch(1 0 0 / 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, oklch(1 0 0 / 0.035) 1px, transparent 1px);
+  background-size: 56px 56px;
+  color: var(--fo-ink);
+}
+.folio-zine ::selection {
+  background: var(--fo-hot);
+  color: var(--fo-ink);
+}
+.font-anton {
+  font-family: var(--font-anton), 'Impact', sans-serif;
+  font-weight: 400;
+}
+.font-hand {
+  font-family: var(--font-hand), 'Segoe Print', cursive;
+  font-weight: 700;
+}
+.fo-draw path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: fo-draw 1.6s cubic-bezier(0.6, 0, 0.2, 1) 0.6s forwards;
+}
+.fo-spin {
+  animation: fo-spin 22s linear infinite;
+}
+@keyframes fo-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes fo-spin {
+  to {
+    rotate: 360deg;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fo-draw path {
+    stroke-dashoffset: 0;
+    animation: none;
+  }
+  .fo-spin {
+    animation: none;
+  }
+}

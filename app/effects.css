@@ -1,0 +1,455 @@
+/* ============================================================
+   SYTHERIS — effects layer: avatar frames, badges, animated
+   banners, card holograms and stylised titles.
+   ============================================================ */
+
+:root {
+  --fx-gold: oklch(0.83 0.15 85);
+  --fx-gold-deep: oklch(0.62 0.14 65);
+  --fx-sakura: oklch(0.82 0.11 355);
+  --fx-ember: oklch(0.7 0.21 40);
+  --fx-void: oklch(0.42 0.2 300);
+}
+
+/* ---------- Avatar frames ---------- */
+.sy-frame {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  isolation: isolate;
+}
+.sy-frame-media {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  object-fit: cover;
+  overflow: hidden;
+}
+.sy-frame-ring {
+  position: absolute;
+  inset: calc(var(--fw) * -1 - 2px);
+  z-index: 0;
+  border-radius: inherit;
+  padding: var(--fw);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+.sy-frame-halo .sy-frame-ring {
+  background: var(--primary);
+  filter: drop-shadow(0 0 6px color-mix(in oklch, var(--primary) 70%, transparent));
+}
+.sy-frame-neon .sy-frame-ring {
+  background: var(--primary);
+  animation: sy-neon 1.6s ease-in-out infinite;
+}
+.sy-frame-prism .sy-frame-ring {
+  background: conic-gradient(from var(--sy-angle, 0deg), #ff4d6d, #ffb14d, #f9f871, #5dfdcb, #4dc9ff, #a77bff, #ff4d6d);
+  animation: sy-spin-angle 3.2s linear infinite;
+}
+.sy-frame-sakura .sy-frame-ring {
+  background: conic-gradient(from var(--sy-angle, 0deg), var(--fx-sakura), color-mix(in oklch, var(--fx-sakura) 30%, transparent), var(--fx-sakura));
+  animation: sy-spin-angle 6s linear infinite;
+}
+.sy-frame-orbit .sy-frame-ring {
+  background: color-mix(in oklch, var(--primary) 55%, transparent);
+}
+.sy-frame-ember .sy-frame-ring {
+  background: conic-gradient(from var(--sy-angle, 0deg), var(--fx-ember), oklch(0.85 0.17 80), oklch(0.55 0.22 28), var(--fx-ember));
+  animation:
+    sy-spin-angle 2.4s linear infinite,
+    sy-flicker 1.2s steps(2) infinite;
+}
+.sy-frame-void .sy-frame-ring {
+  background: conic-gradient(from var(--sy-angle, 0deg), var(--fx-void), oklch(0.15 0.02 300), oklch(0.7 0.18 300), var(--fx-void));
+  animation: sy-spin-angle 5s linear infinite reverse;
+  filter: drop-shadow(0 0 10px color-mix(in oklch, var(--fx-void) 80%, transparent));
+}
+.sy-frame-crown .sy-frame-ring {
+  background: linear-gradient(115deg, var(--fx-gold-deep) 0%, var(--fx-gold) 35%, oklch(0.97 0.05 90) 50%, var(--fx-gold) 65%, var(--fx-gold-deep) 100%);
+  background-size: 250% 100%;
+  animation: sy-shine 3s linear infinite;
+  outline: 1px solid color-mix(in oklch, var(--fx-gold) 60%, transparent);
+  outline-offset: 3px;
+}
+.sy-frame-orbit .sy-frame-orbit {
+  position: absolute;
+  inset: calc(var(--fw) * -1 - 6px);
+  z-index: 2;
+  border-radius: inherit;
+  animation: sy-rotate 4s linear infinite;
+  pointer-events: none;
+}
+.sy-frame-orbit .sy-frame-orbit > span {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 18%;
+  max-width: 10px;
+  min-width: 5px;
+  aspect-ratio: 1;
+  border-radius: 9999px;
+  background: var(--primary);
+  box-shadow: 0 0 10px var(--primary);
+  transform: translate(-50%, -50%);
+}
+.sy-frame-petals {
+  position: absolute;
+  inset: -14%;
+  z-index: 2;
+  animation: sy-rotate 9s linear infinite;
+  pointer-events: none;
+}
+.sy-frame-petals > span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 14%;
+  max-width: 9px;
+  aspect-ratio: 1 / 1.4;
+  border-radius: 80% 0 80% 0;
+  background: var(--fx-sakura);
+  transform: rotate(calc(var(--i) * 60deg)) translateY(-360%) rotate(30deg);
+  transform-origin: 0 0;
+  opacity: 0.9;
+}
+
+@property --sy-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+/* ---------- Badges ---------- */
+.sy-badge {
+  color: oklch(0.92 0.12 var(--bh));
+  background:
+    linear-gradient(160deg, oklch(0.42 0.13 var(--bh)) 0%, oklch(0.26 0.09 var(--bh)) 100%);
+  box-shadow:
+    inset 0 1px 0 oklch(1 0 0 / 0.18),
+    0 4px 14px -6px oklch(0.5 0.15 var(--bh));
+  position: relative;
+  overflow: hidden;
+}
+.sy-badge-shine::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 30%, oklch(1 0 0 / 0.45) 50%, transparent 70%);
+  background-size: 250% 100%;
+  animation: sy-shine 2.6s linear infinite;
+}
+
+/* ---------- Animated banners ---------- */
+.sy-banner-aurora {
+  background:
+    radial-gradient(60% 80% at 20% 30%, color-mix(in oklch, var(--primary) 70%, transparent), transparent 70%),
+    radial-gradient(50% 70% at 80% 60%, oklch(0.6 0.2 calc(var(--hue) + 60)), transparent 70%),
+    radial-gradient(40% 60% at 50% 100%, oklch(0.55 0.18 calc(var(--hue) - 60)), transparent 70%),
+    var(--scrim);
+  background-size: 200% 200%;
+  animation: sy-aurora 14s ease-in-out infinite alternate;
+}
+.sy-banner-stars {
+  background: radial-gradient(120% 90% at 50% 120%, color-mix(in oklch, var(--primary) 35%, var(--scrim)), var(--scrim));
+}
+.sy-stars {
+  position: absolute;
+  inset: -100% 0 0 0;
+  background-image:
+    radial-gradient(1.5px 1.5px at 10% 20%, oklch(1 0 0 / 0.9), transparent),
+    radial-gradient(1px 1px at 30% 70%, oklch(1 0 0 / 0.7), transparent),
+    radial-gradient(1.5px 1.5px at 50% 40%, oklch(1 0 0 / 0.8), transparent),
+    radial-gradient(1px 1px at 70% 10%, oklch(1 0 0 / 0.6), transparent),
+    radial-gradient(2px 2px at 85% 55%, var(--primary), transparent),
+    radial-gradient(1px 1px at 92% 85%, oklch(1 0 0 / 0.7), transparent);
+  background-size: 260px 260px;
+  animation: sy-starfall 18s linear infinite;
+}
+.sy-stars-2 {
+  background-size: 180px 180px;
+  animation-duration: 11s;
+  opacity: 0.6;
+}
+.sy-banner-petals {
+  background: linear-gradient(180deg, color-mix(in oklch, var(--fx-sakura) 30%, var(--scrim)), var(--scrim));
+}
+.sy-petal {
+  position: absolute;
+  top: -10%;
+  left: var(--x);
+  width: 10px;
+  height: 14px;
+  border-radius: 80% 0 80% 0;
+  background: var(--fx-sakura);
+  opacity: 0.85;
+  animation: sy-petal calc(7s + var(--i) * 0.45s) linear infinite;
+  animation-delay: calc(var(--i) * -0.9s);
+}
+.sy-banner-grid {
+  background: linear-gradient(180deg, var(--scrim) 0%, color-mix(in oklch, var(--primary) 30%, var(--scrim)) 100%);
+  perspective: 300px;
+}
+.sy-grid-plane {
+  position: absolute;
+  left: -50%;
+  right: -50%;
+  bottom: -40%;
+  height: 120%;
+  background-image:
+    linear-gradient(color-mix(in oklch, var(--primary) 70%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in oklch, var(--primary) 70%, transparent) 1px, transparent 1px);
+  background-size: 40px 40px;
+  transform: rotateX(62deg);
+  animation: sy-grid 1.8s linear infinite;
+  mask-image: linear-gradient(to top, #000 30%, transparent 90%);
+}
+.sy-banner-waves {
+  background:
+    repeating-radial-gradient(circle at 50% 120%, color-mix(in oklch, var(--primary) 45%, transparent) 0 2px, transparent 2px 22px),
+    var(--scrim);
+  background-size: 100% 100%;
+  animation: sy-waves 6s linear infinite;
+}
+
+/* ---------- Holographic card (Kader Kartı) ---------- */
+.sy-holo {
+  position: relative;
+  transform-style: preserve-3d;
+}
+.sy-holo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    linear-gradient(115deg, transparent 20%, oklch(1 0 0 / 0.25) 40%, oklch(0.85 0.2 calc(var(--hue) + 40) / 0.25) 50%, transparent 65%);
+  background-size: 250% 250%;
+  background-position: var(--mx, 50%) var(--my, 50%);
+  mix-blend-mode: color-dodge;
+  opacity: 0.8;
+}
+.sy-card-back {
+  background:
+    repeating-linear-gradient(45deg, color-mix(in oklch, var(--primary) 18%, transparent) 0 2px, transparent 2px 14px),
+    repeating-linear-gradient(-45deg, color-mix(in oklch, var(--primary) 18%, transparent) 0 2px, transparent 2px 14px),
+    radial-gradient(circle at 50% 50%, color-mix(in oklch, var(--primary) 40%, var(--scrim)), var(--scrim) 70%);
+}
+
+/* ---------- Stylised anime titles ---------- */
+.sy-title-action {
+  font-style: italic;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  transform: skewX(-6deg);
+  text-shadow:
+    4px 4px 0 var(--title-accent, var(--primary)),
+    8px 8px 0 color-mix(in oklch, var(--title-accent, var(--primary)) 35%, transparent);
+}
+.sy-title-fantasy {
+  background-image: linear-gradient(100deg, var(--fx-gold-deep), var(--fx-gold) 30%, oklch(0.98 0.04 90) 50%, var(--fx-gold) 70%, var(--fx-gold-deep));
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: sy-shine 6s linear infinite;
+  filter: drop-shadow(0 4px 18px color-mix(in oklch, var(--fx-gold) 35%, transparent));
+}
+.sy-title-horror {
+  color: oklch(0.95 0.02 25);
+  text-shadow:
+    0 0 18px oklch(0.55 0.24 27),
+    0 0 2px oklch(0.55 0.24 27);
+  animation: sy-horror 4s infinite;
+}
+.sy-title-scifi {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--foreground);
+  text-shadow:
+    0 0 12px var(--title-accent, var(--primary)),
+    0 0 32px color-mix(in oklch, var(--title-accent, var(--primary)) 60%, transparent);
+}
+.sy-title-romance {
+  background-image: linear-gradient(100deg, var(--foreground), var(--fx-sakura) 40%, var(--foreground) 80%);
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: sy-shine 7s ease-in-out infinite;
+}
+.sy-title-comedy {
+  color: var(--foreground);
+  -webkit-text-stroke: 2px var(--scrim);
+  paint-order: stroke fill;
+  text-shadow: 5px 5px 0 var(--title-accent, var(--primary));
+}
+.sy-title-mystery {
+  color: var(--foreground);
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 0 color-mix(in oklch, var(--foreground) 30%, transparent);
+}
+.sy-title-music {
+  color: var(--foreground);
+  text-shadow:
+    0 0 6px var(--title-accent, var(--primary)),
+    0 0 24px var(--title-accent, var(--primary));
+  animation: sy-neon-text 2.8s infinite;
+}
+.sy-title-sports {
+  font-style: italic;
+  text-transform: uppercase;
+  color: var(--foreground);
+  text-shadow:
+    -12px 0 0 color-mix(in oklch, var(--title-accent, var(--primary)) 45%, transparent),
+    -24px 0 0 color-mix(in oklch, var(--title-accent, var(--primary)) 20%, transparent);
+}
+.sy-title-classic {
+  color: var(--foreground);
+  text-shadow: 0 6px 30px color-mix(in oklch, var(--title-accent, var(--primary)) 45%, transparent);
+}
+
+/* ---------- Keyframes ---------- */
+@keyframes sy-spin-angle {
+  to {
+    --sy-angle: 360deg;
+  }
+}
+@keyframes sy-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes sy-neon {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 3px var(--primary));
+    opacity: 0.85;
+  }
+  50% {
+    filter: drop-shadow(0 0 14px var(--primary)) drop-shadow(0 0 4px var(--primary));
+    opacity: 1;
+  }
+}
+@keyframes sy-flicker {
+  50% {
+    filter: drop-shadow(0 0 12px var(--fx-ember)) brightness(1.15);
+  }
+}
+@keyframes sy-shine {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -50% 0;
+  }
+}
+@keyframes sy-aurora {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 100% 100%;
+  }
+}
+@keyframes sy-starfall {
+  to {
+    transform: translateY(50%);
+  }
+}
+@keyframes sy-petal {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate(40px, 55vh) rotate(200deg);
+  }
+  100% {
+    transform: translate(-20px, 110vh) rotate(420deg);
+  }
+}
+@keyframes sy-grid {
+  to {
+    background-position: 0 40px;
+  }
+}
+@keyframes sy-waves {
+  to {
+    background-position: 0 -22px;
+  }
+}
+@keyframes sy-horror {
+  0%,
+  92%,
+  100% {
+    opacity: 1;
+  }
+  93% {
+    opacity: 0.35;
+  }
+  95% {
+    opacity: 1;
+  }
+  96% {
+    opacity: 0.5;
+  }
+}
+@keyframes sy-neon-text {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  45% {
+    opacity: 0.92;
+  }
+  47% {
+    opacity: 0.55;
+  }
+  49% {
+    opacity: 1;
+  }
+}
+@keyframes sy-marquee-x {
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes sy-drift-up {
+  to {
+    transform: translateY(-50%);
+  }
+}
+@keyframes sy-drift-down {
+  from {
+    transform: translateY(-50%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.sy-title-brush {
+  color: var(--foreground);
+  letter-spacing: 0.01em;
+  transform: rotate(-2deg);
+  text-shadow:
+    3px 3px 0 var(--title-accent, var(--primary)),
+    0 0 26px color-mix(in oklch, var(--title-accent, var(--primary)) 40%, transparent);
+}
+.sy-title-shounen {
+  color: var(--foreground);
+  letter-spacing: 0.03em;
+  -webkit-text-stroke: 3px var(--scrim);
+  paint-order: stroke fill;
+  transform: skewX(-4deg) rotate(-1.5deg);
+  text-shadow:
+    5px 5px 0 var(--title-accent, var(--primary)),
+    9px 9px 0 var(--scrim);
+}

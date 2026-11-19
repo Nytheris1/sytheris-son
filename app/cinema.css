@@ -1,0 +1,89 @@
+/* Unlayered on purpose: must win over the unlayered .dark token block in globals.css. */
+/* ---------- Cinema mode — a darkened screening room lit by marquee bulbs ---------- */
+.cine.cine,
+.cine .dark {
+  color-scheme: dark;
+  --background: oklch(0.14 0.012 30);
+  --foreground: oklch(0.95 0.014 80);
+  --card: oklch(0.18 0.014 30);
+  --card-foreground: var(--foreground);
+  --popover: oklch(0.19 0.014 30);
+  --muted: oklch(0.21 0.014 30);
+  --muted-foreground: oklch(0.72 0.02 70);
+  --border: oklch(1 0 0 / 9%);
+  --primary: oklch(0.83 0.13 78);
+  --primary-foreground: oklch(0.2 0.04 60);
+  --ink: oklch(0.85 0.12 80);
+  --ink-dark: oklch(0.85 0.12 80);
+  --ink-light: oklch(0.85 0.12 80);
+  --scrim: oklch(0.09 0.008 30);
+  --on-scrim: oklch(0.97 0.01 80);
+  --page-bg: var(--background);
+}
+.cine.cine {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+.cine-letterbox {
+  position: absolute;
+  inset-inline: 0;
+  z-index: 5;
+  height: 0;
+  background: var(--scrim);
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .cine-letterbox {
+    animation: cine-open 1.6s cubic-bezier(0.7, 0, 0.2, 1) both;
+  }
+}
+@keyframes cine-open {
+  from {
+    height: 50%;
+  }
+  to {
+    height: 0;
+  }
+}
+.cine-beam {
+  background: conic-gradient(from 200deg at 100% 0%, transparent 0deg, color-mix(in oklch, var(--primary) 16%, transparent) 14deg, transparent 34deg);
+  mix-blend-mode: screen;
+}
+.cine-ticket {
+  --notch: 9px;
+  background: color-mix(in oklch, var(--foreground) 7%, transparent);
+  border: 1px solid color-mix(in oklch, var(--foreground) 14%, transparent);
+  -webkit-mask:
+    radial-gradient(circle var(--notch) at var(--stub) 0, transparent 98%, #000) top / 100% 51% no-repeat,
+    radial-gradient(circle var(--notch) at var(--stub) 100%, transparent 98%, #000) bottom / 100% 51% no-repeat;
+  mask:
+    radial-gradient(circle var(--notch) at var(--stub) 0, transparent 98%, #000) top / 100% 51% no-repeat,
+    radial-gradient(circle var(--notch) at var(--stub) 100%, transparent 98%, #000) bottom / 100% 51% no-repeat;
+}
+.cine-bulbs {
+  background-image: radial-gradient(circle, var(--primary) 0 2px, color-mix(in oklch, var(--primary) 30%, transparent) 3px, transparent 4.5px);
+  background-size: 18px 10px;
+  background-repeat: repeat-x;
+  background-position: center;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .cine-bulbs {
+    animation: cine-chase 1.2s steps(2) infinite;
+  }
+}
+@keyframes cine-chase {
+  to {
+    background-position: calc(50% + 9px) center;
+  }
+}
+.cine-card-light {
+  background: linear-gradient(105deg, transparent 35%, color-mix(in oklch, var(--on-scrim) 22%, transparent) 50%, transparent 65%);
+  translate: -120% 0;
+  transition: translate 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.group:hover .cine-card-light {
+  translate: 120% 0;
+}
+.cine .group:hover .top10-slice-numeral {
+  -webkit-text-stroke-color: var(--primary);
+}
