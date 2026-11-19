@@ -27,7 +27,7 @@ export async function GET(req: Request) {
   const out: unknown[] = []
 
   if (KEY) {
-    const auth = KEY.startsWith('eyJ') ? { Authorization: 'Bearer ' + KEY } : {}
+    const auth: Record<string, string> = KEY.startsWith('eyJ') ? { Authorization: 'Bearer ' + KEY } : {}
     const u = 'https://api.themoviedb.org/3/search/movie?query=' + encodeURIComponent(q) + '&language=tr-TR' + (KEY.startsWith('eyJ') ? '' : '&api_key=' + KEY)
     try {
       const r = await fetch(u, { headers: { accept: 'application/json', ...auth }, cache: 'no-store' })
