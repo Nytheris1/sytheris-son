@@ -237,6 +237,10 @@ export async function signedFetch(url: string, init: RequestInit = {}) {
       'x-time': time,
       'x-csrf-token': csrf.token,
       cookie: `htv_csrf_proof=${csrf.proof}`,
+      'Accept-Language': 'en-US,en;q=0.9',
+      'sec-ch-ua': '"Chromium";v="131", "Not_A Brand";v="24"',
+      'sec-ch-ua-mobile': '?0',
+      'sec-ch-ua-platform': '"Windows"',
     },
     cache: 'no-store',
   })
@@ -272,10 +276,13 @@ export async function getSources(slug: string): Promise<HanimeSource[]> {
   const token = seal({ timestamp_unix: Math.floor(Date.now() / 1000), directive: 'htv_player_handshake', slug })
   const res = await signedFetch('https://auth.hanime.tv/api/v11/handshake', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
     body: JSON.stringify({ token }),
   })
-  if (!res.ok) throw new Error(`handshake ${res.status}`)
+  if (!res.ok) {
+    const body = await res.text()
+    throw new Error('handshake ' + res.status + ' - ' + body.replace(/\s+/g, ' ').slice(0, 140))
+  }
   const reply = res.headers.get('x-token')
   if (!reply) throw new Error('handshake yanıtı boş')
   const sources = (open(reply).sources ?? [])

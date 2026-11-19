@@ -141,6 +141,9 @@ async function buildSigner(): Promise<Signer> {
   win.self = win
   win.globalThis = win
   win.Event = win.CustomEvent
+  win.top = win
+  win.parent = win
+  win.frames = win
 
   const ctx = createContext(win, { name: 'hanime-signer' })
   try {
@@ -155,7 +158,7 @@ async function buildSigner(): Promise<Signer> {
     win.stime = ''
     for (const fn of listeners.get('e') ?? []) {
       try {
-        fn({ type: 'e', detail: null })
+        fn({ type: 'e', detail: {}, target: win })
       } catch {
         /* modül hatası tek isteği düşürsün, imzalayıcıyı değil */
       }
@@ -163,12 +166,20 @@ async function buildSigner(): Promise<Signer> {
     return { signature: String(win.ssignature ?? ''), time: String(win.stime ?? '') }
   }
 
-  for (let i = 0; i < 40; i++) {
+  for (let i = 0; i < 80; i++) {
     const probe = sign()
     if (/^[0-9a-f]{64}$/.test(probe.signature) && probe.time) return { sign }
-    await new Promise((r) => setTimeout(r, 150))
+    await new Promise((r) => setTimeout(r, 250))
   }
-  throw new Error('imzalayıcı hazır olmadı')
+  throw new Error(
+    'imzalayici hazir olmadi (dinleyici: ' +
+      (listeners.get('e') || []).length +
+      ', imza: "' +
+      String(win.ssignature || '') +
+      '", hazir: ' +
+      String(win.wasmReady || 'yok') +
+      ')',
+  )
 }
 
 export async function getSigner() {
