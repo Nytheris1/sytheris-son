@@ -18,7 +18,8 @@ export default function TestPage() {
         },
         body: JSON.stringify({ token: 'x' }),
       })
-      setLog((l) => [...l, 'CORS OK: ' + res.status + ' ' + (await res.text()).slice(0, 90)])
+      const body = (await res.text()).slice(0, 90)
+      setLog((l) => [...l, 'CORS OK: ' + res.status + ' ' + body])
     } catch (err) {
       setLog((l) => [...l, 'CORS HATA: ' + (err instanceof Error ? err.message : String(err))])
     }
