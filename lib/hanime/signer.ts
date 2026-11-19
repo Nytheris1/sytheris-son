@@ -102,6 +102,19 @@ async function buildSigner(): Promise<Signer> {
       listeners.set(ev, list)
     },
     removeEventListener: () => {},
+    dispatchEvent: (ev: { type?: string }) => {
+      const list = listeners.get(ev && ev.type ? ev.type : '') || []
+      for (const fn of list) {
+        try {
+          fn(ev)
+        } catch {
+          // dinleyici hatasi
+        }
+      }
+      return true
+    },
+    requestAnimationFrame: (fn: (t: number) => void) => setTimeout(() => fn(Date.now()), 0),
+    cancelAnimationFrame: (id: ReturnType<typeof setTimeout>) => clearTimeout(id),
     setTimeout,
     clearTimeout,
     setInterval,
@@ -127,6 +140,7 @@ async function buildSigner(): Promise<Signer> {
   win.window = win
   win.self = win
   win.globalThis = win
+  win.Event = win.CustomEvent
 
   const ctx = createContext(win, { name: 'hanime-signer' })
   try {
