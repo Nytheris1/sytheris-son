@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { motion } from 'motion/react'
 import { useState, useTransition } from 'react'
-import { Check, Clapperboard, Loader2, Sparkles } from 'lucide-react'
+import { Check, Clapperboard, Flame, Loader2, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
 import { setContentMode } from '@/app/actions/content-mode'
 import type { ContentMode } from '@/lib/content-mode-shared'
@@ -28,6 +28,15 @@ const OPTIONS: { id: ContentMode; title: string; accent: string; body: string; p
     image: '/modes/cinema.webp',
     icon: Clapperboard,
   },
+  {
+    id: 'hentai',
+    title: 'Hentai',
+    accent: 'modu',
+    body: 'Yetiskin anime katalogu. Ana sayfa 18+ basliklarla acilir, site geneli hentaiye doner.',
+    points: ['hanime.tv katalogu: trend, yeni, begenilenler', 'Kendi oynaticimiz, kalite secimi', 'Tur ve studyo filtreleri'],
+    image: '',
+    icon: Flame,
+  },
 ]
 
 export function ContentModePanel({ mode }: { mode: ContentMode }) {
@@ -46,14 +55,14 @@ export function ContentModePanel({ mode }: { mode: ContentMode }) {
         toast.error('Mod değiştirilemedi, tekrar dene.')
         return
       }
-      toast.success(next === 'film' ? 'Sinema modu açık — ana sayfa filmlerle yenilendi' : 'Anime moduna dönüldü')
+      toast.success(next === 'hentai' ? 'Hentai modu acik' : next === 'film' ? 'Sinema modu açık — ana sayfa filmlerle yenilendi' : 'Anime moduna dönüldü')
       router.refresh()
     })
   }
 
   return (
     <div className="flex flex-col gap-5">
-      <div role="radiogroup" aria-label="İçerik modu" className="grid gap-4 md:grid-cols-2">
+      <div role="radiogroup" aria-label="İçerik modu" className="grid gap-4 md:grid-cols-3">
         {OPTIONS.map((o) => {
           const on = current === o.id
           return (
@@ -73,7 +82,7 @@ export function ContentModePanel({ mode }: { mode: ContentMode }) {
                 <img src={o.image || '/placeholder.svg'} alt="" className={cn('absolute inset-0 size-full object-cover transition duration-1000 group-hover:scale-105', !on && 'grayscale-[0.6]')} />
                 <span className="absolute inset-0 bg-gradient-to-t from-scrim via-scrim/30 to-transparent" />
                 <span className="absolute left-5 top-5 flex items-center gap-2 rounded-full bg-scrim/60 px-3 py-1.5 text-xs font-medium text-on-scrim backdrop-blur">
-                  <o.icon className="size-3.5" /> {o.id === 'anime' ? 'Varsayılan' : 'Yeni'}
+                  <o.icon className="size-3.5" /> {o.id === 'anime' ? 'Varsayılan' : o.id === 'hentai' ? '18+' : 'Yeni'}
                 </span>
                 <span className={cn('absolute right-5 top-5 grid size-8 place-items-center rounded-full border-2 transition', on ? 'border-primary bg-primary text-primary-foreground' : 'border-on-scrim/50 bg-scrim/40 text-transparent')}>
                   {pending && on ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" strokeWidth={3} />}

@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { motion } from 'motion/react'
 import { useState, useTransition } from 'react'
-import { Clapperboard, Loader2, Sparkles } from 'lucide-react'
+import { Clapperboard, Flame, Loader2, Sparkles } from 'lucide-react'
 import { setContentMode } from '@/app/actions/content-mode'
 import type { ContentMode } from '@/lib/content-mode-shared'
 import { cn } from '@/lib/utils'
@@ -29,7 +29,7 @@ export function ModeSwitcher({ mode, className, size = 'md' }: { mode: ContentMo
   }
 
   return (
-    <div role="radiogroup" aria-label="İçerik modu" className={cn('relative grid grid-cols-2 gap-1 rounded-full border border-border bg-card p-1', className)}>
+    <div role="radiogroup" aria-label="İçerik modu" className={cn('relative grid grid-cols-3 gap-1 rounded-full border border-border bg-card p-1', className)}>
       {MODES.map((m) => {
         const on = current === m.id
         return (

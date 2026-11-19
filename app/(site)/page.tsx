@@ -13,9 +13,20 @@ import { getContentMode } from '@/lib/content-mode'
 import { FilmHome } from '@/components/film/film-home'
 import { ModeCrossover } from '@/components/home/mode-crossover'
 import { SyraSpotlight } from '@/components/home/syra-spotlight'
+import { HentaiHome } from '@/components/hentai/hentai-home'
 
 export default async function HomePage() {
   const mode = await getContentMode()
+  if (mode === 'hentai') {
+    return (
+      <>
+        <HentaiHome />
+        <div className="pb-10">
+          <ModeCrossover mode="hentai" />
+        </div>
+      </>
+    )
+  }
   if (mode === 'film') {
     return (
       <>
