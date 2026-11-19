@@ -1,7 +1,7 @@
 import 'server-only'
 import { createHmac, timingSafeEqual } from 'node:crypto'
 
-const SECRET = process.env.HANIME_RELAY_SECRET ?? 'sytheris-dev-relay'
+const SECRET = process.env.HANIME_RELAY_SECRET ?? 'degistir-bunu-uzun-bir-string'
 
 const mac = (url: string) => createHmac('sha256', SECRET).update(url).digest('base64url').slice(0, 22)
 
