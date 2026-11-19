@@ -46,7 +46,9 @@ function seconds(text: string) {
 /** Result blocks are thumb-block divs; links, posters and durations all live inside them. */
 function parse(html: string): PornVideo[] {
   const out: PornVideo[] = []
-  for (const chunk of html.split('class="thumb-block"').slice(1)) {
+  let chunks = html.split('thumb-block')
+  if (chunks.length < 2) chunks = html.split('thumb-link')
+  for (const chunk of chunks.slice(1)) {
     const link = chunk.match(/href="\/video-([a-z0-9]+)\/[^"]*"/i)
     if (!link) continue
     const img = chunk.match(/<img[^>]+src="([^"]+)"/i)
