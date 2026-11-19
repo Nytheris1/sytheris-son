@@ -20,7 +20,7 @@ export function PornPlayer({ id, title, poster }: { id: string; title: string; p
     setList(null)
     setError('')
     setPick(0)
-    fetch('/api/porn/sources?id=' + encodeURIComponent(id))
+    fetch('/api/porn/sources?t=' + encodeURIComponent(title))
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error('kaynak ' + r.status))))
       .then((j: { sources?: S[] }) => {
         if (!live) return
@@ -33,7 +33,7 @@ export function PornPlayer({ id, title, poster }: { id: string; title: string; p
     return () => {
       live = false
     }
-  }, [id])
+  }, [id, title])
 
   if (error) {
     return (

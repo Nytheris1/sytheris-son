@@ -67,7 +67,7 @@ export default async function PornoPage({ searchParams }: { searchParams: SP }) 
         {items.length > 0 ? (
           <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6">
             {items.map((v) => (
-              <Link key={v.id} href={'/porno/' + v.id} className="group flex flex-col gap-2.5">
+              <Link key={v.id} href={'/porno/' + v.id + '?t=' + encodeURIComponent(v.title)} className="group flex flex-col gap-2.5">
                 <div className="relative aspect-video overflow-hidden rounded-xl border border-white/10 bg-white/[0.03]">
                   {v.thumb ? (
                     // eslint-disable-next-line @next/next/no-img-element
