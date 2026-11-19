@@ -23,7 +23,13 @@ export function FilmSynopsis({ original, translated, kind = 'film' }: { original
           </div>
         )}
       </div>
-      {text ? <p className="text-pretty text-lg leading-relaxed text-foreground/85">{text}</p> : <p className="text-muted-foreground">Bu {kind} için özet bulunmuyor.</p>}
+      {text ? (
+        <p className="text-pretty text-lg leading-relaxed text-foreground/85 first-letter:float-left first-letter:mr-3 first-letter:mt-1 first-letter:font-serif first-letter:text-7xl first-letter:italic first-letter:leading-[0.8] first-letter:text-primary">
+          {text}
+        </p>
+      ) : (
+        <p className="text-muted-foreground">Bu {kind} için özet bulunmuyor.</p>
+      )}
       {lang === 'tr' && translated && <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Otomatik çeviri</p>}
     </div>
   )

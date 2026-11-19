@@ -194,6 +194,111 @@ export const getFilm = cache(async (id: string): Promise<FilmDetail | null> => {
   }
 })
 
+function fromLookup(r: LookupResult): Film | null {
+  if (!r.artworkUrl100 || EXCLUDED_GENRES.has(r.primaryGenreName)) return null
+  return {
+    id: String(r.trackId),
+    title: r.trackName,
+    director: r.artistName,
+    genre: r.primaryGenreName,
+    genreTr: GENRE_TR[r.primaryGenreName] ?? r.primaryGenreName,
+    year: r.releaseDate ? new Date(r.releaseDate).getFullYear() : null,
+    release: r.releaseDate ?? null,
+    summary: r.longDescription || r.shortDescription || '',
+    poster: sized(r.artworkUrl100, 400, 600),
+    posterLg: sized(r.artworkUrl100, 1000, 1500),
+    trailer: r.previewUrl ?? null,
+    rights: null,
+  }
+}
+
+const fold = (s: string) =>
+  s
+    .toLocaleLowerCase('tr')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/ı/g, 'i')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+
+async function itunesSearch(term: string): Promise<Film[]> {
+  try {
+    const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(term)}&media=movie&entity=movie&country=tr&limit=40`, { next: { revalidate: 3600 } })
+    if (!res.ok) return []
+    const json = (await res.json()) as { results?: LookupResult[] }
+    return (json.results ?? []).map(fromLookup).filter((f): f is Film => Boolean(f))
+  } catch {
+    return []
+  }
+}
+
+/** Fallback when the iTunes search endpoint returns nothing: Wikidata films carrying an iTunes ID (P6398), resolved via the TR lookup. */
+async function wikidataSearch(term: string): Promise<Film[]> {
+  try {
+    const headers = { 'User-Agent': 'SyraCinema/1.0 (cinema mode)', Accept: 'application/json' }
+    const s = await fetch(`https://www.wikidata.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(`${term} haswbstatement:P6398`)}&srlimit=20&format=json`, { headers, next: { revalidate: 86400 } })
+    const ids = (((await s.json()) as { query?: { search?: { title: string }[] } }).query?.search ?? []).map((x) => x.title).filter((t) => /^Q\d+$/.test(t))
+    if (!ids.length) return []
+    const query = `SELECT ?f ?it WHERE { VALUES ?f { ${ids.map((i) => `wd:${i}`).join(' ')} } ?f wdt:P6398 ?it . }`
+    const sp = await fetch(`https://query.wikidata.org/sparql?format=json&query=${encodeURIComponent(query)}`, { headers, next: { revalidate: 86400 } })
+    const rows = (((await sp.json()) as { results?: { bindings?: { f: { value: string }; it: { value: string } }[] } }).results?.bindings ?? [])
+    const order = new Map(ids.map((id, i) => [id, i]))
+    const byFilm = new Map<string, string[]>()
+    for (const r of rows) {
+      const q = r.f.value.split('/').pop()!
+      if (/^\d{3,14}$/.test(r.it.value)) byFilm.set(q, [...(byFilm.get(q) ?? []), r.it.value])
+    }
+    const itunesIds = [...byFilm.values()].flat().slice(0, 150)
+    if (!itunesIds.length) return []
+    const res = await fetch(`https://itunes.apple.com/lookup?id=${itunesIds.join(',')}&country=tr`, { next: { revalidate: 21600 } })
+    const found = new Map(((((await res.json()) as { results?: LookupResult[] }).results ?? [])).map((r) => [String(r.trackId), r]))
+    const out: { film: Film; rank: number }[] = []
+    for (const [q, its] of byFilm) {
+      const hit = its.map((i) => found.get(i)).find(Boolean)
+      const film = hit ? fromLookup(hit) : null
+      if (film) out.push({ film, rank: order.get(q) ?? 99 })
+    }
+    return out.sort((a, b) => a.rank - b.rank).map((x) => x.film)
+  } catch {
+    return []
+  }
+}
+
+/** Film search across the catalogue we already show, the iTunes TR store, and a Wikidata-backed fallback. */
+export const searchFilms = cache(async (q: string): Promise<Film[]> => {
+  const term = q.trim().slice(0, 80)
+  if (term.length < 2) return []
+  const needle = fold(term)
+  const [home, store] = await Promise.all([getFilmHome(), itunesSearch(term)])
+  const local = Object.values(home)
+    .flat()
+    .filter((f) => fold(f.title).includes(needle) || fold(f.director).includes(needle))
+  const remote = store.length ? store : await wikidataSearch(term)
+  const seen = new Set<string>()
+  return [...local, ...remote].filter((f) => {
+    if (seen.has(f.id)) return false
+    seen.add(f.id)
+    return true
+  }).slice(0, 48)
+})
+
+/** Other films by the same director, matched against the iTunes artist credit. */
+export const getFilmsByDirector = cache(async (director: string, excludeId: string): Promise<Film[]> => {
+  const name = director.split(/,|&/)[0]?.trim()
+  if (!name || name.length < 3) return []
+  const needle = fold(name)
+  const [home, store, wiki] = await Promise.all([getFilmHome(), itunesSearch(name), wikidataSearch(name)])
+  const seen = new Set<string>([excludeId])
+  return [...Object.values(home).flat(), ...store, ...wiki]
+    .filter((f) => {
+      if (seen.has(f.id) || !fold(f.director).includes(needle)) return false
+      seen.add(f.id)
+      return true
+    })
+    .sort((a, b) => (b.year ?? 0) - (a.year ?? 0))
+    .slice(0, 18)
+})
+
 export function genreIdFor(genre: string): FilmGenreId | null {
   const map: Record<string, FilmGenreId> = {
     'Action & Adventure': 'aksiyon',

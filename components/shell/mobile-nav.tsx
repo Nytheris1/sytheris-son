@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion } from 'motion/react'
-import { CalendarDays, Clapperboard, Compass, Dices, Ghost, Home, LibraryBig, Tv } from 'lucide-react'
+import { CalendarDays, Clapperboard, Compass, Dices, Home, LibraryBig, Search, Tv } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { ContentMode } from '@/lib/content-mode-shared'
 import { isActive } from './site-header'
@@ -21,7 +21,7 @@ const FILM_ITEMS = [
   { href: '/filmler', label: 'Filmler', icon: Clapperboard },
   { href: '/rastgele', label: 'Rastgele', icon: Dices, center: true },
   { href: '/diziler', label: 'Diziler', icon: Tv },
-  { href: '/korku', label: 'Korku', icon: Ghost },
+  { href: '/sinema-ara', label: 'Ara', icon: Search },
 ]
 
 export function MobileNav({ mode = 'anime' }: { mode?: ContentMode }) {

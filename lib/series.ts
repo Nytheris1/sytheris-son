@@ -79,7 +79,7 @@ export type Series = {
 }
 
 export type SeriesSeason = { number: number; episodes: number | null; premiere: string | null; end: string | null; image: string | null }
-export type SeriesCast = { name: string; character: string; image: string | null }
+export type SeriesCast = { personId: number; name: string; character: string; image: string | null; personImage: string | null }
 
 export type SeriesDetail = Series & {
   summaryTr: string | null
@@ -111,7 +111,7 @@ type RawShow = {
   summary: string | null
   _embedded?: {
     seasons?: { number: number; episodeOrder: number | null; premiereDate: string | null; endDate: string | null; image?: { medium: string } | null }[]
-    cast?: { person: { name: string; image?: { medium: string } | null }; character: { name: string; image?: { medium: string } | null } }[]
+    cast?: { person: { id: number; name: string; image?: { medium: string; original?: string } | null }; character: { name: string; image?: { medium: string } | null } }[]
     images?: { type: string; main?: boolean; resolutions: { original: { url: string; width?: number } } }[]
   }
 }
@@ -151,6 +151,20 @@ function fromRaw(s: RawShow): Series | null {
     weight: s.weight,
   }
 }
+
+/** Full-catalogue series search (TVmaze), anime and animation excluded like the rest of the mode. */
+export const searchSeries = cache(async (q: string): Promise<Series[]> => {
+  const term = q.trim().slice(0, 80)
+  if (term.length < 2) return []
+  try {
+    const res = await fetch(`https://api.tvmaze.com/search/shows?q=${encodeURIComponent(term)}`, { next: { revalidate: 3600 } })
+    if (!res.ok) return []
+    const hits = (await res.json()) as { show: RawShow }[]
+    return hits.map((h) => fromRaw(h.show)).filter((s): s is Series => Boolean(s))
+  } catch {
+    return []
+  }
+})
 
 async function page(n: number): Promise<RawShow[]> {
   try {
@@ -213,7 +227,13 @@ export const getSeries = cache(async (id: string): Promise<SeriesDetail | null> 
       officialSite: raw.officialSite,
       schedule: raw.schedule?.days.length ? raw.schedule : null,
       seasons: (raw._embedded?.seasons ?? []).map((s) => ({ number: s.number, episodes: s.episodeOrder, premiere: s.premiereDate, end: s.endDate, image: s.image?.medium ?? null })),
-      cast: (raw._embedded?.cast ?? []).slice(0, 12).map((c) => ({ name: c.person.name, character: c.character.name, image: c.character.image?.medium ?? c.person.image?.medium ?? null })),
+      cast: (raw._embedded?.cast ?? []).slice(0, 18).map((c) => ({
+        personId: c.person.id,
+        name: c.person.name,
+        character: c.character.name,
+        image: c.character.image?.medium ?? c.person.image?.medium ?? null,
+        personImage: c.person.image?.original ?? c.person.image?.medium ?? null,
+      })),
     }
   } catch {
     return null

@@ -21,6 +21,7 @@ export const NAV: { href: string; label: string; plus?: boolean }[] = [
 ]
 
 export const FILM_NAV: { href: string; label: string; plus?: boolean }[] = [
+  { href: '/sinema-ara', label: 'Ara' },
   { href: '/filmler', label: 'Filmler' },
   { href: '/diziler', label: 'Diziler' },
   { href: '/rastgele', label: 'Rastgele' },

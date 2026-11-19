@@ -129,13 +129,15 @@ export function SeriesSpotlight({ items }: { items: SeriesDetail[] }) {
                 <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/55">Başroller</p>
                 <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-2">
                   {s.cast.slice(0, 4).map((c) => (
-                    <li key={`${c.name}-${c.character}`} className="flex items-center gap-2.5 rounded-2xl bg-foreground/[0.06] p-2 backdrop-blur">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={c.image || '/placeholder.svg'} alt="" loading="lazy" className="size-10 shrink-0 rounded-xl object-cover object-top" />
-                      <span className="flex min-w-0 flex-col">
-                        <span className="truncate text-xs font-semibold">{c.name}</span>
-                        <span className="truncate text-[11px] text-foreground/60">{c.character}</span>
-                      </span>
+                    <li key={`${c.name}-${c.character}`}>
+                      <Link href={`/oyuncu/tv-${c.personId}`} className="flex items-center gap-2.5 rounded-2xl bg-foreground/[0.06] p-2 backdrop-blur transition hover:bg-foreground/[0.12]">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={c.image || '/placeholder.svg'} alt="" loading="lazy" className="size-10 shrink-0 rounded-xl object-cover object-top" />
+                        <span className="flex min-w-0 flex-col">
+                          <span className="truncate text-xs font-semibold">{c.name}</span>
+                          <span className="truncate text-[11px] text-foreground/60">{c.character}</span>
+                        </span>
+                      </Link>
                     </li>
                   ))}
                 </ul>

@@ -87,3 +87,76 @@
 .cine .group:hover .top10-slice-numeral {
   -webkit-text-stroke-color: var(--primary);
 }
+
+/* Dressing-room mirror: vertical bulb rails for the actor portrait */
+.cine-bulbs-y {
+  background-image: radial-gradient(circle, var(--primary) 0 2.5px, color-mix(in oklch, var(--primary) 30%, transparent) 3.5px, transparent 5.5px);
+  background-size: 12px 26px;
+  background-repeat: repeat-y;
+  background-position: center;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .cine-bulbs-y {
+    animation: cine-glow 3.2s ease-in-out infinite alternate;
+  }
+}
+@keyframes cine-glow {
+  from {
+    opacity: 0.75;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Outlined giant numerals (season numbers, chapter marks) */
+.cine-numeral {
+  color: transparent;
+  -webkit-text-stroke: 1.5px color-mix(in oklch, var(--foreground) 22%, transparent);
+  transition: -webkit-text-stroke-color 0.4s;
+}
+.group:hover .cine-numeral {
+  -webkit-text-stroke-color: var(--primary);
+}
+
+/* Portraits develop from silver gelatin to colour on hover */
+.cine-portrait {
+  filter: grayscale(1) contrast(1.05) brightness(0.92);
+  transition:
+    filter 0.7s cubic-bezier(0.2, 0.8, 0.2, 1),
+    scale 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.group:hover .cine-portrait,
+.group:focus-visible .cine-portrait {
+  filter: none;
+  scale: 1.04;
+}
+
+/* End-credits sheet: perforated film rails top and bottom */
+.cine-perf {
+  --hole: color-mix(in oklch, var(--foreground) 14%, transparent);
+  background-image:
+    repeating-linear-gradient(90deg, var(--hole) 0 10px, transparent 10px 22px),
+    repeating-linear-gradient(90deg, var(--hole) 0 10px, transparent 10px 22px);
+  background-size: 100% 6px, 100% 6px;
+  background-position: 6px 10px, 6px calc(100% - 10px);
+  background-repeat: no-repeat;
+}
+
+/* Lit marquee sign — the ticker under the cinema hero */
+.cine-marquee {
+  background:
+    linear-gradient(180deg, color-mix(in oklch, var(--primary) 10%, var(--scrim)), var(--scrim));
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklch, var(--primary) 35%, transparent),
+    inset 0 -1px 0 color-mix(in oklch, var(--primary) 35%, transparent);
+}
+.cine-marquee-text {
+  color: var(--primary);
+  text-shadow: 0 0 18px color-mix(in oklch, var(--primary) 55%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .cine .sy-marquee-x {
+    animation: none;
+  }
+}

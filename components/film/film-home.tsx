@@ -6,6 +6,8 @@ import { translate } from '@/lib/translate'
 import { HorrorTeaser } from '@/components/home/horror-teaser'
 import { SeriesRow } from '@/components/series/series-card'
 import { SeriesSpotlight } from '@/components/series/series-spotlight'
+import { CinemaMarquee } from './cinema-marquee'
+import { StarFaces } from './star-faces'
 import { FilmRow } from './film-card'
 import { FilmGenres } from './film-genres'
 import { FilmHero } from './film-hero'
@@ -63,9 +65,13 @@ export async function FilmHome() {
 
   return (
     <div className="cine dark flex flex-col gap-20 pb-24 sm:gap-24">
-      <FilmHero items={slides} />
+      <div className="flex flex-col">
+        <FilmHero items={slides} />
+        <CinemaMarquee items={data.top.slice(5)} />
+      </div>
       <FilmTopTen items={data.top} />
       <SeriesSpotlight items={spotlight} />
+      <StarFaces series={spotlight} />
       <FilmRow eyebrow="Aksiyon & Macera" title="Nabzı" accent="yükseltenler" href="/filmler?tur=aksiyon" items={data.action} />
       <SeriesRow eyebrow="Diziler · Popüler" title="Herkesin" accent="izlediği diziler" href="/diziler" items={series.popular.slice(4)} />
       <FilmRow eyebrow="Bilim Kurgu & Fantastik" title="Başka" accent="dünyalar" href="/filmler?tur=bilimkurgu" items={data.scifi} />
