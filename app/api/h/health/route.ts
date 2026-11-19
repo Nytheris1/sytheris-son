@@ -1,5 +1,5 @@
 import { getSigner, getCsrf, getSources } from '@/lib/hanime/signer'
-import { proxyUrl, UPSTREAM_HEADERS } from '@/lib/hanime/relay'
+import { proxyUrl, UPSTREAM_HEADERS, relayUrl, decodeRelay } from '@/lib/hanime/relay'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -46,6 +46,9 @@ export async function GET() {
     const keyUri = /URI="([^"]+)"/.exec(text)?.[1]
     const segLine = lines.find((l) => !l.startsWith('#'))
     out.chain = { playlist: pl.status, ctype: pl.headers.get('content-type'), lines: lines.length }
+    const rl = relayUrl(abs)
+    const u2 = new URL('https://x' + rl).searchParams.get('u') || ''
+    out.relay = { src: abs.slice(0, 70), len: u2.length, back: String(decodeRelay(u2)).slice(0, 70) }
 
     if (keyUri) {
       const keyAbs = new URL(keyUri, abs).toString()
