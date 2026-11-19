@@ -75,7 +75,7 @@ export async function resolveSources(id: string): Promise<PornSource[]> {
   if (!page.ok) throw new Error('embed ' + page.status)
   const html = await page.text()
   const hash = (html.match(/hash[^0-9a-f]{0,14}([0-9a-f]{32})/) || [])[1]
-  if (!hash) throw new Error('hash yok')
+  if (!hash) throw new Error('hash yok | ' + page.status + ' | ' + html.length + ' | ' + html.replace(/\s+/g, ' ').slice(0, 220))
 
   const q = new URLSearchParams({
     hash,
