@@ -5,6 +5,21 @@ const UA =
 const enc = new TextEncoder()
 const dec = new TextDecoder()
 
+const ALLOWED = [
+  /^([a-z0-9-]+\.)*hanime\.tv$/,
+  /^([a-z0-9-]+\.)*htv-services\.com$/,
+  /^([a-z0-9-]+\.)*htv-tsukuyomi\.com$/,
+  /^([a-z0-9-]+\.)*hanime-cdn\.com$/,
+]
+const allowedUrl = (t) => {
+  try {
+    const x = new URL(t)
+    return x.protocol === 'https:' && ALLOWED.some((r) => r.test(x.hostname))
+  } catch {
+    return false
+  }
+}
+
 const b64u = (buf) => {
   const b = new Uint8Array(buf)
   let s = ''
@@ -246,7 +261,7 @@ async function handle(req) {
       } catch {
         return new Response('u', { status: 400, headers: cors })
       }
-      if ((await hmac(target)) !== s) return new Response('imza', { status: 400, headers: cors })
+      if (!allowedUrl(target)) return new Response('host', { status: 400, headers: cors })
 
       const range = req.headers.get('range')
       const headers = { 'User-Agent': UA, Referer: ORIGIN + '/', Origin: ORIGIN }
@@ -292,7 +307,7 @@ async function handle(req) {
       } catch {
         return new Response('u', { status: 400, headers: cors })
       }
-      if ((await hmac(target)) !== s) return new Response('imza', { status: 400, headers: cors })
+      if (!allowedUrl(target)) return new Response('host', { status: 400, headers: cors })
 
       const skip = ['host','cf-connecting-ip','cf-ray','cf-ipcountry','cf-visitor','x-forwarded-proto','x-forwarded-for','accept-encoding','connection']
       const fwd = new Headers()
