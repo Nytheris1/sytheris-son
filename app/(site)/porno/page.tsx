@@ -17,6 +17,9 @@ const clock = (s: number) => {
   return h ? h + ':' + pad(m) + ':' + pad(sec) : m + ':' + pad(sec)
 }
 
+const thumbUrl = (u: string) =>
+  u ? '/api/porn/thumb?u=' + Buffer.from(u).toString('base64url') : ''
+
 const compact = (n: number) => (n >= 1_000_000 ? (n / 1_000_000).toFixed(1) + 'M' : n >= 1000 ? (n / 1000).toFixed(1) + 'B' : String(n))
 
 export default async function PornoPage({ searchParams }: { searchParams: SP }) {
@@ -69,7 +72,7 @@ export default async function PornoPage({ searchParams }: { searchParams: SP }) 
                   {v.thumb ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={v.thumb}
+                      src={thumbUrl(v.thumb)}
                       alt={v.title}
                       loading="lazy"
                       referrerPolicy="no-referrer"

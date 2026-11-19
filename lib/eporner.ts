@@ -2,12 +2,32 @@ import 'server-only'
 
 const API = 'https://www.eporner.com/api/v2/video/search/'
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
+const REFERER = 'https://www.eporner.com/'
 
 export type PornVideo = { id: string; title: string; thumb: string; duration: number; views: number }
+export type PornSource = { label: string; url: string }
 
 type Raw = Record<string, unknown>
 const str = (v: unknown) => (typeof v === 'string' ? v : '')
 const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : 0)
+
+/** default_thumb is an object ({ size, width, height, src }); thumbs is an array of the same shape. */
+function thumbOf(raw: Raw): string {
+  const direct = raw.default_thumb
+  if (direct && typeof direct === 'object') {
+    const s = (direct as Raw).src
+    if (typeof s === 'string' && s) return s
+  }
+  if (typeof direct === 'string' && direct) return direct
+  const list = raw.thumbs
+  if (Array.isArray(list)) {
+    for (const t of list) {
+      const s = t && typeof t === 'object' ? (t as Raw).src : null
+      if (typeof s === 'string' && s) return s
+    }
+  }
+  return ''
+}
 
 function normalize(raw: Raw): PornVideo | null {
   const id = str(raw.id)
@@ -15,7 +35,7 @@ function normalize(raw: Raw): PornVideo | null {
   return {
     id,
     title: str(raw.title) || id,
-    thumb: str(raw.default_thumb) || str(raw.thumb),
+    thumb: thumbOf(raw),
     duration: num(raw.length_min) * 60 + num(raw.length_sec),
     views: num(raw.views),
   }
@@ -39,4 +59,48 @@ export async function searchPorn(q: string, page = 1) {
 
 export function embedUrl(id: string) {
   return 'https://www.eporner.com/embed/' + id + '/'
+}
+
+/**
+ * Direct mp4/hls sources for the in-house player. The embed page carries a one-shot 32-hex hash that the
+ * xhr endpoint requires; without it the JSON comes back empty. Quality keys look like "1080p".
+ */
+export async function resolveSources(id: string): Promise<PornSource[]> {
+  if (!/^[A-Za-z0-9]+$/.test(id)) return []
+  const embed = embedUrl(id)
+  const page = await fetch(embed, {
+    headers: { 'User-Agent': UA, Referer: REFERER, Accept: 'text/html,application/xhtml+xml' },
+    cache: 'no-store',
+  })
+  if (!page.ok) throw new Error('embed ' + page.status)
+  const html = await page.text()
+  const hash = (html.match(/hash[^0-9a-f]{0,14}([0-9a-f]{32})/) || [])[1]
+  if (!hash) throw new Error('hash yok')
+
+  const q = new URLSearchParams({
+    hash,
+    device: 'generic',
+    domain: 'www.eporner.com',
+    fallback: 'false',
+    embed: 'true',
+    supported: 'true',
+  })
+  const res = await fetch('https://www.eporner.com/xhr/video/' + id + '?' + q.toString(), {
+    headers: { 'User-Agent': UA, Referer: embed, Origin: 'https://www.eporner.com', Accept: 'application/json' },
+    cache: 'no-store',
+  })
+  if (!res.ok) throw new Error('xhr ' + res.status)
+  const json = (await res.json()) as { sources?: Record<string, Record<string, { src?: string }>> }
+
+  const out: PornSource[] = []
+  for (const group of ['mp4', 'hls']) {
+    const bucket = json.sources?.[group]
+    if (!bucket) continue
+    for (const [label, v] of Object.entries(bucket)) {
+      const src = v && typeof v.src === 'string' ? v.src : ''
+      if (src) out.push({ label: group === 'hls' ? 'hls' : label, url: src })
+    }
+  }
+  out.sort((a, b) => (parseInt(b.label) || 0) - (parseInt(a.label) || 0))
+  return out
 }
