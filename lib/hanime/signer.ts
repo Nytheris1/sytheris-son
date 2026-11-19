@@ -7,6 +7,28 @@ const UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
 const VENDOR_RE = /https:\/\/hanime-cdn\.com\/js\/vendor\.[0-9a-f]+\.min\.js/
 
+const BROWSER_HEADERS: Record<string, string> = {
+  'User-Agent': UA,
+  Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+  'Accept-Language': 'en-US,en;q=0.9',
+  'sec-ch-ua': '"Chromium";v="131", "Not_A Brand";v="24"',
+  'sec-ch-ua-mobile': '?0',
+  'sec-ch-ua-platform': '"Windows"',
+  'sec-fetch-dest': 'document',
+  'sec-fetch-mode': 'navigate',
+  'sec-fetch-site': 'none',
+  'upgrade-insecure-requests': '1',
+}
+
+const SCRIPT_HEADERS: Record<string, string> = {
+  ...BROWSER_HEADERS,
+  Accept: '*/*',
+  Referer: ORIGIN + '/',
+  'sec-fetch-dest': 'script',
+  'sec-fetch-mode': 'no-cors',
+  'sec-fetch-site': 'cross-site',
+}
+
 type Signer = { sign: () => { signature: string; time: string } }
 
 let signer: Signer | null = null
@@ -16,21 +38,44 @@ const b64u = (b: Buffer) => b.toString('base64').replace(/\+/g, '-').replace(/\/
 const unb64u = (s: string) => Buffer.from(s.replace(/-/g, '+').replace(/_/g, '/'), 'base64')
 
 async function buildSigner(): Promise<Signer> {
-  let html = ''
-  let status = 0
-  for (const path of ['/', '/browse/trending', '/search']) {
-    const res = await fetch(ORIGIN + path, { headers: { 'User-Agent': UA, Accept: 'text/html' } })
-    status = res.status
-    html = await res.text()
-    if (html.length > 5000 && /vendor\.[a-z0-9]+\.min\.js/i.test(html)) break
-  }
-  const found =
-    html.match(/https:\/\/hanime-cdn\.com\/js\/vendor\.[a-z0-9]+\.min\.js/i) ||
-    html.match(/\/js\/vendor\.[a-z0-9]+\.min\.js/i)
-  if (!found) throw new Error('vendor script bulunamadi (status ' + status + ', uzunluk ' + html.length + ')')
-  const vendorUrl = new URL(found[0], ORIGIN).toString()
+  const known = [
+    process.env.HANIME_VENDOR_URL || '',
+    'https://hanime-cdn.com/js/vendor.6cb274d12de4872d245a5bc7781bdc5e.min.js',
+  ].filter(Boolean)
 
-  const code = await (await fetch(vendorUrl, { headers: { 'User-Agent': UA, Referer: ORIGIN + '/' } })).text()
+  let code = ''
+  for (const url of known) {
+    try {
+      const res = await fetch(url, { headers: SCRIPT_HEADERS })
+      if (!res.ok) continue
+      const text = await res.text()
+      if (text.length > 100_000) {
+        code = text
+        break
+      }
+    } catch {
+      // sonraki adaya gec
+    }
+  }
+
+  if (!code) {
+    let html = ''
+    let status = 0
+    for (const path of ['/', '/browse/trending', '/search']) {
+      const res = await fetch(ORIGIN + path, { headers: BROWSER_HEADERS })
+      status = res.status
+      html = await res.text()
+      if (html.length > 5000 && /vendor\.[a-z0-9]+\.min\.js/i.test(html)) break
+    }
+    const found =
+      html.match(/https:\/\/hanime-cdn\.com\/js\/vendor\.[a-z0-9]+\.min\.js/i) ||
+      html.match(/\/js\/vendor\.[a-z0-9]+\.min\.js/i)
+    if (!found) throw new Error('vendor script bulunamadi (status ' + status + ', uzunluk ' + html.length + ')')
+    const url = new URL(found[0], ORIGIN).toString()
+    const res = await fetch(url, { headers: SCRIPT_HEADERS })
+    if (!res.ok) throw new Error('vendor indirilemedi ' + res.status)
+    code = await res.text()
+  }
 
   const listeners = new Map<string, ((e: unknown) => void)[]>()
   const win: Record<string, unknown> = {

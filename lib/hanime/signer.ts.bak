@@ -16,10 +16,19 @@ const b64u = (b: Buffer) => b.toString('base64').replace(/\+/g, '-').replace(/\/
 const unb64u = (s: string) => Buffer.from(s.replace(/-/g, '+').replace(/_/g, '/'), 'base64')
 
 async function buildSigner(): Promise<Signer> {
-  const page = await fetch(ORIGIN + '/', { headers: { 'User-Agent': UA } })
-  const html = await page.text()
-  const vendorUrl = html.match(VENDOR_RE)?.[0]
-  if (!vendorUrl) throw new Error('vendor script bulunamadı')
+  let html = ''
+  let status = 0
+  for (const path of ['/', '/browse/trending', '/search']) {
+    const res = await fetch(ORIGIN + path, { headers: { 'User-Agent': UA, Accept: 'text/html' } })
+    status = res.status
+    html = await res.text()
+    if (html.length > 5000 && /vendor\.[a-z0-9]+\.min\.js/i.test(html)) break
+  }
+  const found =
+    html.match(/https:\/\/hanime-cdn\.com\/js\/vendor\.[a-z0-9]+\.min\.js/i) ||
+    html.match(/\/js\/vendor\.[a-z0-9]+\.min\.js/i)
+  if (!found) throw new Error('vendor script bulunamadi (status ' + status + ', uzunluk ' + html.length + ')')
+  const vendorUrl = new URL(found[0], ORIGIN).toString()
 
   const code = await (await fetch(vendorUrl, { headers: { 'User-Agent': UA, Referer: ORIGIN + '/' } })).text()
 
