@@ -1,37 +1,27 @@
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
-export const maxDuration = 30
 
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
 
-const scan = async (label: string, url: string) => {
-  try {
-    const r = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'text/html,application/json,*/*', 'Accept-Language': 'tr,en;q=0.9' }, cache: 'no-store' })
-    const b = await r.text()
-    return {
-      label,
-      status: r.status,
-      len: b.length,
-      tr: /türkçe|turkish|"tr"|>TR</i.test(b),
-      snippet: b.replace(/\s+/g, ' ').slice(0, 120),
-    }
-  } catch (e) {
-    return { label, error: e instanceof Error ? e.message : 'hata' }
-  }
-}
-
 export async function GET() {
-  const out = []
+  const out: Record<string, unknown> = {}
   for (const [label, url] of [
-    ['zoko', 'https://zokoanime.video/stream/anilist/16498/1/sub'],
-    ['animeembed', 'https://animeembed.com/embed/anilist/16498/1?track=sub'],
-    ['tryembed', 'https://tryembed.us.cc/embed/anime/16498/1/sub'],
-    ['vidrift', 'https://vidrift.net/embed/anilist/16498/1'],
-    ['turkanime', 'https://www.turkanime.tv/'],
-    ['animecix', 'https://animecix.tv/'],
-    ['openani', 'https://openani.me/'],
+    ['embed', 'https://animeembed.com/embed/anilist/16498/1?track=sub'],
+    ['embed-tr', 'https://animeembed.com/embed/anilist/16498/1?track=sub&lang=tr'],
+    ['try', 'https://tryembed.us.cc/embed/anime/16498/1/sub'],
   ] as [string, string][]) {
-    out.push(await scan(label, url))
+    try {
+      const r = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'text/html' }, cache: 'no-store' })
+      const b = await r.text()
+      out[label] = {
+        status: r.status,
+        len: b.length,
+        turkish: /türkçe|turkish|"tr"|lang=tr|subtitle.*tr/i.test(b),
+        langs: [...new Set([...b.matchAll(/\b(tr|en|de|fr|es|ar|ru|pt|it)\b/g)].map((m) => m[1]))].slice(0, 10),
+      }
+    } catch (e) {
+      out[label] = { error: e instanceof Error ? e.message : 'hata' }
+    }
   }
   return Response.json(out)
 }
