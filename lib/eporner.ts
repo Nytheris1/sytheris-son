@@ -95,7 +95,26 @@ export async function resolveSources(id: string): Promise<PornSource[]> {
     if (!html) html = body
   }
 
-  if (!hash) throw new Error('hash yok | ' + report.join(' ') + ' | ' + html.replace(/\s+/g, ' ').slice(0, 900))
+  if (!hash) {
+    const probe = async (label: string, target: string) => {
+      try {
+        const r = await fetch(viaWorker(target), {
+          headers: { 'User-Agent': UA, Referer: REFERER, Origin: 'https://www.eporner.com', Accept: 'application/json' },
+          cache: 'no-store',
+        })
+        const b = await r.text()
+        const h = (b.match(/[0-9a-f]{32}/) || [])[0] || ''
+        return label + '=' + r.status + '/' + b.length + '/' + (h ? 'HEX:' + h.slice(0, 8) : 'yok')
+      } catch (e) {
+        return label + '=hata'
+      }
+    }
+    const probes = await Promise.all([
+      probe('nohash', 'https://www.eporner.com/xhr/video/' + id + '?domain=www.eporner.com&fallback=false&embed=true&supported=true'),
+      probe('apidetail', 'https://www.eporner.com/api/v2/video/id/?id=' + id + '&format=json'),
+    ])
+    throw new Error('hash yok | ' + report.join(' ') + ' | ' + probes.join(' '))
+  }
 
   const q = new URLSearchParams({
     hash,
