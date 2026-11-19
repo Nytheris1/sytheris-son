@@ -7,8 +7,8 @@ import { cn } from '@/lib/utils'
 
 type S = { label: string; url: string }
 
-const relay = (url: string, referer: string) =>
-  '/api/proxy?url=' + encodeURIComponent(url) + '&referer=' + encodeURIComponent(referer)
+const relay = (url: string) =>
+  '/api/proxy?url=' + encodeURIComponent(url) + '&referer=' + encodeURIComponent('https://www.xnxx.com/')
 
 export function PornPlayer({ id, title, poster }: { id: string; title: string; poster?: string | null }) {
   const [list, setList] = useState<S[] | null>(null)
@@ -20,7 +20,7 @@ export function PornPlayer({ id, title, poster }: { id: string; title: string; p
     setList(null)
     setError('')
     setPick(0)
-    fetch('/api/porn/sources?t=' + encodeURIComponent(title))
+    fetch('/api/porn/sources?id=' + encodeURIComponent(id))
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error('kaynak ' + r.status))))
       .then((j: { sources?: S[] }) => {
         if (!live) return
@@ -33,14 +33,14 @@ export function PornPlayer({ id, title, poster }: { id: string; title: string; p
     return () => {
       live = false
     }
-  }, [id, title])
+  }, [id])
 
   if (error) {
     return (
       <div className="flex flex-col gap-3">
         <div className="relative aspect-video overflow-hidden rounded-3xl border border-white/10 bg-black">
           <iframe
-            src={'https://www.eporner.com/embed/' + id + '/'}
+            src={'https://www.xnxx.com/embedframe/' + id}
             title={title}
             className="absolute inset-0 size-full"
             allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
@@ -66,7 +66,7 @@ export function PornPlayer({ id, title, poster }: { id: string; title: string; p
     <div className="flex flex-col gap-3">
       <VideoPlayer
         key={active.url}
-        src={relay(active.url, 'https://www.eporner.com/')}
+        src={relay(active.url)}
         subtitleLang="tr"
         title={title}
         episodeLabel=""

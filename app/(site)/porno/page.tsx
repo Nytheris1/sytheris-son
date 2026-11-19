@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowLeft, ArrowRight, Clock, Search } from 'lucide-react'
-import { searchPorn } from '@/lib/eporner'
+import { searchPorn } from '@/lib/xnxx'
 
 export const metadata: Metadata = { title: 'Pornolar', robots: { index: false, follow: false } }
 export const dynamic = 'force-dynamic'
@@ -17,10 +17,7 @@ const clock = (s: number) => {
   return h ? h + ':' + pad(m) + ':' + pad(sec) : m + ':' + pad(sec)
 }
 
-const thumbUrl = (u: string) =>
-  u ? '/api/porn/thumb?u=' + Buffer.from(u).toString('base64url') : ''
-
-const compact = (n: number) => (n >= 1_000_000 ? (n / 1_000_000).toFixed(1) + 'M' : n >= 1000 ? (n / 1000).toFixed(1) + 'B' : String(n))
+const thumbUrl = (u: string) => (u ? '/api/porn/thumb?u=' + Buffer.from(u).toString('base64url') : '')
 
 export default async function PornoPage({ searchParams }: { searchParams: SP }) {
   const sp = await searchParams
@@ -50,7 +47,7 @@ export default async function PornoPage({ searchParams }: { searchParams: SP }) 
     <div className="dark min-h-screen bg-[#08070a] pb-24 text-white">
       <div className="mx-auto flex max-w-[1600px] flex-col gap-8 px-4 pt-16 sm:px-6 lg:px-10">
         <div className="flex flex-col gap-2">
-          <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-rose-400">eporner</p>
+          <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-rose-400">xnxx</p>
           <h1 className="text-4xl font-bold tracking-[-0.04em] sm:text-5xl">
             Pornolar <span className="accent-serif italic text-white/35">arsivi</span>
           </h1>
@@ -75,7 +72,6 @@ export default async function PornoPage({ searchParams }: { searchParams: SP }) 
                       src={thumbUrl(v.thumb)}
                       alt={v.title}
                       loading="lazy"
-                      referrerPolicy="no-referrer"
                       className="size-full object-cover transition duration-500 group-hover:scale-[1.04]"
                     />
                   ) : null}
@@ -87,10 +83,7 @@ export default async function PornoPage({ searchParams }: { searchParams: SP }) 
                     </span>
                   ) : null}
                 </div>
-                <div className="flex flex-col gap-1">
-                  <h2 className="line-clamp-2 text-[13px] font-medium leading-snug text-white/85 group-hover:text-white">{v.title}</h2>
-                  {v.views ? <p className="font-mono text-[10px] uppercase tracking-wider text-white/30">{compact(v.views)} izlenme</p> : null}
-                </div>
+                <h2 className="line-clamp-2 text-[13px] font-medium leading-snug text-white/85 group-hover:text-white">{v.title}</h2>
               </Link>
             ))}
           </div>
