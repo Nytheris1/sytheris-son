@@ -8,6 +8,7 @@ const dec = new TextDecoder()
 const ALLOWED = [
   /^([a-z0-9-]+\.)*hanime\.tv$/,
   /^([a-z0-9-]+\.)*htv-[a-z-]+\.com$/,
+  /^([a-z0-9-]+\.)*rule34\.[a-z]+$/,
   /^([a-z0-9-]+\.)*hanime-cdn\.com$/,
 ]
 const allowedUrl = (t) => {

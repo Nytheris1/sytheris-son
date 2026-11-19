@@ -8,6 +8,7 @@ const mac = (url: string) => createHmac('sha256', SECRET).update(url).digest('ba
 const ALLOWED = [
   /^([a-z0-9-]+\.)*hanime\.tv$/,
   /^([a-z0-9-]+\.)*htv-[a-z-]+\.com$/,
+  /^([a-z0-9-]+\.)*rule34\.[a-z]+$/,
   /^([a-z0-9-]+\.)*hanime-cdn\.com$/,
 ]
 
