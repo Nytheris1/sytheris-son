@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowLeft, Captions, Play } from 'lucide-react'
-import { DUB_PROVIDERS, SUB_PROVIDERS, syntheticEpisodes } from '@/lib/anime-source'
+import { DUB_PROVIDERS, SUB_PROVIDERS, aniEpisodes } from '@/lib/anime-source'
 import { AnimeEmbed } from '@/components/anime/anime-embed'
 import { getAnimeMeta } from '@/lib/anilist'
 import { pickTitle } from '@/lib/format'
@@ -26,11 +26,11 @@ export default async function WatchPage({ params }: Props) {
   const total = (media as { episodes?: number | null } | null)?.episodes ?? 0
   const episodes = (stored.length
     ? stored
-    : syntheticEpisodes(total, total === 1).map((n) => ({
-        id: 'a' + animeId + '-e' + n,
-        number: n,
-        title: '',
-        thumbnail: null,
+    : (await aniEpisodes(animeId, total)).map((e) => ({
+        id: e.id,
+        number: e.number,
+        title: e.title,
+        thumbnail: e.thumbnail,
         videoUrl: null,
         magnetUrl: null,
         subtitleUrl: null,
