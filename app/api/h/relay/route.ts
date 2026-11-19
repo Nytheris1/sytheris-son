@@ -8,7 +8,15 @@ export async function GET(req: NextRequest) {
   const u = req.nextUrl.searchParams.get('u') ?? ''
   const s = req.nextUrl.searchParams.get('s') ?? ''
   const target = decodeRelay(u)
-  if (!target) return new Response('imza geçersiz', { status: 400 })
+  if (!target) {
+    let back = ''
+    try {
+      back = Buffer.from(u, 'base64url').toString().slice(0, 90)
+    } catch {
+      back = 'cozulemedi'
+    }
+    return new Response('imza gecersiz | len=' + u.length + ' | u=' + u.slice(0, 50) + ' | back=' + back, { status: 400 })
+  }
 
   const range = req.headers.get('range')
   const upstream = await fetch(proxyUrl(target), {
