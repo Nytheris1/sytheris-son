@@ -4,8 +4,8 @@ export type AnimeProvider = { id: string; label: string; build: (animeId: number
 
 /** AniList id + episode; the player resolves the stream itself, so every title works without manual entry. */
 export const SUB_PROVIDERS: AnimeProvider[] = [
-  { id: 'animeembed', label: 'AnimeEmbed', build: (a, e) => 'https://animeembed.com/embed/anilist/' + a + '/' + e + '?track=sub' },
-  { id: 'tryembed', label: 'TryEmbed', build: (a, e) => 'https://tryembed.us.cc/embed/anime/' + a + '/' + e + '/sub' },
+  { id: 'animeembed', label: 'AnimeEmbed', build: (a, e) => 'https://animeembed.com/embed/anilist/' + a + '/' + e + '?track=sub&lang=tr' },
+  { id: 'tryembed', label: 'TryEmbed', build: (a, e) => 'https://tryembed.us.cc/embed/anime/' + a + '/' + e + '/sub?lang=tr' },
 ]
 
 export const DUB_PROVIDERS: AnimeProvider[] = [
