@@ -30,10 +30,10 @@ export const FILM_NAV: { href: string; label: string; plus?: boolean }[] = [
 ]
 
 export const HENTAI_NAV: { href: string; label: string; plus?: boolean }[] = [
-  { href: '/hentai', label: 'Hentai' },
-  { href: '/galeri', label: 'Rule34' },
-  { href: '/porno', label: 'Porno' },
+  { href: '/hentai', label: 'Hentailer' },
+  { href: '/porno', label: 'Pornolar' },
   { href: '/rastgele', label: 'Rastgele' },
+  { href: '/galeri', label: 'Rule34' },
 ]
 
 export function isActive(pathname: string, href: string, search?: URLSearchParams | null) {
