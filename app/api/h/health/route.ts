@@ -1,4 +1,4 @@
-import { getSigner, getCsrf } from '@/lib/hanime/signer'
+import { getSigner, getCsrf, getSources } from '@/lib/hanime/signer'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -17,5 +17,22 @@ export async function GET() {
   } catch (err) {
     out.csrf = err instanceof Error ? err.message : 'hata'
   }
+  const bases = [
+    process.env.HANIME_AUTH_BASE || 'https://auth.hanime.tv',
+    'https://guest.freeanimehentai.net',
+    'https://hanime.tv',
+  ]
+  const hs: string[] = []
+  for (const b of bases) {
+    try {
+      const s = await getSources('yabai-fukushuu-yami-site-2', b)
+      hs.push(b + ' = OK (' + s.length + ' kaynak)')
+      break
+    } catch (err) {
+      const e = err as { message?: string }
+      hs.push(b + ' = ' + (e && e.message ? e.message : String(err)).slice(0, 80))
+    }
+  }
+  out.handshake = hs
   return Response.json(out)
 }
