@@ -13,6 +13,6 @@ export const DUB_PROVIDERS: AnimeProvider[] = [
 
 /** AniList episode count drives the list, so a title with no stored episodes is still fully watchable. */
 export function syntheticEpisodes(total: number, isMovie: boolean) {
-  const n = isMovie ? 1 : Math.min(Math.max(total || 1, 1), 2000)
+  const n = isMovie ? 1 : Math.min(Math.max(total || 12, 1), 2000)
   return Array.from({ length: n }, (_, i) => i + 1)
 }

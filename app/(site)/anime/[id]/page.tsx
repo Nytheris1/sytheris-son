@@ -174,7 +174,7 @@ export default async function AnimePage({ params }: Props) {
           </aside>
         </section>
 
-        {episodes.length > 0 && (
+        {(episodes.length > 0 || ((media as { episodes?: number | null } | null)?.episodes ?? 0) > 0) && (
           <section id="bolumler" className="flex scroll-mt-36 flex-col gap-6">
             <SectionHeading eyebrow="Sytheris oynatıcı" title="Bölümler" accent="izle" description="Türkçe altyazılı bölümler doğrudan sitede." />
             <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
