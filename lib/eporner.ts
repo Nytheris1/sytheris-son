@@ -109,10 +109,27 @@ export async function resolveSources(id: string): Promise<PornSource[]> {
         return label + '=hata'
       }
     }
-    const probes = await Promise.all([
-      probe('nohash', 'https://www.eporner.com/xhr/video/' + id + '?domain=www.eporner.com&fallback=false&embed=true&supported=true'),
-      probe('apidetail', 'https://www.eporner.com/api/v2/video/id/?id=' + id + '&format=json'),
-    ])
+    const page = 'https://www.eporner.com/embed/' + id + '/'
+    const hops: [string, string][] = [
+      ['allorigins', 'https://api.allorigins.win/raw?url=' + encodeURIComponent(page)],
+      ['jina', 'https://r.jina.ai/' + page],
+      ['corsproxy', 'https://corsproxy.io/?url=' + encodeURIComponent(page)],
+    ]
+    const probes = await Promise.all(
+      hops.map(async ([label, url]) => {
+        try {
+          const r = await fetch(url, {
+            headers: { Accept: 'text/html,text/plain,*/*', 'X-Return-Format': 'html' },
+            cache: 'no-store',
+          })
+          const b = await r.text()
+          const h = (b.match(/hash[^0-9a-f]{0,14}([0-9a-f]{32})/) || [])[1] || ''
+          return label + '=' + r.status + '/' + b.length + '/' + (h ? 'HASH:' + h.slice(0, 8) : 'yok')
+        } catch {
+          return label + '=hata'
+        }
+      }),
+    )
     throw new Error('hash yok | ' + report.join(' ') + ' | ' + probes.join(' '))
   }
 
