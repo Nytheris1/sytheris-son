@@ -11,27 +11,29 @@ import { getIntroCovers } from '@/lib/anilist'
 import { getSettings } from '@/lib/site'
 import { getViewer } from '@/lib/viewer'
 import { getContentMode } from '@/lib/content-mode'
+import type { ContentMode } from '@/lib/content-mode-shared'
 import { getTopFilms } from '@/lib/films'
 
-async function introArt(mode: 'anime' | 'film') {
-  if (mode === 'anime') return { covers: await getIntroCovers(), keyart: '/intro/keyart.webp' }
+async function introArt(mode: ContentMode) {
+  if (mode !== 'film') return { covers: await getIntroCovers(), keyart: '/intro/keyart.webp' }
   const films = (await getTopFilms(30)).filter((f) => f.poster)
   return { covers: films.slice(1, 8).map((f) => f.poster), keyart: films[0]?.posterLg ?? '/intro/keyart.webp' }
 }
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
   const mode = await getContentMode()
+  const shellMode: 'anime' | 'film' = mode === 'film' ? 'film' : 'anime'
   const [settings, viewer, art] = await Promise.all([getSettings(), getViewer().catch(() => null), introArt(mode)])
 
   return (
     <>
-      <Intro covers={art.covers} keyart={art.keyart} mode={mode} enabled={settings.introEnabled} />
+      <Intro covers={art.covers} keyart={art.keyart} mode={shellMode} enabled={settings.introEnabled} />
       <AnnouncementBar text={settings.announcement} tone={settings.announcementTone} />
       <SiteHeader user={viewer?.header ?? null} mode={mode} />
       <main id="main" className="min-h-[70dvh]">
         {children}
       </main>
-      <SiteFooter mode={mode} />
+      <SiteFooter mode={shellMode} />
       <MobileNav mode={mode} />
       {settings.aiEnabled && <AiAssistant />}
       <MusicMiniPlayer className="bottom-40 left-3 md:bottom-6 md:left-6" />

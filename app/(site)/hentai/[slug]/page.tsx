@@ -39,9 +39,9 @@ export default async function HanimeDetailPage({ params }: Props) {
   return (
     <div className="dark min-h-screen bg-[#08070a] pb-24 text-white">
       <section className="relative isolate overflow-hidden">
-        {(video.banner ?? video.cover) && (
+        {(video.cover) && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={(video.banner ?? video.cover)!} alt="" aria-hidden="true" className="absolute inset-0 -z-20 size-full object-cover opacity-25" />
+          <img src={(video.cover)!} alt="" aria-hidden="true" className="absolute inset-0 -z-20 size-full object-cover opacity-25" />
         )}
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_15%_0%,rgba(244,63,94,0.25),transparent_50%),linear-gradient(to_bottom,rgba(8,7,10,0.6),#08070a_85%)]" aria-hidden="true" />
 
