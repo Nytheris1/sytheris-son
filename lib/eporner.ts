@@ -68,14 +68,28 @@ export function embedUrl(id: string) {
 export async function resolveSources(id: string): Promise<PornSource[]> {
   if (!/^[A-Za-z0-9]+$/.test(id)) return []
   const embed = embedUrl(id)
-  const page = await fetch(embed, {
-    headers: { 'User-Agent': UA, Referer: REFERER, Accept: 'text/html,application/xhtml+xml' },
-    cache: 'no-store',
-  })
-  if (!page.ok) throw new Error('embed ' + page.status)
-  const html = await page.text()
-  const hash = (html.match(/hash[^0-9a-f]{0,14}([0-9a-f]{32})/) || [])[1]
-  if (!hash) throw new Error('hash yok | ' + page.status + ' | ' + html.length + ' | ' + html.replace(/\s+/g, ' ').slice(0, 220))
+  const tries = [embed, 'https://www.eporner.com/video-' + id + '/']
+  const report: string[] = []
+  let hash = ''
+  let html = ''
+
+  for (const target of tries) {
+    const res = await fetch(target, {
+      headers: { 'User-Agent': UA, Referer: REFERER, Accept: 'text/html,application/xhtml+xml' },
+      cache: 'no-store',
+    })
+    const body = await res.text()
+    const found = (body.match(/hash[^0-9a-f]{0,14}([0-9a-f]{32})/) || [])[1] || ''
+    report.push(target.replace('https://www.eporner.com', '') + '=' + res.status + '/' + body.length + '/' + (found ? 'HASH' : 'yok'))
+    if (found) {
+      hash = found
+      html = body
+      break
+    }
+    if (!html) html = body
+  }
+
+  if (!hash) throw new Error('hash yok | ' + report.join(' ') + ' | ' + html.replace(/\s+/g, ' ').slice(0, 900))
 
   const q = new URLSearchParams({
     hash,
