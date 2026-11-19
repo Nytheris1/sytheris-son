@@ -13,13 +13,13 @@ export function HanimePlayer({ slug, title }: { slug: string; title: string }) {
   const [sources, setSources] = useState<Source[]>([])
   const [active, setActive] = useState(0)
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
-  const [message, setMessage] = useState('')
+  const [message, setMessage] = useState(')
 
   useEffect(() => {
     let dead = false
     fetch(`/api/h/sources?slug=${encodeURIComponent(slug)}`)
       .then(async (r) => {
-        if (!(r.headers.get(''content-type'') ?? '''').includes(''json'')) throw new Error(''Servis JSON yerine HTML dondurdu - /api yolu gate tarafindan kapatilmis olabilir.'')
+        if (!(r.headers.get('content-type') ?? ').includes('json')) throw new Error('Servis JSON yerine HTML dondurdu - /api yolu gate tarafindan kapatilmis olabilir.')
         const json = (await r.json()) as { sources?: Source[]; error?: string }
         if (!r.ok || !json.sources?.length) throw new Error(json.error ?? 'kaynak yok')
         if (dead) return
@@ -111,7 +111,7 @@ export function HanimePlayer({ slug, title }: { slug: string; title: string }) {
             ))}
           </div>
         ) : (
-          <span className="text-xs text-muted-foreground">{sources[0]?.label ?? ''}</span>
+          <span className="text-xs text-muted-foreground">{sources[0]?.label ?? '}</span>
         )}
         <a href={external} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-medium transition hover:border-rose-500">
           {title} <ExternalLink className="size-3.5" />

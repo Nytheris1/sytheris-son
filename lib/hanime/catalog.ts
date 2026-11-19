@@ -27,7 +27,7 @@ export type HanimeVideo = {
 
 type Raw = Record<string, unknown>
 
-const str = (v: unknown) => (typeof v === 'string' ? v : '')
+const str = (v: unknown) => (typeof v === 'string' ? v : ')
 const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : 0)
 
 const toTags = (raw: unknown): HanimeTag[] => {
@@ -47,13 +47,13 @@ const fold = (s: string) =>
     .toLowerCase()
     .replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ğ/g, 'g')
     .replace(/ü/g, 'u').replace(/ö/g, 'o').replace(/ç/g, 'c').replace(/â/g, 'a')
-    .normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
+    .normalize('NFKD').replace(/[\u0300-\u036f]/g, ')
     .replace(/[^a-z0-9]+/g, ' ')
-    .replace(/(.)\1+/g, '''''')
+    .replace(/(.)\1+/g, ')
     .trim()
 
 const haystack = (v: HanimeVideo) =>
-  fold([v.name, v.searchTitles, v.slug, v.brand ?? '', v.tags.map((t) => t.text).join(' ')].join(' '))
+  fold([v.name, v.searchTitles, v.slug, v.brand ?? ', v.tags.map((t) => t.text).join(' ')].join(' '))
 
 function normalize(raw: Raw): HanimeVideo | null {
   const slug = str(raw.slug)
