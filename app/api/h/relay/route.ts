@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic'
 export async function GET(req: NextRequest) {
   const u = req.nextUrl.searchParams.get('u') ?? ''
   const s = req.nextUrl.searchParams.get('s') ?? ''
-  const target = decodeRelay(u, s)
+  const target = decodeRelay(u)
   if (!target) return new Response('imza geçersiz', { status: 400 })
 
   const range = req.headers.get('range')
