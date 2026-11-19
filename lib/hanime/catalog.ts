@@ -1,4 +1,3 @@
-[IO.File]::WriteAllText("$PWD\lib\hanime\catalog.ts", @'
 import 'server-only'
 
 const ENDPOINT = 'https://guest.freeanimehentai.net/api/v11/search_hvs'
@@ -202,5 +201,3 @@ export async function getStats() {
   const all = await safeLoad()
   return { total: all.length }
 }
-'@, (New-Object System.Text.UTF8Encoding($false)))
-Write-Host 'catalog.ts yazildi' -ForegroundColor Green

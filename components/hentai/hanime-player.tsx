@@ -1,4 +1,3 @@
-[IO.File]::WriteAllText("$PWD\components\hentai\hanime-player.tsx", @'
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
@@ -154,5 +153,3 @@ export function HanimePlayer({ slug, title }: { slug: string; title: string }) {
     </div>
   )
 }
-'@, (New-Object System.Text.UTF8Encoding($false)))
-Write-Host 'hanime-player.tsx yazildi' -ForegroundColor Green
