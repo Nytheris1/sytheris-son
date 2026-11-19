@@ -3,6 +3,12 @@ import 'server-only'
 const API = 'https://www.eporner.com/api/v2/video/search/'
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
 const REFERER = 'https://www.eporner.com/'
+const WORKER = (process.env.HANIME_WORKER_URL || '').trim().replace(/\/+$/, '')
+
+/** Eporner serves a stub page to datacenter IPs, so page and xhr calls go out through the Cloudflare Worker. */
+function viaWorker(target: string) {
+  return WORKER ? WORKER + '/proxy?u=' + Buffer.from(target, 'utf8').toString('base64url') : target
+}
 
 export type PornVideo = { id: string; title: string; thumb: string; duration: number; views: number }
 export type PornSource = { label: string; url: string }
@@ -74,7 +80,7 @@ export async function resolveSources(id: string): Promise<PornSource[]> {
   let html = ''
 
   for (const target of tries) {
-    const res = await fetch(target, {
+    const res = await fetch(viaWorker(target), {
       headers: { 'User-Agent': UA, Referer: REFERER, Accept: 'text/html,application/xhtml+xml' },
       cache: 'no-store',
     })
@@ -99,7 +105,7 @@ export async function resolveSources(id: string): Promise<PornSource[]> {
     embed: 'true',
     supported: 'true',
   })
-  const res = await fetch('https://www.eporner.com/xhr/video/' + id + '?' + q.toString(), {
+  const res = await fetch(viaWorker('https://www.eporner.com/xhr/video/' + id + '?' + q.toString()), {
     headers: { 'User-Agent': UA, Referer: embed, Origin: 'https://www.eporner.com', Accept: 'application/json' },
     cache: 'no-store',
   })
