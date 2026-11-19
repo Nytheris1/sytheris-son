@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic'
 
 export async function GET() {
   const out: Record<string, unknown> = {}
+  out.worker = process.env.HANIME_WORKER_URL || 'YOK'
   try {
     const signer = await getSigner()
     out.signer = /^[0-9a-f]{64}$/.test(signer.sign().signature) ? 'ok' : 'boş imza'

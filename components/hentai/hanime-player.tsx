@@ -61,7 +61,8 @@ export function HanimePlayer({ slug, title }: { slug: string; title: string }) {
         hls.on(Hls.Events.ERROR, (_e, data) => {
           if (data.fatal) {
             setStatus('error')
-            setMessage('Yayin kesildi. Baska kaliteyi dene.')
+            const code = data.response && data.response.code ? ' HTTP ' + data.response.code : ''
+            setMessage('Yayin kesildi: ' + String(data.details || data.type) + code)
           }
         })
         cleanup = () => hls.destroy()

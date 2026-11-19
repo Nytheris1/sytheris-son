@@ -1,4 +1,5 @@
 import { getSigner, getCsrf, getSources } from '@/lib/hanime/signer'
+import { proxyUrl, UPSTREAM_HEADERS } from '@/lib/hanime/relay'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -35,5 +36,15 @@ export async function GET() {
     }
   }
   out.handshake = hs
+  try {
+    const list = await getSources('yabai-fukushuu-yami-site-2')
+    const target = list[0].url
+    const up = await fetch(proxyUrl(target), { headers: UPSTREAM_HEADERS })
+    const text = await up.text()
+    out.chain = { status: up.status, ctype: up.headers.get('content-type'), head: text.slice(0, 120) }
+  } catch (err) {
+    const e = err as { message?: string }
+    out.chain = (e && e.message) || String(err)
+  }
   return Response.json(out)
 }
