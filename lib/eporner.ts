@@ -109,22 +109,25 @@ export async function resolveSources(id: string): Promise<PornSource[]> {
         return label + '=hata'
       }
     }
-    const page = 'https://www.eporner.com/embed/' + id + '/'
-    const hops: [string, string][] = [
-      ['allorigins', 'https://api.allorigins.win/raw?url=' + encodeURIComponent(page)],
-      ['jina', 'https://r.jina.ai/' + page],
-      ['corsproxy', 'https://corsproxy.io/?url=' + encodeURIComponent(page)],
+    const BROWSER = {
+      'User-Agent': UA,
+      Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+      'Accept-Language': 'tr,en;q=0.9',
+    }
+    const hops: [string, string, Record<string, string>][] = [
+      ['xh-search', 'https://xhamster.com/search/test', BROWSER],
+      ['xh-home', 'https://xhamster.com/', BROWSER],
+      ['xnxx', 'https://www.xnxx.com/search/test', BROWSER],
+      ['ph-api', 'https://www.pornhub.com/webmasters/search?search=test', BROWSER],
+      ['ep-noRef', 'https://www.eporner.com/embed/' + id + '/', BROWSER],
     ]
     const probes = await Promise.all(
-      hops.map(async ([label, url]) => {
+      hops.map(async ([label, url, headers]) => {
         try {
-          const r = await fetch(url, {
-            headers: { Accept: 'text/html,text/plain,*/*', 'X-Return-Format': 'html' },
-            cache: 'no-store',
-          })
+          const r = await fetch(url, { headers, cache: 'no-store' })
           const b = await r.text()
-          const h = (b.match(/hash[^0-9a-f]{0,14}([0-9a-f]{32})/) || [])[1] || ''
-          return label + '=' + r.status + '/' + b.length + '/' + (h ? 'HASH:' + h.slice(0, 8) : 'yok')
+          const mark = /\.mp4|"sources"|initials|video_high/.test(b) ? 'MP4VAR' : 'yok'
+          return label + '=' + r.status + '/' + b.length + '/' + mark
         } catch {
           return label + '=hata'
         }
