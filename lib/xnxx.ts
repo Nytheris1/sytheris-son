@@ -77,14 +77,27 @@ function clean(title: string) {
     .slice(0, 90)
 }
 
-export async function searchPorn(q: string, page = 1) {
-  const p = Math.max(1, page)
-  const url = q
-    ? ORIGIN + '/search/' + encodeURIComponent(clean(q)) + '/' + p
-    : ORIGIN + '/best/' + p
+/** Monthly best archive is the only listing that really paginates; /best/2 repeats page one. */
+function monthKey(back = 0) {
+  const d = new Date()
+  d.setUTCMonth(d.getUTCMonth() - back)
+  return d.getUTCFullYear() + '-' + String(d.getUTCMonth() + 1).padStart(2, '0')
+}
+
+async function fetchList(url: string) {
   const res = await fetch(url, { headers: HEADERS, cache: 'no-store' })
   if (!res.ok) throw new Error('xnxx ' + res.status)
-  const items = parse(await res.text())
+  return parse(await res.text())
+}
+
+export async function searchPorn(q: string, page = 1) {
+  const p = Math.max(1, page)
+  if (q) {
+    const items = await fetchList(ORIGIN + '/search/' + encodeURIComponent(clean(q)) + '/' + p)
+    return { items, hasNext: items.length >= 10 }
+  }
+  let items = await fetchList(ORIGIN + '/best/' + monthKey(0) + '/' + p)
+  if (!items.length) items = await fetchList(ORIGIN + '/best/' + monthKey(1) + '/' + p)
   return { items, hasNext: items.length >= 20 }
 }
 
