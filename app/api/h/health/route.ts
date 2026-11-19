@@ -38,16 +38,28 @@ export async function GET() {
   out.handshake = hs
   try {
     const list = await getSources('yabai-fukushuu-yami-site-2')
-    const raw = list[0].url
-    const bases = ['https://hanime.tv', 'https://weeb.hanime.tv', 'https://p00.htv-tsukuyomi.com']
-    const tries: unknown[] = []
-    for (const b of bases) {
-      const abs = new URL(raw, b).toString()
-      const up = await fetch(proxyUrl(abs), { headers: UPSTREAM_HEADERS })
-      const text = await up.text()
-      tries.push({ base: b, status: up.status, ctype: up.headers.get('content-type'), head: text.slice(0, 60) })
+    const abs = list[0].url
+    const pl = await fetch(proxyUrl(abs), { headers: UPSTREAM_HEADERS })
+    const text = await pl.text()
+    const lines = text.split('\n').map((l) => l.trim()).filter(Boolean)
+
+    const keyUri = /URI="([^"]+)"/.exec(text)?.[1]
+    const segLine = lines.find((l) => !l.startsWith('#'))
+    out.chain = { playlist: pl.status, ctype: pl.headers.get('content-type'), lines: lines.length }
+
+    if (keyUri) {
+      const keyAbs = new URL(keyUri, abs).toString()
+      const k = await fetch(proxyUrl(keyAbs), { headers: UPSTREAM_HEADERS })
+      const kb = await k.arrayBuffer()
+      out.key = { host: new URL(keyAbs).host, status: k.status, bytes: kb.byteLength }
     }
-    out.chain = tries
+
+    if (segLine) {
+      const segAbs = new URL(segLine, abs).toString()
+      const s = await fetch(proxyUrl(segAbs), { headers: UPSTREAM_HEADERS })
+      const sb = await s.arrayBuffer()
+      out.seg = { host: new URL(segAbs).host, status: s.status, bytes: sb.byteLength }
+    }
   } catch (err) {
     const e = err as { message?: string }
     out.chain = (e && e.message) || String(err)
