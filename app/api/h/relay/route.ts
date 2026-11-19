@@ -25,7 +25,8 @@ export async function GET(req: NextRequest) {
   })
   if (!upstream.ok && upstream.status !== 206) return new Response(`upstream ${upstream.status}`, { status: 502 })
 
-  const isPlaylist = /\.m3u8($|\?)/.test(target) || (upstream.headers.get('content-type') ?? '').includes('mpegurl')
+  const ctype = (upstream.headers.get('content-type') ?? '').toLowerCase()
+  const isPlaylist = /\.m3u8($|\?)/.test(target) || ctype.includes('mpegurl') || ctype.includes('m3u')
 
   if (isPlaylist) {
     const body = rewritePlaylist(await upstream.text(), target)
