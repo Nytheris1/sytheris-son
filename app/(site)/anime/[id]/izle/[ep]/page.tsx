@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { ArrowLeft, Captions, Play, AlertCircle } from 'lucide-react'
+import { ArrowLeft, Captions, Play } from 'lucide-react'
+import { DUB_PROVIDERS, SUB_PROVIDERS, syntheticEpisodes } from '@/lib/anime-source'
+import { AnimeEmbed } from '@/components/anime/anime-embed'
 import { getAnimeMeta } from '@/lib/anilist'
 import { pickTitle } from '@/lib/format'
 import { listEpisodes } from '@/lib/site'
@@ -20,7 +22,21 @@ export default async function WatchPage({ params }: Props) {
   const { id, ep } = await params
   const animeId = Number(id)
   const number = Number(ep)
-  const [media, episodes] = await Promise.all([getAnimeMeta(animeId), listEpisodes(animeId).catch(() => [])])
+  const [media, stored] = await Promise.all([getAnimeMeta(animeId), listEpisodes(animeId).catch(() => [])])
+  const total = (media as { episodes?: number | null } | null)?.episodes ?? 0
+  const episodes = (stored.length
+    ? stored
+    : syntheticEpisodes(total, total === 1).map((n) => ({
+        id: 'a' + animeId + '-e' + n,
+        number: n,
+        title: '',
+        thumbnail: null,
+        videoUrl: null,
+        magnetUrl: null,
+        subtitleUrl: null,
+        subtitleText: null,
+        subtitleLang: 'tr',
+      }))) as unknown as typeof stored
   const index = episodes.findIndex((e) => e.number === number)
   const current = episodes[index]
   const title = media ? pickTitle(media.title) : 'Anime'
@@ -74,11 +90,11 @@ export default async function WatchPage({ params }: Props) {
             nextHref={next ? `/anime/${animeId}/izle/${next.number}` : null}
           />
         ) : (
-          <div className="flex aspect-video w-full flex-col items-center justify-center gap-3 rounded-3xl border border-border bg-muted/30 text-center p-6">
-            <AlertCircle className="size-10 text-muted-foreground" />
-            <p className="text-lg font-semibold">Video Kaynağı Bulunamadı</p>
-            <p className="text-sm text-muted-foreground">Bu bölüm için geçerli bir video veya magnet linki eklenmemiş.</p>
-          </div>
+          <AnimeEmbed
+            title={title}
+            sub={SUB_PROVIDERS.map((p) => ({ id: p.id, label: p.label, url: p.build(animeId, current.number) }))}
+            dub={DUB_PROVIDERS.map((p) => ({ id: p.id, label: p.label, url: p.build(animeId, current.number) }))}
+          />
         )}
 
         <div className="flex flex-col gap-2">
