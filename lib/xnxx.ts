@@ -4,7 +4,7 @@ const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
 const ORIGIN = 'https://www.xnxx.com'
 
 export type PornSource = { label: string; url: string }
-export type PornVideo = { id: string; title: string; thumb: string; duration: number }
+export type PornVideo = { id: string; slug: string; title: string; thumb: string; duration: number }
 
 const HEADERS = {
   'User-Agent': UA,
@@ -55,11 +55,13 @@ function parse(html: string): PornVideo[] {
     const label = chunk.match(/title="([^"]+)"/i)
     const dur = chunk.match(/class="duration"[^>]*>([^<]+)</i)
     const slug = (chunk.match(/href="\/video-[a-z0-9]+\/([^"]*)"/i) || [])[1] || ''
+    const durText = (chunk.match(/\d+\s*h\s*\d+\s*min|\d+\s*min|\d+\s*s(?:ec)?/i) || [])[0] || ''
     out.push({
       id: link[1],
+      slug,
       title: decode(label ? label[1] : slug.replace(/_/g, ' ')) || link[1],
       thumb: img ? img[1] : '',
-      duration: seconds(dur ? dur[1] : ''),
+      duration: seconds(durText),
     })
   }
   return out
@@ -86,8 +88,8 @@ export async function searchPorn(q: string, page = 1) {
   return { items, hasNext: items.length >= 20 }
 }
 
-export function pageUrl(id: string) {
-  return ORIGIN + '/video-' + id
+export function pageUrl(id: string, slug = '') {
+  return ORIGIN + '/video-' + id + (slug ? '/' + slug : '')
 }
 
 export function embedUrl(id: string) {
@@ -95,9 +97,9 @@ export function embedUrl(id: string) {
 }
 
 /** Stream URLs sit in the page as html5player.setVideoUrlHigh/Low/HLS calls. */
-export async function resolveSources(id: string): Promise<PornSource[]> {
+export async function resolveSources(id: string, slug = ''): Promise<PornSource[]> {
   if (!/^[a-z0-9]+$/i.test(id)) return []
-  const res = await fetch(pageUrl(id), { headers: HEADERS, cache: 'no-store' })
+  const res = await fetch(pageUrl(id, slug), { headers: HEADERS, cache: 'no-store' })
   if (!res.ok) throw new Error('sayfa ' + res.status)
   const body = await res.text()
 

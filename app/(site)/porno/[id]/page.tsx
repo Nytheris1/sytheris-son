@@ -11,20 +11,21 @@ export default async function PornoWatchPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ t?: string }>
+  searchParams: Promise<{ t?: string; s?: string }>
 }) {
   const { id } = await params
-  const { t } = await searchParams
+  const { t, s } = await searchParams
   const title = (t || '').trim() || 'Video'
+  const slug = (s || '').trim()
 
   return (
     <div className="dark min-h-screen bg-[#08070a] pb-24 text-white">
       <div className="mx-auto max-w-[1200px] px-4 pt-10 sm:px-6 lg:px-10">
         <Link href="/porno" className="font-mono text-[11px] uppercase tracking-[0.24em] text-white/40 hover:text-white">- Porno</Link>
         <h1 className="mt-3 mb-4 text-2xl font-semibold tracking-[-0.02em]">{title}</h1>
-        <PornPlayer id={id} title={title} />
+        <PornPlayer id={id} slug={slug} title={title} />
         <a
-          href={pageUrl(id)}
+          href={pageUrl(id, slug)}
           target="_blank"
           rel="noopener noreferrer"
           className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-white/15 px-4 py-2 text-xs"

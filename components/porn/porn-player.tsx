@@ -10,7 +10,7 @@ type S = { label: string; url: string }
 const relay = (url: string) =>
   '/api/proxy?url=' + encodeURIComponent(url) + '&referer=' + encodeURIComponent('https://www.xnxx.com/')
 
-export function PornPlayer({ id, title, poster }: { id: string; title: string; poster?: string | null }) {
+export function PornPlayer({ id, slug, title, poster }: { id: string; slug: string; title: string; poster?: string | null }) {
   const [list, setList] = useState<S[] | null>(null)
   const [pick, setPick] = useState(0)
   const [error, setError] = useState('')
@@ -20,7 +20,7 @@ export function PornPlayer({ id, title, poster }: { id: string; title: string; p
     setList(null)
     setError('')
     setPick(0)
-    fetch('/api/porn/sources?id=' + encodeURIComponent(id))
+    fetch('/api/porn/sources?id=' + encodeURIComponent(id) + '&s=' + encodeURIComponent(slug))
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error('kaynak ' + r.status))))
       .then((j: { sources?: S[] }) => {
         if (!live) return
@@ -33,7 +33,7 @@ export function PornPlayer({ id, title, poster }: { id: string; title: string; p
     return () => {
       live = false
     }
-  }, [id])
+  }, [id, slug])
 
   if (error) {
     return (
