@@ -8,7 +8,7 @@ export const GATE_COOKIE = 'sy_gate'
 export const GATE_PATH = '/kapi'
 
 /** Paths that must stay reachable without a pass: the gate itself, the hidden download page and PWA files. */
-const OPEN_PREFIXES = ['/kapi', '/indir', '/api/indir', '/robots.txt', '/manifest.json', '/sw.js', '/icon', '/apple-icon', '/favicon', '/placeholder']
+const OPEN_PREFIXES = ['/kapi', '/indir', '/api/indir', '/api/h', '/robots.txt', '/manifest.json', '/sw.js', '/icon', '/apple-icon', '/favicon', '/placeholder']
 
 export function isOpenPath(pathname: string) {
   return OPEN_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`) || pathname.startsWith(`${p}.`) || pathname.startsWith(`${p}-`))
