@@ -291,7 +291,11 @@ export async function getSources(
   if (!reply) throw new Error('handshake yanıtı boş')
   const sources = (open(reply).sources ?? [])
     .filter((s): s is { src: string; height: number; label?: string } => Boolean(s.src))
-    .map((s) => ({ url: s.src, height: s.height ?? 0, label: s.label ?? `${s.height ?? 0}p` }))
+    .map((s) => ({
+      url: new URL(s.src, 'https://hanime.tv').toString(),
+      height: s.height ?? 0,
+      label: s.label ?? `${s.height ?? 0}p`,
+    }))
     .sort((a, b) => b.height - a.height)
   if (!sources.length) throw new Error('kaynak yok')
   return sources

@@ -218,7 +218,7 @@ export async function getCsrf(): Promise<Csrf> {
     token = body.trim().replace(/^"|"$/g, '')
   }
   const proof = /htv_csrf_proof=([^;]+)/.exec(res.headers.get('set-cookie') ?? '')?.[1] ?? ''
-  if (!token || !proof) throw new Error('csrf alınamadı')
+  if (!token || !proof) throw new Error('csrf alinamadi (' + res.status + ' token=' + (token ? 'var' : 'yok') + ' proof=' + (proof ? 'var' : 'yok') + ') ' + body.replace(/\s+/g, ' ').slice(0, 70))
   return { token, proof }
 }
 
