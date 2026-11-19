@@ -1,3 +1,4 @@
+[IO.File]::WriteAllText("$PWD\lib\hanime\catalog.ts", @'
 import 'server-only'
 
 const ENDPOINT = 'https://guest.freeanimehentai.net/api/v11/search_hvs'
@@ -27,7 +28,7 @@ export type HanimeVideo = {
 
 type Raw = Record<string, unknown>
 
-const str = (v: unknown) => (typeof v === 'string' ? v : ')
+const str = (v: unknown) => (typeof v === 'string' ? v : '')
 const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : 0)
 
 const toTags = (raw: unknown): HanimeTag[] => {
@@ -45,15 +46,21 @@ const toTags = (raw: unknown): HanimeTag[] => {
 const fold = (s: string) =>
   s
     .toLowerCase()
-    .replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ğ/g, 'g')
-    .replace(/ü/g, 'u').replace(/ö/g, 'o').replace(/ç/g, 'c').replace(/â/g, 'a')
-    .normalize('NFKD').replace(/[\u0300-\u036f]/g, ')
+    .replace(/ı/g, 'i')
+    .replace(/ş/g, 's')
+    .replace(/ğ/g, 'g')
+    .replace(/ü/g, 'u')
+    .replace(/ö/g, 'o')
+    .replace(/ç/g, 'c')
+    .replace(/â/g, 'a')
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9]+/g, ' ')
-    .replace(/(.)\1+/g, ')
+    .replace(/(.)\1+/g, '$1')
     .trim()
 
 const haystack = (v: HanimeVideo) =>
-  fold([v.name, v.searchTitles, v.slug, v.brand ?? ', v.tags.map((t) => t.text).join(' ')].join(' '))
+  fold([v.name, v.searchTitles, v.slug, v.brand ?? '', v.tags.map((t) => t.text).join(' ')].join(' '))
 
 function normalize(raw: Raw): HanimeVideo | null {
   const slug = str(raw.slug)
@@ -64,6 +71,7 @@ function normalize(raw: Raw): HanimeVideo | null {
     slug,
     name: str(raw.name) || slug,
     titles: Array.isArray(raw.titles) ? raw.titles.filter((t): t is string => typeof t === 'string') : [],
+    searchTitles: str(raw.search_titles),
     description: str(raw.description),
     cover: str(raw.cover_url) || str(raw.cover) || str(artwork.cover) || null,
     poster: str(raw.poster_url) || str(raw.poster) || str(artwork.poster) || null,
@@ -74,7 +82,6 @@ function normalize(raw: Raw): HanimeVideo | null {
     likes: num(raw.likes),
     rating: num(raw.rating),
     releasedAt: num(raw.released_at),
-    searchTitles: str(raw.search_titles),
     tags: toTags(raw.tags),
   }
 }
@@ -89,8 +96,9 @@ async function load(): Promise<HanimeVideo[]> {
     const res = await fetch(ENDPOINT, {
       headers: { 'User-Agent': UA, Accept: 'application/json' },
       cache: 'no-store',
+      signal: AbortSignal.timeout(20_000),
     })
-    if (!res.ok) throw new Error(`hanime katalog ${res.status}`)
+    if (!res.ok) throw new Error('hanime katalog ' + res.status)
     const json = (await res.json()) as { data?: Raw[] }
     const items = (json.data ?? []).map(normalize).filter((v): v is HanimeVideo => Boolean(v))
     if (items.length) cache = { at: Date.now(), items }
@@ -101,7 +109,16 @@ async function load(): Promise<HanimeVideo[]> {
   return inflight
 }
 
+async function safeLoad(): Promise<HanimeVideo[]> {
+  try {
+    return await load()
+  } catch {
+    return cache?.items ?? []
+  }
+}
+
 export type HanimeSort = 'trending' | 'new' | 'top' | 'az'
+
 const SORTERS: Record<HanimeSort, (a: HanimeVideo, b: HanimeVideo) => number> = {
   trending: (a, b) => b.views - a.views,
   new: (a, b) => b.releasedAt - a.releasedAt,
@@ -114,12 +131,13 @@ export const PER_PAGE = 30
 export type HanimeQuery = { q?: string; tag?: string; brand?: string; sort?: HanimeSort; page?: number }
 
 export async function searchHanime(input: HanimeQuery) {
-  const all = await load()
+  const all = await safeLoad()
   const q = input.q?.trim()
   const tag = input.tag?.trim().toLowerCase()
   const brand = input.brand?.trim().toLowerCase()
 
   let items = all
+
   if (q) {
     const tokens = fold(q).split(' ').filter(Boolean)
     if (tokens.length) {
@@ -136,38 +154,53 @@ export async function searchHanime(input: HanimeQuery) {
       items = pool.map((s) => s.v).sort((a, b) => score(b) - score(a))
     }
   }
+
   if (tag) items = items.filter((v) => v.tags.some((t) => t.text.toLowerCase() === tag || t.slug === tag))
   if (brand) items = items.filter((v) => v.brand?.toLowerCase() === brand)
 
-  const sort = input.sort && input.sort in SORTERS ? input.sort : 'trending'
-  items = [...items].sort(SORTERS[sort])
+  if (!q) {
+    const sort = input.sort && input.sort in SORTERS ? input.sort : 'trending'
+    items = [...items].sort(SORTERS[sort])
+  }
 
   const page = Math.max(1, Math.floor(input.page ?? 1))
   const start = (page - 1) * PER_PAGE
-  return { items: items.slice(start, start + PER_PAGE), total: items.length, page, hasNext: start + PER_PAGE < items.length }
+  return {
+    items: items.slice(start, start + PER_PAGE),
+    total: items.length,
+    page,
+    hasNext: start + PER_PAGE < items.length,
+  }
 }
 
 export async function getVideo(slug: string): Promise<HanimeVideo | null> {
-  const all = await load()
+  const all = await safeLoad()
   return all.find((v) => v.slug === slug) ?? null
 }
 
 export async function getRelated(video: HanimeVideo, limit = 12) {
-  const all = await load()
-  const byTag = all.filter((v) => v.slug !== video.slug && v.tags.some((t) => video.tags.some((x) => x.text === t.text)))
+  const all = await safeLoad()
   const byBrand = all.filter((v) => v.slug !== video.slug && video.brand && v.brand === video.brand)
+  const byTag = all.filter(
+    (v) => v.slug !== video.slug && v.tags.some((t) => video.tags.some((x) => x.text === t.text)),
+  )
   const seen = new Set<number>()
   return [...byBrand, ...byTag].filter((v) => (seen.has(v.id) ? false : seen.add(v.id))).slice(0, limit)
 }
 
 export async function getTopTags(limit = 24) {
-  const all = await load()
+  const all = await safeLoad()
   const counts = new Map<string, number>()
   for (const v of all) for (const t of v.tags) counts.set(t.text, (counts.get(t.text) ?? 0) + 1)
-  return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, limit).map(([text, count]) => ({ text, count }))
+  return [...counts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, limit)
+    .map(([text, count]) => ({ text, count }))
 }
 
 export async function getStats() {
-  const all = await load()
+  const all = await safeLoad()
   return { total: all.length }
 }
+'@, (New-Object System.Text.UTF8Encoding($false)))
+Write-Host 'catalog.ts yazildi' -ForegroundColor Green
