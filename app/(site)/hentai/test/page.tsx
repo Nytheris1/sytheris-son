@@ -35,6 +35,18 @@ export default function TestPage() {
       fetch('https://auth.hanime.tv/api/v11/handshake', { method: 'OPTIONS' }),
     )
 
+  const postTo = (label: string, base: string) =>
+    run(label, () =>
+      fetch(base + '/api/v11/handshake', {
+        method: 'POST',
+        headers: { 'content-type': 'text/plain' },
+        body: '{"token":"x"}',
+      }),
+    )
+
+  const getCsrf = () =>
+    run('GET ct csrf', () => fetch('https://ct.hanime.tv/csrf-token', { cache: 'no-store' }))
+
   const script = () => {
     const s = document.createElement('script')
     s.src = 'https://hanime-cdn.com/js/vendor.6cb274d12de4872d245a5bc7781bdc5e.min.js'
@@ -51,6 +63,9 @@ export default function TestPage() {
         <button onClick={postSimple} className="rounded-full border border-border px-4 py-2 text-sm">2 POST basit</button>
         <button onClick={options} className="rounded-full border border-border px-4 py-2 text-sm">3 OPTIONS</button>
         <button onClick={script} className="rounded-full border border-border px-4 py-2 text-sm">4 Betik</button>
+        <button onClick={() => postTo('5 POST guest', 'https://guest.freeanimehentai.net')} className="rounded-full border border-border px-4 py-2 text-sm">5 POST guest</button>
+        <button onClick={() => postTo('6 POST hanime.tv', 'https://hanime.tv')} className="rounded-full border border-border px-4 py-2 text-sm">6 POST hanime</button>
+        <button onClick={getCsrf} className="rounded-full border border-border px-4 py-2 text-sm">7 GET csrf</button>
       </div>
       <pre className="whitespace-pre-wrap rounded-xl border border-border p-4 text-xs">{log.join('\n') || 'sonuc yok'}</pre>
     </div>
