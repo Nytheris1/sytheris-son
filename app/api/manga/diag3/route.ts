@@ -12,7 +12,7 @@ export async function GET() {
   const tb = await t.text()
   out.tagLen = tb.length
   out.hasDoujinshiName = /"en"\s*:\s*"Doujinshi"/.test(tb)
-  const m = tb.match(/\{"id":"([0-9a-f-]{36})"[^{}]*"en":"Doujinshi"/)
+  const m = tb.match(/"id":"([0-9a-f-]{36})"[\s\S]{0,400}?"en":"Doujinshi"/)
   out.tagId = m ? m[1] : ''
 
   if (m) {

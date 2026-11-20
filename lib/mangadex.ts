@@ -165,19 +165,17 @@ let doujinTagCache: string | null = null
 async function doujinTag() {
   if (doujinTagCache) return doujinTagCache
   try {
-    const res = await fetch(API + '/manga/tag', { headers: HEADERS, next: { revalidate: 86400 } })
-    if (!res.ok) return ''
-    const json = (await res.json()) as { data?: { id: string; attributes?: { name?: Record<string, string> } }[] }
-    const hit = (json.data || []).find((t) => (t.attributes?.name?.en || '').toLowerCase() === 'doujinshi')
-    doujinTagCache = hit?.id || ''
+    const res = await fetch(API + '/manga/tag', { headers: HEADERS, cache: 'no-store' })
+    if (res.ok) {
+      const text = await res.text()
+      const hit = text.match(/"id":"([0-9a-f-]{36})"[\s\S]{0,400}?"en":"Doujinshi"/)
+      doujinTagCache = hit ? hit[1] : ''
+    }
   } catch {
     doujinTagCache = ''
   }
   return doujinTagCache
 }
-
-export type DoujinChapter = MangaChapter & { lang: string }
-
 async function hasChapters(id: string) {
   const p = new URLSearchParams()
   p.set('limit', '1')
