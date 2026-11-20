@@ -115,7 +115,11 @@ export async function listChapters(id: string): Promise<MangaChapter[]> {
   p.append('order[chapter]', 'asc')
   p.set('limit', '500')
   p.append('includes[]', 'scanlation_group')
-  const res = await fetch(API + '/manga/' + id + '/feed?' + p.toString(), { headers: HEADERS, cache: 'no-store' })
+  let res = await fetch(API + '/manga/' + id + '/feed?' + p.toString(), { headers: HEADERS, cache: 'no-store' })
+  if (!res.ok) {
+    await new Promise((r) => setTimeout(r, 500))
+    res = await fetch(API + '/manga/' + id + '/feed?' + p.toString(), { headers: HEADERS, cache: 'no-store' })
+  }
   if (!res.ok) return []
   const json = (await res.json()) as {
     data?: { id: string; attributes?: { chapter?: string | null; title?: string | null; pages?: number }; relationships?: { type: string; attributes?: { name?: string } }[] }[]
@@ -180,7 +184,11 @@ export async function listChaptersAll(id: string): Promise<DoujinChapter[]> {
   p.append('order[chapter]', 'asc')
   p.set('limit', '300')
   p.append('includes[]', 'scanlation_group')
-  const res = await fetch(API + '/manga/' + id + '/feed?' + p.toString(), { headers: HEADERS, cache: 'no-store' })
+  let res = await fetch(API + '/manga/' + id + '/feed?' + p.toString(), { headers: HEADERS, cache: 'no-store' })
+  if (!res.ok) {
+    await new Promise((r) => setTimeout(r, 500))
+    res = await fetch(API + '/manga/' + id + '/feed?' + p.toString(), { headers: HEADERS, cache: 'no-store' })
+  }
   if (!res.ok) return []
   const json = (await res.json()) as {
     data?: {

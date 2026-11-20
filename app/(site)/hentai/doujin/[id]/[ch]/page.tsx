@@ -14,7 +14,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function DoujinReader({ params }: Props) {
   const { id, ch } = await params
-  const [manga, chapters, pages] = await Promise.all([getManga(id), listChaptersAll(id), chapterPages(ch)])
+  const manga = await getManga(id)
+  const chapters = await listChaptersAll(id)
+  const pages = await chapterPages(ch)
   const index = chapters.findIndex((c) => c.id === ch)
   const prev = chapters[index - 1]
   const next = chapters[index + 1]

@@ -15,7 +15,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function DoujinDetail({ params }: Props) {
   const { id } = await params
-  const [manga, chapters] = await Promise.all([getManga(id), listChaptersAll(id)])
+  const manga = await getManga(id)
+  const chapters = manga ? await listChaptersAll(id) : []
   if (!manga) notFound()
 
   return (
