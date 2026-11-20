@@ -178,6 +178,18 @@ async function doujinTag() {
 }
 export type DoujinChapter = MangaChapter & { lang: string }
 
+async function hasChapters(id: string) {
+  const p = new URLSearchParams()
+  p.set('limit', '1')
+  try {
+    const res = await fetch(API + '/manga/' + id + '/feed?' + p.toString(), { headers: HEADERS, next: { revalidate: 3600 } })
+    if (!res.ok) return false
+    const json = (await res.json()) as { data?: { attributes?: { pages?: number } }[] }
+    return (json.data || []).some((c) => (c.attributes?.pages || 0) > 0)
+  } catch {
+    return false
+  }
+}
 /** Only titles that really carry an uploaded chapter, otherwise the page opens empty. */
 export async function listDoujin(page = 1) {
   const tag = await doujinTag()
