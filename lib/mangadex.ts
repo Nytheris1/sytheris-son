@@ -32,7 +32,7 @@ const shape = (raw: Raw): MangaCard => ({
   tags: (raw.attributes?.tags || []).map((t) => t.attributes?.name?.tr || t.attributes?.name?.en || '').filter(Boolean).slice(0, 3),
 })
 
-const _UNUSED = new URLSearchParams()
+const BASE_QUERY = new URLSearchParams()
 BASE_QUERY.append('availableTranslatedLanguage[]', 'tr')
 BASE_QUERY.append('includes[]', 'cover_art')
 BASE_QUERY.append('hasAvailableChapters', 'true')
