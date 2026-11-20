@@ -45,7 +45,7 @@ export async function listManga(q: string, page = 1) {
   p.set('offset', String((Math.max(1, page) - 1) * 24))
   if (q) p.set('title', q)
   const res = await fetch(API + '/manga?' + p.toString(), { headers: HEADERS, cache: 'no-store' })
-  if (!res.ok) throw new Error('mangadex ' + res.status)
+  if (!res.ok) throw new Error('mangadex ' + res.status + ' ' + (await res.text()).slice(0, 240))
   const json = (await res.json()) as { data?: Raw[]; total?: number }
   const items = (json.data || []).map(shape).filter((m) => m.title)
   return { items, hasNext: (json.total ?? 0) > Math.max(1, page) * 24 }
