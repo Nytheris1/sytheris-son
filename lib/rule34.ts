@@ -18,8 +18,8 @@ const VIDEO = /\.(mp4|webm)$/i
 export async function searchR34(tags: string, page = 1) {
   const p = new URLSearchParams()
   p.set('r', 'posts/index')
-  p.set('q', tags)
-  p.set('p', String(Math.max(1, page)))
+  p.set('q', tags.trim().replace(/\s+/g, '+'))
+  p.set('pid', String((Math.max(1, page) - 1) * 42))
 
   const res = await fetch(BASE + '?' + p.toString(), { headers: HEADERS, cache: 'no-store' })
   if (!res.ok) throw new Error('rule34 ' + res.status)
@@ -47,5 +47,6 @@ export async function searchR34(tags: string, page = 1) {
     })
   }
 
-  return { items, hasNext: items.length >= 30 }
+  const hasNext = /posts\/index&amp;pid=\d+/.test(html) || items.length >= 40
+  return { items, hasNext }
 }
