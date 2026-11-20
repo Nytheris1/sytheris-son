@@ -7,10 +7,8 @@ import { getManga, listChaptersAll } from '@/lib/mangadex'
 type Props = { params: Promise<{ id: string }> }
 const img = (u: string) => (u ? '/api/manga/img?u=' + Buffer.from(u).toString('base64url') : '')
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params
-  const manga = await getManga(id)
-  return { title: manga ? manga.title : 'Doujinshi' }
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: 'Doujinshi', robots: { index: false, follow: false } }
 }
 
 export default async function DoujinDetail({ params }: Props) {

@@ -5,6 +5,21 @@ const UA = 'Sytheris/1.0 (manga reader)'
 
 const HEADERS = { 'User-Agent': UA, Accept: 'application/json' }
 
+/** MangaDex rate-limits bursts, so every call retries with a growing pause on 429. */
+async function mg(url: string, tries = 3): Promise<Response | null> {
+  for (let i = 0; i < tries; i++) {
+    try {
+      const res = await fetch(url, { headers: HEADERS, cache: 'no-store' })
+      if (res.ok) return res
+      if (res.status !== 429 && res.status < 500) return res
+    } catch {
+      /* ag hatasi, tekrar dene */
+    }
+    await new Promise((r) => setTimeout(r, 500 + i * 700))
+  }
+  return null
+}
+
 export type MangaCard = { id: string; title: string; cover: string; year: number | null; tags: string[] }
 export type MangaChapter = { id: string; number: string; title: string; group: string; pages: number }
 
@@ -103,16 +118,10 @@ export async function listManga(q: string, page = 1) {
 }
 export async function getManga(id: string) {
   if (!/^[0-9a-f-]{36}$/i.test(id)) return null
-  for (let attempt = 0; attempt < 2; attempt++) {
-    const res = await fetch(API + '/manga/' + id + '?includes[]=cover_art', { headers: HEADERS, cache: 'no-store' })
-    if (res.ok) {
-      const json = (await res.json()) as { data?: Raw }
-      return json.data ? shape(json.data) : null
-    }
-    if (res.status !== 429) return null
-    await new Promise((r) => setTimeout(r, 700))
-  }
-  return null
+  const res = await mg(API + '/manga/' + id + '?includes[]=cover_art')
+  if (!res || !res.ok) return null
+  const json = (await res.json()) as { data?: Raw }
+  return json.data ? shape(json.data) : null
 }
 
 export async function listChapters(id: string): Promise<MangaChapter[]> {
@@ -121,12 +130,8 @@ export async function listChapters(id: string): Promise<MangaChapter[]> {
   p.append('order[chapter]', 'asc')
   p.set('limit', '500')
   p.append('includes[]', 'scanlation_group')
-  let res = await fetch(API + '/manga/' + id + '/feed?' + p.toString(), { headers: HEADERS, cache: 'no-store' })
-  if (!res.ok) {
-    await new Promise((r) => setTimeout(r, 500))
-    res = await fetch(API + '/manga/' + id + '/feed?' + p.toString(), { headers: HEADERS, cache: 'no-store' })
-  }
-  if (!res.ok) return []
+  const res = await mg(API + '/manga/' + id + '/feed?' + p.toString())
+  if (!res || !res.ok) return []
   const json = (await res.json()) as {
     data?: { id: string; attributes?: { chapter?: string | null; title?: string | null; pages?: number }; relationships?: { type: string; attributes?: { name?: string } }[] }[]
   }
@@ -190,12 +195,8 @@ export async function listChaptersAll(id: string): Promise<DoujinChapter[]> {
   p.append('order[chapter]', 'asc')
   p.set('limit', '300')
   p.append('includes[]', 'scanlation_group')
-  let res = await fetch(API + '/manga/' + id + '/feed?' + p.toString(), { headers: HEADERS, cache: 'no-store' })
-  if (!res.ok) {
-    await new Promise((r) => setTimeout(r, 500))
-    res = await fetch(API + '/manga/' + id + '/feed?' + p.toString(), { headers: HEADERS, cache: 'no-store' })
-  }
-  if (!res.ok) return []
+  const res = await mg(API + '/manga/' + id + '/feed?' + p.toString())
+  if (!res || !res.ok) return []
   const json = (await res.json()) as {
     data?: {
       id: string
