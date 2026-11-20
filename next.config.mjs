@@ -54,12 +54,14 @@ const nextConfig = {
         headers: [
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-          { key: 'Strict-Transport-Security', value: 'max-age=63072000' },
+          { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
           { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()' },
           { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
           { key: 'X-Permitted-Cross-Domain-Policies', value: 'none' },
           { key: 'Cross-Origin-Resource-Policy', value: 'same-site' },
           { key: 'X-DNS-Prefetch-Control', value: 'on' },
+          { key: 'Origin-Agent-Cluster', value: '?1' },
+          { key: 'X-Download-Options', value: 'noopen' },
           { key: 'Cross-Origin-Opener-Policy', value: 'same-origin-allow-popups' },
           {
             // Enforced on deployments; dev keeps report-only because Next's dev runtime relies on eval.
@@ -78,7 +80,7 @@ const nextConfig = {
               "base-uri 'self'",
               "form-action 'self'",
               "frame-ancestors 'self'",
-              "manifest-src 'self'",
+              "manifest-src 'self'; upgrade-insecure-requests",
             ].join('; '),
           },
         ],

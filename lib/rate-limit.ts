@@ -1,4 +1,8 @@
-import 'server-only'
+/**
+ * Fixed-window, per-instance limiter. No Node APIs and no `server-only` marker so the proxy
+ * (edge runtime) can use it too. Per-instance is enough to blunt scripted abuse; credential
+ * endpoints add their own stricter lockouts.
+ */
 
 type Bucket = Map<string, { n: number; at: number }>
 const g = globalThis as unknown as { __syRate?: Map<string, Bucket> }
@@ -9,10 +13,7 @@ export function clientIp(headers: Headers) {
   return headers.get('x-real-ip')?.trim() || headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'local'
 }
 
-/**
- * Fixed-window, per-instance limiter. Returns the seconds to wait when the key is over its budget, otherwise 0.
- * Per-instance is enough to blunt scripted abuse; credential endpoints add their own stricter lockouts.
- */
+/** Returns the seconds to wait when the key is over its budget, otherwise 0. */
 export function rateLimit(name: string, key: string, max: number, windowMs: number) {
   let bucket = buckets.get(name)
   if (!bucket) buckets.set(name, (bucket = new Map()))
@@ -28,5 +29,15 @@ export function rateLimit(name: string, key: string, max: number, windowMs: numb
 }
 
 export function tooMany(retryAfter: number, message = 'Çok fazla istek. Biraz sonra tekrar dene.') {
-  return Response.json({ ok: false, error: message }, { status: 429, headers: { 'Retry-After': String(retryAfter) } })
+  return Response.json(
+    { ok: false, error: message },
+    {
+      status: 429,
+      headers: {
+        'Retry-After': String(retryAfter),
+        'X-Content-Type-Options': 'nosniff',
+        'Cache-Control': 'no-store',
+      },
+    },
+  )
 }
