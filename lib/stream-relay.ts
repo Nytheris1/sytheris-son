@@ -108,7 +108,13 @@ export async function handle(req: Request, method: 'GET' | 'HEAD'): Promise<Resp
   } catch {
     return new Response('Çözümlenemeyen url.', { status: 400 })
   }
-  if (!hostAllowed(target)) return new Response(Host izinli degil: , { status: 403 })\n  const ref = pickReferer(target, searchParams.get('referer') ?? searchParams.get('r'))
+
+  // Only the provider CDNs we actually stream from. Anything else is a 403 that names the host.
+  if (!hostAllowed(target)) {
+    return new Response(`Host izinli degil: ${parsed.hostname}`, { status: 403 })
+  }
+
+  const ref = pickReferer(target, searchParams.get('referer') ?? searchParams.get('r'))
 
   const forward: Record<string, string> = {
     'User-Agent': UA,
@@ -124,12 +130,17 @@ export async function handle(req: Request, method: 'GET' | 'HEAD'): Promise<Resp
 
   let upstream: Response
   try {
-    const res = await safeFetch(target, {
-      method,
-      headers: forward,
-      cache: 'no-store',
-      signal: AbortSignal.timeout(45_000),
-    }, 4, true)
+    const res = await safeFetch(
+      target,
+      {
+        method,
+        headers: forward,
+        cache: 'no-store',
+        signal: AbortSignal.timeout(45_000),
+      },
+      4,
+      true,
+    )
     if (!res) return new Response('Bu adres proxy üzerinden okunamaz.', { status: 400 })
     upstream = res
   } catch {
