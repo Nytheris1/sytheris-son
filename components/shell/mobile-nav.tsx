@@ -27,6 +27,7 @@ const FILM_ITEMS = [
 const HENTAI_ITEMS = [
   { href: '/', label: 'Ana Sayfa', icon: Home },
   { href: '/hentai', label: 'Hentai', icon: Flame },
+  { href: '/hentai/doujin', label: 'Doujin', icon: BookOpen },
   { href: '/galeri', label: 'Rule34', icon: Images, center: true },
   { href: '/porno', label: 'Porno', icon: Video },
   { href: '/kutuphane', label: 'Kutuphane', icon: LibraryBig },

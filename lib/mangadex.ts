@@ -138,3 +138,65 @@ export async function chapterPages(chapterId: string) {
   const json = (await res.json()) as { baseUrl?: string; chapter?: { hash?: string; data?: string[] } }
   return { base: json.baseUrl || '', hash: json.chapter?.hash || '', files: json.chapter?.data || [] }
 }
+let doujinTagCache: string | null = null
+
+async function doujinTag() {
+  if (doujinTagCache) return doujinTagCache
+  try {
+    const res = await fetch(API + '/manga/tag', { headers: HEADERS, next: { revalidate: 86400 } })
+    if (!res.ok) return ''
+    const json = (await res.json()) as { data?: { id: string; attributes?: { name?: Record<string, string> } }[] }
+    const hit = (json.data || []).find((t) => (t.attributes?.name?.en || '').toLowerCase() === 'doujinshi')
+    doujinTagCache = hit?.id || ''
+  } catch {
+    doujinTagCache = ''
+  }
+  return doujinTagCache
+}
+
+export type DoujinChapter = MangaChapter & { lang: string }
+
+export async function listDoujin(page = 1) {
+  const tag = await doujinTag()
+  const p = new URLSearchParams()
+  if (tag) p.append('includedTags[]', tag)
+  p.append('includes[]', 'cover_art')
+  p.append('hasAvailableChapters', 'true')
+  p.append('order[followedCount]', 'desc')
+  for (const r of ['erotica', 'pornographic']) p.append('contentRating[]', r)
+  p.set('limit', '28')
+  p.set('offset', String((Math.max(1, page) - 1) * 28))
+
+  const res = await fetch(API + '/manga?' + p.toString(), { headers: HEADERS, cache: 'no-store' })
+  if (!res.ok) throw new Error('mangadex ' + res.status)
+  const json = (await res.json()) as { data?: Raw[]; total?: number }
+  const items = (json.data || []).map(shape).filter((m) => m.title)
+  return { items, hasNext: (json.total ?? 0) > Math.max(1, page) * 28 }
+}
+
+/** Doujinshi is rarely translated to Turkish, so every language is listed with its code. */
+export async function listChaptersAll(id: string): Promise<DoujinChapter[]> {
+  const p = new URLSearchParams()
+  p.append('order[chapter]', 'asc')
+  p.set('limit', '300')
+  p.append('includes[]', 'scanlation_group')
+  const res = await fetch(API + '/manga/' + id + '/feed?' + p.toString(), { headers: HEADERS, cache: 'no-store' })
+  if (!res.ok) return []
+  const json = (await res.json()) as {
+    data?: {
+      id: string
+      attributes?: { chapter?: string | null; title?: string | null; pages?: number; translatedLanguage?: string }
+      relationships?: { type: string; attributes?: { name?: string } }[]
+    }[]
+  }
+  return (json.data || [])
+    .map((ch) => ({
+      id: ch.id,
+      number: ch.attributes?.chapter || '',
+      title: ch.attributes?.title || '',
+      group: ch.relationships?.find((r) => r.type === 'scanlation_group')?.attributes?.name || '',
+      pages: ch.attributes?.pages || 0,
+      lang: ch.attributes?.translatedLanguage || '',
+    }))
+    .filter((ch) => ch.pages > 0)
+}
