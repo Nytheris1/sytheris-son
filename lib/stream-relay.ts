@@ -1,6 +1,6 @@
 import 'server-only'
 import { clientIp, rateLimit, tooMany } from '@/lib/rate-limit'
-import { safeFetch } from '@/lib/safe-url'
+import { hostAllowed, safeFetch } from '@/lib/safe-url'
 
 const UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
@@ -108,7 +108,7 @@ export async function handle(req: Request, method: 'GET' | 'HEAD'): Promise<Resp
   } catch {
     return new Response('Çözümlenemeyen url.', { status: 400 })
   }
-  const ref = pickReferer(target, searchParams.get('referer') ?? searchParams.get('r'))
+  if (!hostAllowed(target)) return new Response(Host izinli degil: , { status: 403 })\n  const ref = pickReferer(target, searchParams.get('referer') ?? searchParams.get('r'))
 
   const forward: Record<string, string> = {
     'User-Agent': UA,
@@ -129,7 +129,7 @@ export async function handle(req: Request, method: 'GET' | 'HEAD'): Promise<Resp
       headers: forward,
       cache: 'no-store',
       signal: AbortSignal.timeout(45_000),
-    })
+    }, 4, true)
     if (!res) return new Response('Bu adres proxy üzerinden okunamaz.', { status: 400 })
     upstream = res
   } catch {

@@ -38,7 +38,75 @@ export function isPrivateAddress(ip: string) {
   return true
 }
 
-export async function publicUrl(raw: string): Promise<URL | null> {
+/**
+ * Suffix allowlist for the media relays. Without it a relay is an open proxy: any public host on the
+ * internet can be pulled through our egress. Entries are registrable domains, subdomains match too.
+ * `PROXY_HOSTS_EXTRA` appends more at runtime as a comma separated list, so a missing CDN never
+ * needs a code change.
+ */
+const PROXY_HOSTS = [
+  'animepahe.ru',
+  'animepahe.com',
+  'kwik.cx',
+  'kwi.kz',
+  'kwik.si',
+  'bysekoze.com',
+  'hianime.to',
+  'megacloud.tv',
+  'rapid-cloud.co',
+  'gogocdn.net',
+  'gogoanime3.co',
+  'animekai.to',
+  'anify.tv',
+  'anizone.to',
+  'mp4upload.com',
+  'filemoon.sx',
+  'doodstream.com',
+  'cloudfront.net',
+  'akamaized.net',
+  'akamaihd.net',
+  'jwpcdn.com',
+  'b-cdn.net',
+  'bunnycdn.com',
+  'hanime.tv',
+  'hanime-cdn.com',
+  'htv-warrior-of-light.com',
+  'apiplayer.ru',
+  'lovable.app',
+  'icefy.top',
+  'vidsrc.mov',
+  'vidsrc.xyz',
+  'vidlink.pro',
+  '2embed.cc',
+  'multiembed.mov',
+  'superembed.com',
+  'tmdb.org',
+  'youtube.com',
+  'ytimg.com',
+  'nhentai.net',
+  'mangadex.org',
+  'rule34.us',
+  'safebooru.org',
+  'pinterest.com',
+]
+
+export function hostAllowed(raw: string) {
+  let host: string
+  try {
+    host = new URL(raw).hostname.toLowerCase().replace(/^\[|\]$/g, '')
+  } catch {
+    return false
+  }
+  const extra = (process.env.PROXY_HOSTS_EXTRA || '')
+    .split(',')
+    .map((h) => h.trim().toLowerCase())
+    .filter(Boolean)
+  return [...PROXY_HOSTS, ...extra].some((d) => host === d || host.endsWith(`.${d}`))
+}
+
+type Resolved = { url: URL; addresses: string[] }
+
+async function resolve(raw: string): Promise<Resolved | null> {
   let url: URL
   try {
     url = new URL(raw)
@@ -50,26 +118,64 @@ export async function publicUrl(raw: string): Promise<URL | null> {
   if (url.port && !['80', '443', '8080', '8443'].includes(url.port)) return null
   const host = url.hostname.replace(/^\[|\]$/g, '')
   if (!host || host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.internal') || host.endsWith('.local')) return null
-  if (isIP(host)) return isPrivateAddress(host) ? null : url
+  if (isIP(host)) return isPrivateAddress(host) ? null : { url, addresses: [host] }
   try {
     const addrs = await lookup(host, { all: true, verbatim: true })
     if (!addrs.length || addrs.some((a) => isPrivateAddress(a.address))) return null
+    return { url, addresses: addrs.map((a) => a.address) }
   } catch {
     return null
   }
-  return url
+}
+
+export async function publicUrl(raw: string): Promise<URL | null> {
+  const resolved = await resolve(raw)
+  return resolved ? resolved.url : null
+}
+
+type LookupFn = (
+  hostname: string,
+  options: unknown,
+  callback: (err: Error | null, address: string, family: number) => void,
+) => void
+
+/**
+ * Pins the connection to the address we already validated, so a second DNS answer cannot move the
+ * socket onto the private network between validation and connect. Silently degrades to plain
+ * fetch() where undici is unavailable.
+ */
+async function pinnedAgent(address: string) {
+  const family = isIP(address)
+  if (!family) return undefined
+  try {
+    const undici = (await import('undici')) as unknown as { Agent: new (opts: unknown) => unknown }
+    const pinned: LookupFn = (_hostname, _options, callback) => callback(null, address, family)
+    return new undici.Agent({ connect: { lookup: pinned, timeout: 10_000 }, connections: 1, keepAliveTimeout: 1_000 })
+  } catch {
+    return undefined
+  }
 }
 
 /** fetch() that re-validates every redirect hop so a public URL can't bounce the server into the private network. */
-export async function safeFetch(raw: string, init: RequestInit = {}, maxRedirects = 4): Promise<Response | null> {
+export async function safeFetch(
+  raw: string,
+  init: RequestInit = {},
+  maxRedirects = 4,
+  enforceHosts = false,
+): Promise<Response | null> {
   let current = raw
   for (let hop = 0; hop <= maxRedirects; hop++) {
-    const url = await publicUrl(current)
-    if (!url) return null
-    const res = await fetch(url, { ...init, redirect: 'manual' })
+    if (enforceHosts && !hostAllowed(current)) return null
+    const resolved = await resolve(current)
+    if (!resolved) return null
+    const agent = await pinnedAgent(resolved.addresses[0])
+    const options = agent
+      ? ({ ...init, redirect: 'manual', dispatcher: agent } as RequestInit)
+      : { ...init, redirect: 'manual' as RequestRedirect }
+    const res = await fetch(resolved.url, options)
     const location = res.status >= 300 && res.status < 400 ? res.headers.get('location') : null
     if (!location) return res
-    current = new URL(location, url).toString()
+    current = new URL(location, resolved.url).toString()
   }
   return null
 }
