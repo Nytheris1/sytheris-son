@@ -19,17 +19,20 @@ export function syntheticEpisodes(total: number, isMovie: boolean) {
   return Array.from({ length: n }, (_, i) => i + 1)
 }
 const ENDPOINT = 'https://graphql.anilist.co'
-const EP_QUERY = 'query ($id: Int) { Media(id: $id) { episodes streamingEpisodes { title thumbnail } } }'
+const EP_QUERY =
+  'query ($id: Int) { Media(id: $id) { format episodes nextAiringEpisode { episode } streamingEpisodes { title thumbnail } } }'
 
 export type AniEpisode = { id: string; number: number; title: string; thumbnail: string | null }
 
 /**
  * Real episode titles and stills come from AniList's streamingEpisodes. The count follows AniList's own
- * episode number, so a title with 8 episodes never lists 12. Falls back to `count` when AniList is silent.
+ * data: the total episode number, otherwise how many episodes have aired, otherwise a format based
+ * guess. The list is therefore never empty, even for titles AniList has no episode count for.
  */
 export const aniEpisodes = cache(async (animeId: number, count: number): Promise<AniEpisode[]> => {
   let titles: { title: string; thumbnail: string | null }[] = []
   let total = count
+  let format = ''
   try {
     const res = await fetch(ENDPOINT, {
       method: 'POST',
@@ -39,11 +42,21 @@ export const aniEpisodes = cache(async (animeId: number, count: number): Promise
     })
     if (res.ok) {
       const json = (await res.json()) as {
-        data?: { Media?: { episodes?: number | null; streamingEpisodes?: { title?: string; thumbnail?: string }[] } }
+        data?: {
+          Media?: {
+            format?: string | null
+            episodes?: number | null
+            nextAiringEpisode?: { episode?: number | null } | null
+            streamingEpisodes?: { title?: string; thumbnail?: string }[]
+          }
+        }
       }
       const media = json.data?.Media
       if (media) {
+        format = media.format || ''
+        const aired = media.nextAiringEpisode?.episode ? media.nextAiringEpisode.episode - 1 : 0
         if (media.episodes) total = media.episodes
+        else if (aired > 0) total = aired
         titles = (media.streamingEpisodes || []).map((e) => ({ title: e.title || '', thumbnail: e.thumbnail || null }))
         if (titles.length > total) total = titles.length
       }
@@ -51,6 +64,7 @@ export const aniEpisodes = cache(async (animeId: number, count: number): Promise
   } catch {
     /* AniList sustu, mevcut sayıyla devam */
   }
+  if (!total) total = format === 'MOVIE' ? 1 : 12
   const n = Math.min(Math.max(total || 1, 1), 2000)
   return Array.from({ length: n }, (_, i) => ({
     id: 'a' + animeId + '-e' + (i + 1),

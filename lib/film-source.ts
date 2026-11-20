@@ -100,3 +100,45 @@ export const resolveTmdbId = cache(async (title: string, year: number | null): P
     return null
   }
 })
+
+
+/** TMDB genre ids for our own genre slugs. `klasik` has no TMDB counterpart, it filters by decade instead. */
+const TMDB_GENRES: Record<string, number> = {
+  aksiyon: 28,
+  bilimkurgu: 878,
+  gerilim: 53,
+  dram: 18,
+  komedi: 35,
+  korku: 27,
+  romantik: 10749,
+  aile: 10751,
+  belgesel: 99,
+  western: 37,
+}
+
+/** Paged popular catalogue. This is what makes the film mode broad instead of a fixed chart. */
+export const discoverFilms = cache(async (genre: string | null, page: number): Promise<TmdbFilm[]> => {
+  if (!KEY) return []
+  const p = new URLSearchParams({
+    language: 'tr-TR',
+    include_adult: 'false',
+    page: String(Math.min(Math.max(page, 1), 500)),
+    'vote_count.gte': '25',
+  })
+  const gid = genre ? TMDB_GENRES[genre] : 0
+  if (gid) p.set('with_genres', String(gid))
+  if (genre === 'klasik') {
+    p.set('sort_by', 'vote_count.desc')
+    p.set('primary_release_date.lte', '1979-12-31')
+  } else {
+    p.set('sort_by', 'popularity.desc')
+  }
+  try {
+    const res = await fetch(url(BASE + '/discover/movie?' + p.toString()), { headers: headers(), next: { revalidate: 3600 } })
+    if (!res.ok) return []
+    const json = (await res.json()) as { results?: Raw[] }
+    return (json.results || []).map(shape).slice(0, 42)
+  } catch {
+    return []
+  }
+})

@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Search } from 'lucide-react'
 import { FILM_GENRES, getFilmsByGenre, getTopFilms, isFilmGenre } from '@/lib/films'
-import { hasKey, searchFilms } from '@/lib/film-source'
+import { discoverFilms, hasKey, searchFilms, type TmdbFilm } from '@/lib/film-source'
 import { cn } from '@/lib/utils'
 import { FilmCard } from '@/components/film/film-card'
 
@@ -11,13 +11,38 @@ export const metadata: Metadata = {
   description: 'Türkiye listelerinden güncel filmler ve tüm arşivde arama.',
 }
 
-export default async function FilmsPage({ searchParams }: { searchParams: Promise<{ tur?: string; q?: string }> }) {
-  const { tur, q: rawQ } = await searchParams
+function TmdbCard({ film }: { film: TmdbFilm }) {
+  return (
+    <Link href={'/film/izle/' + film.id} className="group flex flex-col gap-3 outline-none">
+      <span className="relative block aspect-[2/3] overflow-hidden rounded-md bg-muted ring-1 ring-border transition duration-500 group-hover:-translate-y-1 group-hover:shadow-[0_28px_60px_-24px_rgb(0_0_0/0.8),0_0_0_1px_var(--primary)]">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={film.poster || '/placeholder.svg'} alt="" loading="lazy" decoding="async" className="size-full object-cover transition duration-700 group-hover:scale-[1.04]" />
+        <span className="cine-card-light pointer-events-none absolute inset-0" aria-hidden="true" />
+      </span>
+      <span className="flex flex-col gap-1">
+        <span className="line-clamp-2 text-sm font-semibold leading-snug transition group-hover:text-ink">{film.title}</span>
+        <span className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+          {film.year ? <span>{film.year}</span> : null}
+        </span>
+      </span>
+    </Link>
+  )
+}
+
+export default async function FilmsPage({ searchParams }: { searchParams: Promise<{ tur?: string; q?: string; sayfa?: string }> }) {
+  const { tur, q: rawQ, sayfa } = await searchParams
   const q = (rawQ || '').trim()
   const genre = isFilmGenre(tur) ? FILM_GENRES.find((g) => g.id === tur)! : null
+  const page = Math.min(Math.max(Number(sayfa) || 1, 1), 500)
 
   const found = q.length >= 2 ? await searchFilms(q) : []
-  const films = q.length >= 2 ? [] : genre ? await getFilmsByGenre(genre.id, 60) : await getTopFilms(80)
+  const browse = q.length < 2
+
+  const charts = browse && page === 1 ? (genre ? await getFilmsByGenre(genre.id, 60) : await getTopFilms(80)) : []
+  const discovered = browse ? await discoverFilms(genre?.id ?? null, page) : []
+  const chartTitles = new Set(charts.map((f) => f.title.toLocaleLowerCase('tr')))
+  const extra = discovered.filter((f) => !chartTitles.has(f.title.toLocaleLowerCase('tr')))
+  const moreHref = `/filmler?${new URLSearchParams({ ...(genre ? { tur: genre.id } : {}), sayfa: String(page + 1) }).toString()}`
 
   return (
     <div className="cine dark min-h-dvh">
@@ -30,7 +55,7 @@ export default async function FilmsPage({ searchParams }: { searchParams: Promis
             {q ? 'Arama' : genre ? genre.label : 'Tüm'} <span className="accent-serif">{q ? 'sonuçları' : 'filmler'}</span>
           </h1>
           <p className="max-w-xl text-pretty leading-relaxed text-muted-foreground">
-            {q ? `"${q}" için bulunanlar.` : genre ? genre.blurb : 'Türkiye’de bu hafta en çok izlenenler. Arşivin tamamında aramak için yukarıdaki kutuyu kullan.'}
+            {q ? `"${q}" için bulunanlar.` : genre ? genre.blurb : 'Türkiye’de bu hafta en çok izlenenler ve popüler arşiv. Arşivin tamamında aramak için yukarıdaki kutuyu kullan.'}
           </p>
         </header>
 
@@ -47,16 +72,7 @@ export default async function FilmsPage({ searchParams }: { searchParams: Promis
             <ul className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
               {found.map((f) => (
                 <li key={f.id}>
-                  <Link href={'/film/izle/' + f.id} className="group flex flex-col gap-2">
-                    <div className="relative aspect-[2/3] overflow-hidden rounded-xl border border-border bg-muted">
-                      {f.poster ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={f.poster} alt={f.title} className="size-full object-cover transition group-hover:scale-[1.03]" />
-                      ) : null}
-                    </div>
-                    <p className="line-clamp-2 text-sm font-medium">{f.title}</p>
-                    {f.year ? <p className="font-mono text-[10px] text-muted-foreground">{f.year}</p> : null}
-                  </Link>
+                  <TmdbCard film={f} />
                 </li>
               ))}
             </ul>
@@ -76,14 +92,31 @@ export default async function FilmsPage({ searchParams }: { searchParams: Promis
               ))}
             </nav>
 
-            {films.length ? (
-              <ul className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-                {films.map((f, i) => (
-                  <li key={f.id}>
-                    <FilmCard film={f} rank={i < 10 ? i + 1 : undefined} />
-                  </li>
-                ))}
-              </ul>
+            {charts.length + extra.length ? (
+              <>
+                <ul className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+                  {charts.map((f, i) => (
+                    <li key={f.id}>
+                      <FilmCard film={f} rank={i < 10 ? i + 1 : undefined} />
+                    </li>
+                  ))}
+                  {extra.map((f) => (
+                    <li key={'t' + f.id}>
+                      <TmdbCard film={f} />
+                    </li>
+                  ))}
+                </ul>
+                <div className="flex items-center justify-center gap-3 pt-4">
+                  {page > 1 && (
+                    <Link href={`/filmler?${new URLSearchParams({ ...(genre ? { tur: genre.id } : {}), sayfa: String(page - 1) }).toString()}`} className="rounded-full border border-border px-6 py-3 text-sm font-medium transition hover:border-foreground/40">
+                      Önceki
+                    </Link>
+                  )}
+                  <Link href={moreHref} className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:brightness-110">
+                    Daha fazla
+                  </Link>
+                </div>
+              </>
             ) : (
               <p className="rounded-3xl border border-dashed border-border p-10 text-center text-muted-foreground">Bu tür için şu an film listelenemiyor.</p>
             )}

@@ -81,9 +81,11 @@ export default async function AnimePage({ params }: Props) {
     ['Diğer adlar', media.synonyms?.slice(0, 2).join(', ')],
   ]
 
+  const episodeList = episodes.length ? episodes : await aniEpisodes(animeId, (media as { episodes?: number | null } | null)?.episodes ?? 0)
+
   const sections = [
     { id: 'genel', label: 'Genel bakış' },
-    ...((episodes.length || ((media as { episodes?: number | null } | null)?.episodes ?? 0) > 0) ? [{ id: 'bolumler', label: 'Bölümler', count: episodes.length || ((media as { episodes?: number | null } | null)?.episodes ?? 0) }] : []),
+    { id: 'bolumler', label: 'Bölümler', count: episodeList.length },
     ...(characters.length ? [{ id: 'karakterler', label: 'Karakterler', count: characters.length }] : []),
     ...(relations.length ? [{ id: 'iliskili', label: 'Evren', count: relations.length }] : []),
     { id: 'istatistik', label: 'İstatistik' },
@@ -178,7 +180,7 @@ export default async function AnimePage({ params }: Props) {
           <section id="bolumler" className="flex scroll-mt-36 flex-col gap-6">
             <SectionHeading eyebrow="Sytheris oynatıcı" title="Bölümler" accent="izle" description="Türkçe altyazılı bölümler doğrudan sitede." />
             <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {(episodes.length ? episodes : await aniEpisodes(animeId, (media as { episodes?: number | null } | null)?.episodes ?? 0)).map((ep) => (
+              {episodeList.map((ep) => (
                 <li key={ep.id}>
                   <Link href={`/anime/${animeId}/izle/${ep.number}`} className="group flex items-center gap-4 rounded-2xl border border-border bg-card p-3 transition hover:-translate-y-0.5 hover:border-primary">
                     <span className="relative grid aspect-video w-32 shrink-0 place-items-center overflow-hidden rounded-xl bg-muted">
