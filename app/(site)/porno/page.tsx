@@ -153,7 +153,7 @@ export default async function PornoPage({ searchParams }: { searchParams: SP }) 
                     </span>
                   ) : null}
                 </div>
-                <p className="font-mono text-[10px] uppercase tracking-wider text-rose-400/70">{v.src === 'ph' ? 'pornhub' : v.src === 'xv' ? 'xvideos' : 'hqporner'}</p>
+                <p className="font-mono text-[10px] uppercase tracking-wider text-rose-400/70">{v.src === 'ph' ? 'pornhub' : 'xvideos'}</p>
                 <h2 className="line-clamp-2 text-[13px] font-medium leading-snug text-white/80 transition group-hover:text-white">{v.title}</h2>
               </Link>
             ))}

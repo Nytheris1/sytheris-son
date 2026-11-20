@@ -10,7 +10,6 @@ type S = { label: string; url: string }
 const REFERER: Record<string, string> = {
   ph: 'https://www.pornhub.com/',
   xv: 'https://www.xvideos.com/',
-  hq: 'https://hqporner.com/',
 }
 
 const relay = (url: string, referer: string) =>

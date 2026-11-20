@@ -2,17 +2,16 @@ import 'server-only'
 
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
 
-export type Src = 'ph' | 'xv' | 'hq'
+export type Src = 'ph' | 'xv'
 export type PornItem = { id: string; src: Src; title: string; thumb: string; duration: number; path: string }
 export type PornSourceLink = { label: string; url: string }
 
 export const SOURCES: { id: Src; label: string; home: string }[] = [
   { id: 'ph', label: 'Pornhub', home: 'https://www.pornhub.com/' },
   { id: 'xv', label: 'XVideos', home: 'https://www.xvideos.com/' },
-  { id: 'hq', label: 'HQPorner', home: 'https://hqporner.com/' },
 ]
 
-const REFERER: Record<Src, string> = { ph: 'https://www.pornhub.com/', xv: 'https://www.xvideos.com/', hq: 'https://hqporner.com/' }
+const REFERER: Record<Src, string> = { ph: 'https://www.pornhub.com/', xv: 'https://www.xvideos.com/' }
 
 const headers = (src: Src) => ({
   'User-Agent': UA,
@@ -76,20 +75,17 @@ function parseHq(html: string): PornItem[] {
   return out
 }
 
-const PARSERS: Record<Src, (html: string) => PornItem[]> = { ph: parsePh, xv: parseXv, hq: parseHq }
+const PARSERS: Record<Src, (html: string) => PornItem[]> = { ph: parsePh, xv: parseXv }
 
-const searchUrl = (src: Src, q: string, page: number) => {
-  if (src === 'ph') return 'https://www.pornhub.com/video/search?search=' + encodeURIComponent(q) + (page > 1 ? '&page=' + page : '')
-  if (src === 'xv') return 'https://www.xvideos.com/?k=' + encodeURIComponent(q) + (page > 1 ? '&p=' + page : '')
-  return 'https://hqporner.com/?q=' + encodeURIComponent(q) + (page > 1 ? '&p=' + page : '')
-}
+const searchUrl = (src: Src, q: string, page: number) =>
+  src === 'ph'
+    ? 'https://www.pornhub.com/video/search?search=' + encodeURIComponent(q) + (page > 1 ? '&page=' + page : '')
+    : 'https://www.xvideos.com/?k=' + encodeURIComponent(q) + (page > 1 ? '&p=' + page : '')
 
-const browseUrl = (src: Src, page: number) => {
-  if (src === 'ph') return 'https://www.pornhub.com/video?o=tr' + (page > 1 ? '&page=' + page : '')
-  if (src === 'xv') return 'https://www.xvideos.com/best/' + page
-  return 'https://hqporner.com/top' + (page > 1 ? '?p=' + page : '')
-}
-
+const browseUrl = (src: Src, page: number) =>
+  src === 'ph'
+    ? 'https://www.pornhub.com/video?o=tr' + (page > 1 ? '&page=' + page : '')
+    : 'https://www.xvideos.com/best/' + page
 async function fromSource(src: Src, q: string, page: number): Promise<PornItem[]> {
   const url = q ? searchUrl(src, clean(q), page) : browseUrl(src, page)
   try {
