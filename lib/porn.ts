@@ -132,11 +132,16 @@ export async function resolveSources(src: Src, path: string): Promise<PornSource
   }
 
   if (src === 'ph') {
-    for (const m of body.matchAll(/"video_url"\s*:\s*"([^"]+\.mp4[^"]*)"/g)) push('mp4', m[1])
-    for (const m of body.matchAll(/"quality"\s*:\s*"(\d+)"/g)) {
-      const at = body.indexOf(m[0])
-      const near = body.slice(at, at + 300).match(/"video_url"\s*:\s*"([^"]+)"/)
-      if (near) push(m[1] + 'p', near[1])
+    for (const m of body.matchAll(/\{[^{}]*?"videoUrl"\s*:\s*"([^"]+)"[^{}]*?\}/g)) {
+      const block = m[0]
+      const fmt = (block.match(/"format"\s*:\s*"(\w+)"/) || [])[1] || ''
+      const height = (block.match(/"height"\s*:\s*(\d+)/) || [])[1] || ''
+      if (fmt === 'hls') push('hls', m[1])
+      else if (height) push(height + 'p', m[1])
+      else push('mp4', m[1])
+    }
+    if (!out.length) {
+      for (const m of body.matchAll(/"videoUrl"\s*:\s*"([^"]+)"/g)) push('mp4', m[1])
     }
   } else if (src === 'xv') {
     const pick = (fn: string) => (body.match(new RegExp(fn + "\\('([^']+)'\\)")) || [])[1] || ''
@@ -149,6 +154,22 @@ export async function resolveSources(src: Src, path: string): Promise<PornSource
   } else {
     for (const m of body.matchAll(/<source[^>]+src="([^"]+\.mp4[^"]*)"/gi)) push('mp4', m[1])
     for (const m of body.matchAll(/https:\/\/[^"'\s]+\.mp4[^"'\s]*/g)) push('mp4', m[0])
+
+    if (!out.length) {
+      const frame = (body.match(/<iframe[^>]+src="([^"]+)"/i) || [])[1] || ''
+      if (frame) {
+        const inner = frame.startsWith('http') ? frame : pageUrl(src, frame)
+        try {
+          const sub = await fetch(inner, { headers: headers(src), cache: 'no-store' })
+          if (sub.ok) {
+            const text = await sub.text()
+            for (const m of text.matchAll(/https:\/\/[^"'\s]+\.mp4[^"'\s]*/g)) push('mp4', m[0])
+          }
+        } catch {
+          /* iframe acilmadi */
+        }
+      }
+    }
   }
 
   return out
