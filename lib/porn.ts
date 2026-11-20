@@ -131,17 +131,38 @@ export async function resolveSources(src: Src, path: string): Promise<PornSource
     if (u.startsWith('http') && !out.some((o) => o.url === u)) out.push({ label, url: u })
   }
 
+  /** Pornhub serves signed get_media JSON endpoints; the real mp4 list is inside that reply. */
+  const followPh = async (endpoint: string) => {
+    try {
+      const r = await fetch(endpoint, { headers: { ...headers('ph'), Accept: 'application/json' }, cache: 'no-store' })
+      if (!r.ok) return
+      const text = await r.text()
+      for (const m of text.matchAll(/"videoUrl"\s*:\s*"([^"]+)"/g)) {
+        const block = text.slice(Math.max(0, m.index - 220), (m.index || 0) + 40)
+        const height = (block.match(/"height"\s*:\s*(\d+)/) || [])[1] || ''
+        push(height ? height + 'p' : 'mp4', m[1])
+      }
+      for (const m of text.matchAll(/https:\/\/[^"'\s]+\.mp4[^"'\s]*/g)) push('mp4', m[0])
+    } catch {
+      /* get_media acilmadi */
+    }
+  }
+
   if (src === 'ph') {
+    const pending: string[] = []
     for (const m of body.matchAll(/\{[^{}]*?"videoUrl"\s*:\s*"([^"]+)"[^{}]*?\}/g)) {
       const block = m[0]
       const fmt = (block.match(/"format"\s*:\s*"(\w+)"/) || [])[1] || ''
       const height = (block.match(/"height"\s*:\s*(\d+)/) || [])[1] || ''
-      if (fmt === 'hls') push('hls', m[1])
-      else if (height) push(height + 'p', m[1])
-      else push('mp4', m[1])
+      const u = m[1].replace(/\\\//g, '/')
+      if (u.includes('/get_media')) pending.push(u)
+      else if (fmt === 'hls') push('hls', u)
+      else if (height) push(height + 'p', u)
+      else push('mp4', u)
     }
+    for (const endpoint of pending.slice(0, 2)) await followPh(endpoint)
     if (!out.length) {
-      for (const m of body.matchAll(/"videoUrl"\s*:\s*"([^"]+)"/g)) push('mp4', m[1])
+      for (const m of body.matchAll(/https:\/\/[^"'\s]+\.mp4[^"'\s]*/g)) push('mp4', m[0])
     }
   } else if (src === 'xv') {
     const pick = (fn: string) => (body.match(new RegExp(fn + "\\('([^']+)'\\)")) || [])[1] || ''
