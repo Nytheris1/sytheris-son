@@ -41,27 +41,55 @@ for (const r of ['safe', 'suggestive', 'erotica', 'pornographic']) BASE_QUERY.ap
 
 /** MangaDex TR coverage is thin, so the listing is built from Turkish chapter uploads, not from titles. */
 /** Everything that actually has a Turkish chapter, most followed first; falls back if the filter is rejected. */
-export async function listManga(q: string, page = 1) {
-  const p = new URLSearchParams()
-  p.append('availableTranslatedLanguage[]', 'tr')
-  p.append('includes[]', 'cover_art')
-  p.append('hasAvailableChapters', 'true')
-  p.append('order[followedCount]', 'desc')
-  for (const r of ['safe', 'suggestive', 'erotica', 'pornographic']) p.append('contentRating[]', r)
-  p.set('limit', '30')
-  p.set('offset', String((Math.max(1, page) - 1) * 30))
-  if (q) p.set('title', q)
+const RATINGS = ['safe', 'suggestive', 'erotica', 'pornographic']
 
-  let res = await fetch(API + '/manga?' + p.toString(), { headers: HEADERS, cache: 'no-store' })
-  if (!res.ok) {
-    p.delete('availableTranslatedLanguage[]')
-    res = await fetch(API + '/manga?' + p.toString(), { headers: HEADERS, cache: 'no-store' })
+/** Collects manga ids that provably have a Turkish chapter by walking the TR chapter feed. */
+async function trIds(q: string, page: number) {
+  const seen = new Set<string>()
+  for (let slice = 0; slice < 3; slice++) {
+    const p = new URLSearchParams()
+    p.append('translatedLanguage[]', 'tr')
+    p.append('order[readableAt]', 'desc')
+    p.append('includes[]', 'manga')
+    p.set('limit', '100')
+    p.set('offset', String((page - 1) * 300 + slice * 100))
+    for (const r of RATINGS) p.append('contentRating[]', r)
+    if (q) p.set('title', q)
+
+    const res = await fetch(API + '/chapter?' + p.toString(), { headers: HEADERS, cache: 'no-store' })
+    if (!res.ok) break
+    const json = (await res.json()) as { data?: { relationships?: { type: string; id: string }[] }[] }
+    const rows = json.data || []
+    for (const ch of rows) {
+      const id = ch.relationships?.find((r) => r.type === 'manga')?.id
+      if (id) seen.add(id)
+    }
+    if (rows.length < 100) break
   }
-  if (!res.ok) throw new Error('mangadex ' + res.status + ' ' + (await res.text()).slice(0, 200))
+  return [...seen]
+}
 
-  const json = (await res.json()) as { data?: Raw[]; total?: number }
-  const items = (json.data || []).map(shape).filter((m) => m.title)
-  return { items, hasNext: (json.total ?? 0) > Math.max(1, page) * 30 }
+export async function listManga(q: string, page = 1) {
+  const ids = await trIds(q, Math.max(1, page))
+  if (!ids.length) return { items: [] as MangaCard[], hasNext: false }
+
+  const found = new Map<string, MangaCard>()
+  for (let i = 0; i < ids.length; i += 100) {
+    const mp = new URLSearchParams()
+    for (const id of ids.slice(i, i + 100)) mp.append('ids[]', id)
+    mp.append('includes[]', 'cover_art')
+    mp.set('limit', '100')
+    const res = await fetch(API + '/manga?' + mp.toString(), { headers: HEADERS, cache: 'no-store' })
+    if (!res.ok) continue
+    const json = (await res.json()) as { data?: Raw[] }
+    for (const raw of json.data || []) {
+      const card = shape(raw)
+      if (card.title) found.set(card.id, card)
+    }
+  }
+
+  const items = ids.map((id) => found.get(id)).filter((m): m is MangaCard => Boolean(m))
+  return { items, hasNext: ids.length >= 60 }
 }
 export async function getManga(id: string) {
   if (!/^[0-9a-f-]{36}$/i.test(id)) return null
