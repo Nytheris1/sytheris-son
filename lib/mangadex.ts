@@ -43,53 +43,63 @@ for (const r of ['safe', 'suggestive', 'erotica', 'pornographic']) BASE_QUERY.ap
 /** Everything that actually has a Turkish chapter, most followed first; falls back if the filter is rejected. */
 const RATINGS = ['safe', 'suggestive', 'erotica', 'pornographic']
 
-/** Collects manga ids that provably have a Turkish chapter by walking the TR chapter feed. */
-async function trIds(q: string, page: number) {
-  const seen = new Set<string>()
-  for (let slice = 0; slice < 3; slice++) {
-    const p = new URLSearchParams()
-    p.append('translatedLanguage[]', 'tr')
-    p.append('order[readableAt]', 'desc')
-    p.append('includes[]', 'manga')
-    p.set('limit', '100')
-    p.set('offset', String((page - 1) * 300 + slice * 100))
-    for (const r of RATINGS) p.append('contentRating[]', r)
-    if (q) p.set('title', q)
-
-    const res = await fetch(API + '/chapter?' + p.toString(), { headers: HEADERS, cache: 'no-store' })
-    if (!res.ok) break
-    const json = (await res.json()) as { data?: { relationships?: { type: string; id: string }[] }[] }
-    const rows = json.data || []
-    for (const ch of rows) {
-      const id = ch.relationships?.find((r) => r.type === 'manga')?.id
-      if (id) seen.add(id)
-    }
-    if (rows.length < 100) break
+/** A single cheap request tells whether the title really has a Turkish chapter. */
+async function hasTr(id: string) {
+  const p = new URLSearchParams()
+  p.append('translatedLanguage[]', 'tr')
+  p.set('limit', '1')
+  try {
+    const res = await fetch(API + '/manga/' + id + '/feed?' + p.toString(), {
+      headers: HEADERS,
+      next: { revalidate: 3600 },
+    })
+    if (!res.ok) return false
+    const json = (await res.json()) as { data?: unknown[] }
+    return (json.data?.length ?? 0) > 0
+  } catch {
+    return false
   }
-  return [...seen]
 }
 
+/**
+ * Popular titles first, but only those that actually carry a Turkish chapter. Verification runs in small
+ * batches against the cached feed endpoint so a page of results stays fast on repeat visits.
+ */
 export async function listManga(q: string, page = 1) {
-  const ids = await trIds(q, Math.max(1, page))
-  if (!ids.length) return { items: [] as MangaCard[], hasNext: false }
+  const need = 24
+  const out: MangaCard[] = []
+  let offset = (Math.max(1, page) - 1) * 100
+  let rounds = 0
 
-  const found = new Map<string, MangaCard>()
-  for (let i = 0; i < ids.length; i += 100) {
-    const mp = new URLSearchParams()
-    for (const id of ids.slice(i, i + 100)) mp.append('ids[]', id)
-    mp.append('includes[]', 'cover_art')
-    mp.set('limit', '100')
-    const res = await fetch(API + '/manga?' + mp.toString(), { headers: HEADERS, cache: 'no-store' })
-    if (!res.ok) continue
+  while (out.length < need && rounds < 4) {
+    const p = new URLSearchParams()
+    p.append('includes[]', 'cover_art')
+    p.append('hasAvailableChapters', 'true')
+    p.append('order[followedCount]', 'desc')
+    for (const r of RATINGS) p.append('contentRating[]', r)
+    p.set('limit', '100')
+    p.set('offset', String(offset))
+    if (q) p.set('title', q)
+
+    const res = await fetch(API + '/manga?' + p.toString(), { headers: HEADERS, next: { revalidate: 600 } })
+    if (!res.ok) break
     const json = (await res.json()) as { data?: Raw[] }
-    for (const raw of json.data || []) {
-      const card = shape(raw)
-      if (card.title) found.set(card.id, card)
+    const rows = (json.data || []).map(shape).filter((m) => m.title)
+    if (!rows.length) break
+
+    for (let i = 0; i < rows.length && out.length < need; i += 8) {
+      const batch = rows.slice(i, i + 8)
+      const flags = await Promise.all(batch.map((m) => hasTr(m.id)))
+      batch.forEach((m, index) => {
+        if (flags[index] && out.length < need) out.push(m)
+      })
     }
+
+    offset += 100
+    rounds++
   }
 
-  const items = ids.map((id) => found.get(id)).filter((m): m is MangaCard => Boolean(m))
-  return { items, hasNext: ids.length >= 60 }
+  return { items: out, hasNext: out.length >= need }
 }
 export async function getManga(id: string) {
   if (!/^[0-9a-f-]{36}$/i.test(id)) return null
