@@ -7,10 +7,28 @@ import { cn } from '@/lib/utils'
 
 type S = { label: string; url: string }
 
-const relay = (url: string) =>
-  '/api/proxy?url=' + encodeURIComponent(url) + '&referer=' + encodeURIComponent('https://www.xnxx.com/')
+const REFERER: Record<string, string> = {
+  ph: 'https://www.pornhub.com/',
+  xv: 'https://www.xvideos.com/',
+  hq: 'https://hqporner.com/',
+}
 
-export function PornPlayer({ id, slug, title, poster }: { id: string; slug: string; title: string; poster?: string | null }) {
+const relay = (url: string, referer: string) =>
+  '/api/proxy?url=' + encodeURIComponent(url) + '&referer=' + encodeURIComponent(referer)
+
+export function PornPlayer({
+  id,
+  path,
+  src,
+  title,
+  poster,
+}: {
+  id: string
+  path: string
+  src: string
+  title: string
+  poster?: string | null
+}) {
   const [list, setList] = useState<S[] | null>(null)
   const [pick, setPick] = useState(0)
   const [error, setError] = useState('')
@@ -20,7 +38,7 @@ export function PornPlayer({ id, slug, title, poster }: { id: string; slug: stri
     setList(null)
     setError('')
     setPick(0)
-    fetch('/api/porn/sources?id=' + encodeURIComponent(id) + '&s=' + encodeURIComponent(slug))
+    fetch('/api/porn/sources?src=' + encodeURIComponent(src) + '&p=' + encodeURIComponent(path))
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error('kaynak ' + r.status))))
       .then((j: { sources?: S[] }) => {
         if (!live) return
@@ -33,14 +51,14 @@ export function PornPlayer({ id, slug, title, poster }: { id: string; slug: stri
     return () => {
       live = false
     }
-  }, [id, slug])
+  }, [src, path])
 
   if (error) {
     return (
       <div className="flex flex-col gap-3">
         <div className="relative aspect-video overflow-hidden rounded-3xl border border-white/10 bg-black">
           <iframe
-            src={'https://www.xnxx.com/embedframe/' + id}
+            src={'https://www.pornhub.com/embed/' + id}
             title={title}
             className="absolute inset-0 size-full"
             allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
@@ -66,12 +84,14 @@ export function PornPlayer({ id, slug, title, poster }: { id: string; slug: stri
     <div className="flex flex-col gap-3">
       <VideoPlayer
         key={active.url}
-        src={relay(active.url)}
+        src={relay(active.url, REFERER[src] || REFERER.ph)}
         subtitleLang="tr"
         title={title}
         episodeLabel=""
         storageKey={'porn-' + id}
-        poster={poster ? '/api/porn/thumb?u=' + btoa(poster).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '') : null}
+        poster={
+          poster ? '/api/porn/thumb?u=' + btoa(poster).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '') : null
+        }
       />
       {list.length > 1 && (
         <div className="flex flex-wrap items-center gap-1.5">
