@@ -16,9 +16,6 @@ export default async function DoujinReader({ params }: Props) {
   const gallery = await getGallery(id)
   if (!gallery) notFound()
 
-  const media = (await fetch('https://nhentai.net/api/v2/galleries/' + id, { cache: 'no-store' }).then((r) => r.json())) as { media_id?: string }
-  const mediaId = media.media_id || ''
-
   return (
     <div className="dark min-h-screen bg-[#08070a] pb-20 text-white">
       <div className="sticky top-0 z-10 border-b border-white/10 bg-[#08070a]/95 backdrop-blur">
@@ -35,7 +32,7 @@ export default async function DoujinReader({ params }: Props) {
       <div className="mx-auto flex max-w-[900px] flex-col gap-1 px-2 pt-4 sm:px-4">
         {gallery.files.map((file, i) => (
           // eslint-disable-next-line @next/next/no-img-element
-          <img key={file} src={img(imageUrl(mediaId, file))} alt={'sayfa ' + (i + 1)} loading={i < 3 ? 'eager' : 'lazy'} className="w-full rounded-sm bg-white/5" />
+          <img key={file} src={img(imageUrl(file))} alt={'sayfa ' + (i + 1)} loading={i < 3 ? 'eager' : 'lazy'} className="w-full rounded-sm bg-white/5" />
         ))}
         {!gallery.files.length && <p className="py-20 text-center text-sm text-white/40">Sayfalar yüklenemedi.</p>}
       </div>
