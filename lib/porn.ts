@@ -120,10 +120,13 @@ export async function resolveSources(src: Src, path: string): Promise<PornSource
       const r = await fetch(endpoint, { headers: { ...headers('ph'), Accept: 'application/json' }, cache: 'no-store' })
       if (!r.ok) return
       const text = await r.text()
-      for (const m of text.matchAll(/"videoUrl"\s*:\s*"([^"]+)"/g)) {
-        const block = text.slice(Math.max(0, m.index - 220), (m.index || 0) + 40)
+      for (const m of text.matchAll(/\{[^{}]*?"videoUrl"\s*:\s*"([^"]+)"[^{}]*?\}/g)) {
+        const block = m[0]
+        const fmt = (block.match(/"format"\s*:\s*"(\w+)"/) || [])[1] || ''
         const height = (block.match(/"height"\s*:\s*(\d+)/) || [])[1] || ''
-        push(height ? height + 'p' : 'mp4', m[1])
+        if (fmt === 'hls') push('hls', m[1])
+        else if (height) push(height + 'p', m[1])
+        else push('mp4', m[1])
       }
       for (const m of text.matchAll(/https:\/\/[^"'\s]+\.mp4[^"'\s]*/g)) push('mp4', m[0])
     } catch {

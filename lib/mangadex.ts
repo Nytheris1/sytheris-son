@@ -130,7 +130,14 @@ export async function listChapters(id: string): Promise<MangaChapter[]> {
   p.append('order[chapter]', 'asc')
   p.set('limit', '500')
   p.append('includes[]', 'scanlation_group')
-  const res = await mg(API + '/manga/' + id + '/feed?' + p.toString())
+  let res = await mg(API + '/manga/' + id + '/feed?' + p.toString())
+  if (!res || !res.ok) {
+    const q = new URLSearchParams()
+    q.append('translatedLanguage[]', 'tr')
+    q.append('order[chapter]', 'asc')
+    q.set('limit', '100')
+    res = await mg(API + '/manga/' + id + '/feed?' + q.toString())
+  }
   if (!res || !res.ok) return []
   const json = (await res.json()) as {
     data?: { id: string; attributes?: { chapter?: string | null; title?: string | null; pages?: number }; relationships?: { type: string; attributes?: { name?: string } }[] }[]
@@ -193,9 +200,16 @@ export async function listDoujin(page = 1) {
 export async function listChaptersAll(id: string): Promise<DoujinChapter[]> {
   const p = new URLSearchParams()
   p.append('order[chapter]', 'asc')
-  p.set('limit', '300')
+  p.set('limit', '100')
   p.append('includes[]', 'scanlation_group')
-  const res = await mg(API + '/manga/' + id + '/feed?' + p.toString())
+  let res = await mg(API + '/manga/' + id + '/feed?' + p.toString())
+  if (!res || !res.ok) {
+    const q = new URLSearchParams()
+    q.append('translatedLanguage[]', 'tr')
+    q.append('order[chapter]', 'asc')
+    q.set('limit', '100')
+    res = await mg(API + '/manga/' + id + '/feed?' + q.toString())
+  }
   if (!res || !res.ok) return []
   const json = (await res.json()) as {
     data?: {
