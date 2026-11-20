@@ -167,28 +167,15 @@ async function doujinTag() {
   try {
     const res = await fetch(API + '/manga/tag', { headers: HEADERS, cache: 'no-store' })
     if (res.ok) {
-      const text = await res.text()
-      const hit = text.match(/"id":"([0-9a-f-]{36})"[\s\S]{0,400}?"en":"Doujinshi"/)
-      doujinTagCache = hit ? hit[1] : ''
+      const json = (await res.json()) as { data?: { id: string; attributes?: { name?: Record<string, string> } }[] }
+      const hit = (json.data || []).find((t) => (t.attributes?.name?.en || '').trim().toLowerCase() === 'doujinshi')
+      doujinTagCache = hit?.id || ''
     }
   } catch {
     doujinTagCache = ''
   }
   return doujinTagCache
 }
-async function hasChapters(id: string) {
-  const p = new URLSearchParams()
-  p.set('limit', '1')
-  try {
-    const res = await fetch(API + '/manga/' + id + '/feed?' + p.toString(), { headers: HEADERS, next: { revalidate: 3600 } })
-    if (!res.ok) return false
-    const json = (await res.json()) as { data?: { attributes?: { pages?: number } }[] }
-    return (json.data || []).some((c) => (c.attributes?.pages || 0) > 0)
-  } catch {
-    return false
-  }
-}
-
 export type DoujinChapter = MangaChapter & { lang: string }
 
 /** Only titles that really carry an uploaded chapter, otherwise the page opens empty. */
