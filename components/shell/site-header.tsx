@@ -31,6 +31,7 @@ export const FILM_NAV: { href: string; label: string; plus?: boolean }[] = [
 
 export const HENTAI_NAV: { href: string; label: string; plus?: boolean }[] = [
   { href: '/hentai', label: 'Hentailer' },
+  { href: '/hentai/doujin', label: 'Doujinshi' },
   { href: '/porno', label: 'Pornolar' },
   { href: '/rastgele', label: 'Rastgele' },
   { href: '/galeri', label: 'Rule34' },
