@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
 import { FooterThemeLine } from './footer-theme-line'
 import { Mascot } from '@/components/mascot/mascot'
+import type { ContentMode } from '@/lib/content-mode-shared'
 
 const COLS = [
   {
@@ -177,6 +178,80 @@ export function SiteFooter({ mode = 'anime' }: { mode?: 'anime' | 'film' }) {
         <div className="mt-6 flex flex-col items-start justify-between gap-4 border-t border-border pt-6 text-xs text-muted-foreground sm:flex-row sm:items-center">
           <FooterThemeLine />
           <p>© {new Date().getFullYear()} Sytheris. Anime verileri AniList&apos;e aittir. Tüm hakları saklıdır.</p>
+        </div>
+      </div>
+    </footer>
+  )
+}
+
+const HENTAI_COLS = [
+  {
+    title: 'Kütüphane',
+    links: [
+      { href: '/hentai', label: 'Hentailer' },
+      { href: '/hentai/doujin', label: 'Doujinshi' },
+      { href: '/porno', label: 'Pornolar' },
+      { href: '/galeri', label: 'Rule34 galerisi' },
+    ],
+  },
+  {
+    title: 'Keşif',
+    links: [
+      { href: '/rastgele', label: 'Rastgele öner' },
+      { href: '/kutuphane', label: 'Kütüphanem' },
+      { href: '/takvim', label: 'Yayın takvimi' },
+      { href: '/ara', label: 'Anime kataloğu' },
+    ],
+  },
+  {
+    title: 'Modlar',
+    links: [
+      { href: '/ayarlar?tab=icerik', label: 'Mod seç' },
+      { href: '/filmler', label: 'Sinema modu' },
+      { href: '/manga', label: 'Manga' },
+      { href: 'https://hanime.tv', label: 'hanime.tv', external: true },
+      { href: 'https://rule34.us', label: 'rule34.us', external: true },
+    ],
+  },
+]
+
+function HentaiFooter() {
+  return (
+    <footer className="ht-scope relative mt-24 overflow-hidden border-t border-border bg-scrim text-foreground">
+      <div className="ht-grid pointer-events-none absolute inset-0" aria-hidden="true" />
+      <div className="pointer-events-none absolute -top-32 left-1/2 h-64 w-[70%] -translate-x-1/2 rounded-full bg-[oklch(0.72_0.22_350_/_0.16)] blur-[90px]" aria-hidden="true" />
+      <div className="relative mx-auto w-full max-w-[1440px] px-4 pb-28 pt-16 sm:px-6 md:pb-10 lg:px-10">
+        <div className="grid gap-12 lg:grid-cols-[1.3fr_2fr]">
+          <div className="flex flex-col gap-6">
+            <p className="label-mono flex items-center gap-3 text-[var(--ht-accent)]">
+              <span className="h-px w-8 bg-[var(--ht-accent)]" /> Sytheris Hentai
+              <span className="rounded-sm border border-[var(--ht-accent)] px-1.5 py-0.5 text-[10px] tracking-[0.14em]">18+</span>
+            </p>
+            <h2 className="max-w-md text-balance text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
+              Işıklar kısık, <span className="accent-serif ht-neon">sekmeler kapalı.</span>
+            </h2>
+            <p className="max-w-md text-pretty leading-relaxed text-muted-foreground">
+              Hentai arşivi, doujinshi rafı, pornolar ve Rule34 galerisi — hepsi tek yerde, hepsi gömülü oynatıcıyla. Künye ve altyazı bizden.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {['Hentai', 'Doujinshi', 'Porno', 'Rule34'].map((t) => (
+                <span key={t} className="ht-chip rounded-full px-3.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                  {t}
+                </span>
+              ))}
+            </div>
+          </div>
+          <FooterLinks cols={HENTAI_COLS} />
+        </div>
+
+        <div className="relative mt-16 select-none" aria-hidden="true">
+          <p className="ht-word text-center text-[22vw] font-bold lg:text-[15rem]">HENTAI</p>
+          <span className="ht-rule absolute inset-x-[10%] -bottom-2 h-px" />
+        </div>
+
+        <div className="mt-10 flex flex-col items-start justify-between gap-4 border-t border-border pt-6 text-xs text-muted-foreground sm:flex-row sm:items-center">
+          <p>18+ içerik. Veriler hanime.tv, nhentai, Pornhub, XVideos ve rule34 üzerinden canlı gelir.</p>
+          <p>© {new Date().getFullYear()} Sytheris. Tüm hakları saklıdır.</p>
         </div>
       </div>
     </footer>

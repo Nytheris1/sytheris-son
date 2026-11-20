@@ -8,6 +8,7 @@
 @import './studio.css' layer(components);
 @import './v6.css' layer(components);
 @import './cinema.css';
+@import './hentai.css' layer(components);
 
 @custom-variant dark (&:is(.dark *));
 

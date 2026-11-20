@@ -1,0 +1,57 @@
+/* Hentai mode — neon pink on near-black, tape grid, oversized outlined word. */
+
+.ht-scope {
+  --ht-accent: oklch(0.72 0.22 350);
+  --ht-accent-soft: oklch(0.72 0.22 350 / 0.18);
+}
+
+.ht-neon {
+  color: var(--ht-accent);
+  text-shadow:
+    0 0 10px oklch(0.72 0.22 350 / 0.55),
+    0 0 32px oklch(0.72 0.22 350 / 0.28);
+}
+
+.ht-grid {
+  background-image:
+    linear-gradient(oklch(1 0 0 / 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, oklch(1 0 0 / 0.045) 1px, transparent 1px);
+  background-size: 44px 44px;
+  -webkit-mask-image: radial-gradient(ellipse at 50% 0%, #000 0%, transparent 78%);
+  mask-image: radial-gradient(ellipse at 50% 0%, #000 0%, transparent 78%);
+}
+
+.ht-word {
+  color: transparent;
+  -webkit-text-stroke: 1px oklch(0.72 0.22 350 / 0.5);
+  letter-spacing: -0.06em;
+  line-height: 0.78;
+}
+
+.ht-chip {
+  border: 1px solid oklch(1 0 0 / 0.14);
+  background: oklch(1 0 0 / 0.04);
+  transition:
+    border-color 0.25s,
+    color 0.25s,
+    background 0.25s;
+}
+.ht-chip:hover {
+  border-color: var(--ht-accent);
+  background: oklch(0.72 0.22 350 / 0.12);
+  color: oklch(0.98 0.01 350);
+}
+
+.ht-card {
+  transition:
+    translate 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+    border-color 0.4s;
+}
+.ht-card:hover {
+  translate: 0 -4px;
+  border-color: var(--ht-accent);
+}
+
+.ht-rule {
+  background: linear-gradient(90deg, transparent, oklch(0.72 0.22 350 / 0.55), transparent);
+}

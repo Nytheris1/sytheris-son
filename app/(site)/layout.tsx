@@ -33,7 +33,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       <main id="main" className="min-h-[70dvh]">
         {children}
       </main>
-      <SiteFooter mode={shellMode} />
+      <SiteFooter mode={mode} />
       <MobileNav mode={mode} />
       {settings.aiEnabled && <AiAssistant />}
       <MusicMiniPlayer className="bottom-40 left-3 md:bottom-6 md:left-6" />
