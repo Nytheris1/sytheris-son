@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowLeft, ArrowRight, Play, Search, Sparkles } from 'lucide-react'
 import { getTopTags, searchHanime, type HanimeSort } from '@/lib/hanime/catalog'
-import { compactNumber } from '@/lib/hanime/format'
+import { compactNumber, shortDuration } from '@/lib/hanime/format'
 import { HanimeCard } from '@/components/hentai/hanime-card'
 import { cn } from '@/lib/utils'
 
@@ -81,18 +81,24 @@ export default async function HentaiPage({ searchParams }: { searchParams: SP })
                   <Link
                     key={v.slug}
                     href={'/hentai/' + v.slug}
-                    className="group relative isolate flex items-end gap-4 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] p-3 transition hover:border-rose-500/60"
+                    className="group relative isolate flex items-end gap-3 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] p-3 transition hover:border-rose-500/60"
                   >
-                    <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-rose-600/15 font-mono text-xs text-rose-400">
-                      0{i + 1}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-semibold">{v.name}</span>
-                      <span className="font-mono text-[10px] uppercase tracking-wider text-white/35">
-                        {compactNumber(v.views)} izlenme
+                    <span className="relative block h-20 w-14 shrink-0 overflow-hidden rounded-xl bg-white/5">
+                      {v.cover && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={v.cover} alt="" className="size-full object-cover transition duration-500 group-hover:scale-105" />
+                      )}
+                      <span className="absolute inset-0 grid place-items-center bg-black/40 opacity-0 transition group-hover:opacity-100">
+                        <Play className="size-4 fill-current text-white" aria-hidden="true" />
                       </span>
                     </span>
-                    <Play className="size-4 shrink-0 text-rose-400 opacity-0 transition group-hover:opacity-100" aria-hidden="true" />
+                    <span className="min-w-0 flex-1 pb-1">
+                      <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-rose-400">0{i + 1}</span>
+                      <span className="mt-0.5 line-clamp-2 block text-sm font-semibold leading-snug">{v.name}</span>
+                      <span className="mt-1 block font-mono text-[10px] uppercase tracking-wider text-white/35">
+                        {compactNumber(v.views)} izlenme · {shortDuration(v.durationMs)}
+                      </span>
+                    </span>
                   </Link>
                 ))}
               </div>
@@ -168,7 +174,18 @@ export default async function HentaiPage({ searchParams }: { searchParams: SP })
             ))}
           </ul>
         ) : (
-          <p className="rounded-3xl border border-dashed border-white/15 p-16 text-center text-white/40">Sonuc yok. Filtreleri gevsetmeyi dene.</p>
+          <div className="flex flex-col items-center gap-4 rounded-3xl border border-dashed border-white/15 px-6 py-20 text-center">
+            <span className="grid size-12 place-items-center rounded-full border border-white/10 bg-white/[0.03]">
+              <Search className="size-5 text-white/35" aria-hidden="true" />
+            </span>
+            <div className="flex flex-col gap-1">
+              <p className="text-lg font-semibold">Sonuç yok</p>
+              <p className="text-sm text-white/40">Filtreleri gevşetmeyi ya da başka bir etiket denemeyi dene.</p>
+            </div>
+            <Link href="/hentai" className="rounded-full border border-white/15 px-5 py-2.5 text-sm transition hover:border-rose-500">
+              Filtreleri temizle
+            </Link>
+          </div>
         )}
 
         <nav className="flex items-center justify-center gap-3 pt-4" aria-label="Sayfalama">
@@ -177,8 +194,9 @@ export default async function HentaiPage({ searchParams }: { searchParams: SP })
               <ArrowLeft className="size-4" /> Onceki
             </Link>
           )}
+          <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/30">Sayfa {page}</span>
           {result.hasNext && (
-            <Link href={href({ sayfa: String(page + 1) })} className="flex h-12 items-center gap-2 rounded-full bg-rose-600 px-6 text-sm font-semibold">
+            <Link href={href({ sayfa: String(page + 1) })} className="flex h-12 items-center gap-2 rounded-full bg-rose-600 px-6 text-sm font-semibold transition hover:bg-rose-500">
               Sonraki <ArrowRight className="size-4" />
             </Link>
           )}
