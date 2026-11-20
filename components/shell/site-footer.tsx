@@ -148,8 +148,124 @@ function CinemaFooter() {
   )
 }
 
-export function SiteFooter({ mode = 'anime' }: { mode?: 'anime' | 'film' }) {
+export function SiteFooter({ mode = 'anime' }: { mode?: ContentMode }) {
   if (mode === 'film') return <CinemaFooter />
+  if (mode === 'hentai') return <HentaiFooter />
+  return (
+    <footer className="relative mt-24 overflow-hidden border-t border-border bg-card">
+      <div className="mx-auto w-full max-w-[1440px] px-4 pb-28 pt-16 sm:px-6 md:pb-10 lg:px-10">
+        <div className="grid gap-12 lg:grid-cols-[1.4fr_2fr]">
+          <div className="flex items-start gap-5">
+            <Mascot className="hidden size-28 shrink-0 sm:block" pose="bust" />
+            <div className="flex flex-col gap-5">
+              <p className="label-mono text-muted-foreground">Anime keşif platformu</p>
+              <h2 className="max-w-md text-balance text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
+                Bir sonraki favori animen <span className="accent-serif">burada.</span>
+              </h2>
+              <p className="max-w-md text-pretty leading-relaxed text-muted-foreground">
+                Sytheris; trend listeleri, fragmanlar, karakterler ve kişisel kütüphanenle anime keşfini tek bir yerde toplar. Veriler AniList üzerinden canlı gelir.
+              </p>
+            </div>
+          </div>
+          <FooterLinks cols={COLS} />
+        </div>
+
+        <div className="mt-16 select-none" aria-hidden="true">
+          <p className="bg-gradient-to-b from-foreground/90 to-foreground/0 bg-clip-text text-center text-[22vw] font-bold leading-[0.8] tracking-[-0.06em] text-transparent lg:text-[15rem]">
+            SYTHERIS
+          </p>
+        </div>
+
+        <div className="mt-6 flex flex-col items-start justify-between gap-4 border-t border-border pt-6 text-xs text-muted-foreground sm:flex-row sm:items-center">
+          <FooterThemeLine />
+          <p>© {new Date().getFullYear()} Sytheris. Anime verileri AniList&apos;e aittir. Tüm hakları saklıdır.</p>
+        </div>
+      </div>
+    </footer>
+  )
+}
+
+const HENTAI_COLS = [
+  {
+    title: 'Kütüphane',
+    links: [
+      { href: '/hentai', label: 'Hentailer' },
+      { href: '/hentai/doujin', label: 'Doujinshi' },
+      { href: '/porno', label: 'Pornolar' },
+      { href: '/galeri', label: 'Rule34 galerisi' },
+    ],
+  },
+  {
+    title: 'Keşif',
+    links: [
+      { href: '/rastgele', label: 'Rastgele öner' },
+      { href: '/kutuphane', label: 'Kütüphanem' },
+      { href: '/takvim', label: 'Yayın takvimi' },
+      { href: '/ara', label: 'Anime kataloğu' },
+    ],
+  },
+  {
+    title: 'Modlar',
+    links: [
+      { href: '/ayarlar?tab=icerik', label: 'Mod seç' },
+      { href: '/filmler', label: 'Sinema modu' },
+      { href: '/manga', label: 'Manga' },
+      { href: 'https://hanime.tv', label: 'hanime.tv', external: true },
+      { href: 'https://rule34.us', label: 'rule34.us', external: true },
+    ],
+  },
+]
+
+function HentaiFooter() {
+  return (
+    <footer className="ht-scope relative mt-24 overflow-hidden border-t border-border bg-card">
+      <div
+        className="pointer-events-none absolute -top-24 left-1/2 h-56 w-[60%] -translate-x-1/2 rounded-full blur-[80px]"
+        style={{ background: 'oklch(0.72 0.22 350 / 0.12)' }}
+        aria-hidden="true"
+      />
+      <div className="relative mx-auto w-full max-w-[1440px] px-4 pb-28 pt-16 sm:px-6 md:pb-10 lg:px-10">
+        <div className="grid gap-12 lg:grid-cols-[1.4fr_2fr]">
+          <div className="flex flex-col gap-5">
+            <p className="label-mono flex items-center gap-2.5 text-muted-foreground">
+              <span className="size-1.5 rounded-full bg-[var(--ht-accent)]" />
+              Hentai arşivi
+              <span className="rounded-sm border border-border px-1.5 py-0.5 text-[10px] tracking-[0.14em] text-muted-foreground">18+</span>
+            </p>
+            <h2 className="max-w-md text-balance text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
+              Işıklar kısık, <span className="accent-serif">sekmeler kapalı.</span>
+            </h2>
+            <p className="max-w-md text-pretty leading-relaxed text-muted-foreground">
+              Hentai arşivi, doujinshi rafı, pornolar ve Rule34 galerisi tek yerde; hepsi gömülü oynatıcıyla. Veriler hanime.tv, nhentai, Pornhub, XVideos ve rule34 üzerinden canlı gelir.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {['Hentai', 'Doujinshi', 'Porno', 'Rule34'].map((t) => (
+                <span key={t} className="ht-chip rounded-full px-3.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                  {t}
+                </span>
+              ))}
+            </div>
+          </div>
+          <FooterLinks cols={HENTAI_COLS} />
+        </div>
+
+        <div className="mt-16 select-none" aria-hidden="true">
+          <p className="bg-gradient-to-b from-[oklch(0.78_0.18_350_/_0.85)] to-transparent bg-clip-text text-center text-[22vw] font-bold leading-[0.8] tracking-[-0.06em] text-transparent lg:text-[15rem]">
+            HENTAI
+          </p>
+        </div>
+
+        <div className="mt-6 flex flex-col items-start justify-between gap-4 border-t border-border pt-6 text-xs text-muted-foreground sm:flex-row sm:items-center">
+          <FooterThemeLine />
+          <p>© {new Date().getFullYear()} Sytheris. 18+ içerik. Tüm hakları saklıdır.</p>
+        </div>
+      </div>
+    </footer>
+  )
+}
+export function SiteFooter({ mode = 'anime' }: { mode?: ContentMode }) {
+  if (mode === 'film') return <CinemaFooter />
+  if (mode === 'hentai') return <HentaiFooter />
   return (
     <footer className="relative mt-24 overflow-hidden border-t border-border bg-card">
       <div className="mx-auto w-full max-w-[1440px] px-4 pb-28 pt-16 sm:px-6 md:pb-10 lg:px-10">
