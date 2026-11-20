@@ -32,7 +32,6 @@ const COLS = [
     links: [
       { href: 'https://anilist.co', label: 'AniList', external: true },
       { href: 'https://animethemes.moe', label: 'AnimeThemes', external: true },
-
     ],
   },
 ]
@@ -66,6 +65,37 @@ const CINE_COLS = [
       { href: '/ayarlar?tab=icerik', label: 'Anime moduna dön' },
       { href: 'https://www.tvmaze.com', label: 'TVmaze', external: true },
       { href: 'https://www.apple.com/tr/apple-tv-app/', label: 'Apple TV', external: true },
+    ],
+  },
+]
+
+const HENTAI_COLS = [
+  {
+    title: 'Kütüphane',
+    links: [
+      { href: '/hentai', label: 'Hentailer' },
+      { href: '/hentai/doujin', label: 'Doujinshi' },
+      { href: '/porno', label: 'Pornolar' },
+      { href: '/galeri', label: 'Rule34 galerisi' },
+    ],
+  },
+  {
+    title: 'Keşif',
+    links: [
+      { href: '/rastgele', label: 'Rastgele öner' },
+      { href: '/kutuphane', label: 'Kütüphanem' },
+      { href: '/takvim', label: 'Yayın takvimi' },
+      { href: '/ara', label: 'Anime kataloğu' },
+    ],
+  },
+  {
+    title: 'Modlar',
+    links: [
+      { href: '/ayarlar?tab=icerik', label: 'Mod seç' },
+      { href: '/filmler', label: 'Sinema modu' },
+      { href: '/manga', label: 'Manga' },
+      { href: 'https://hanime.tv', label: 'hanime.tv', external: true },
+      { href: 'https://rule34.us', label: 'rule34.us', external: true },
     ],
   },
 ]
@@ -148,74 +178,6 @@ function CinemaFooter() {
   )
 }
 
-export function SiteFooter({ mode = 'anime' }: { mode?: ContentMode }) {
-  if (mode === 'film') return <CinemaFooter />
-  if (mode === 'hentai') return <HentaiFooter />
-  return (
-    <footer className="relative mt-24 overflow-hidden border-t border-border bg-card">
-      <div className="mx-auto w-full max-w-[1440px] px-4 pb-28 pt-16 sm:px-6 md:pb-10 lg:px-10">
-        <div className="grid gap-12 lg:grid-cols-[1.4fr_2fr]">
-          <div className="flex items-start gap-5">
-            <Mascot className="hidden size-28 shrink-0 sm:block" pose="bust" />
-            <div className="flex flex-col gap-5">
-              <p className="label-mono text-muted-foreground">Anime keşif platformu</p>
-              <h2 className="max-w-md text-balance text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
-                Bir sonraki favori animen <span className="accent-serif">burada.</span>
-              </h2>
-              <p className="max-w-md text-pretty leading-relaxed text-muted-foreground">
-                Sytheris; trend listeleri, fragmanlar, karakterler ve kişisel kütüphanenle anime keşfini tek bir yerde toplar. Veriler AniList üzerinden canlı gelir.
-              </p>
-            </div>
-          </div>
-          <FooterLinks cols={COLS} />
-        </div>
-
-        <div className="mt-16 select-none" aria-hidden="true">
-          <p className="bg-gradient-to-b from-foreground/90 to-foreground/0 bg-clip-text text-center text-[22vw] font-bold leading-[0.8] tracking-[-0.06em] text-transparent lg:text-[15rem]">
-            SYTHERIS
-          </p>
-        </div>
-
-        <div className="mt-6 flex flex-col items-start justify-between gap-4 border-t border-border pt-6 text-xs text-muted-foreground sm:flex-row sm:items-center">
-          <FooterThemeLine />
-          <p>© {new Date().getFullYear()} Sytheris. Anime verileri AniList&apos;e aittir. Tüm hakları saklıdır.</p>
-        </div>
-      </div>
-    </footer>
-  )
-}
-
-const HENTAI_COLS = [
-  {
-    title: 'Kütüphane',
-    links: [
-      { href: '/hentai', label: 'Hentailer' },
-      { href: '/hentai/doujin', label: 'Doujinshi' },
-      { href: '/porno', label: 'Pornolar' },
-      { href: '/galeri', label: 'Rule34 galerisi' },
-    ],
-  },
-  {
-    title: 'Keşif',
-    links: [
-      { href: '/rastgele', label: 'Rastgele öner' },
-      { href: '/kutuphane', label: 'Kütüphanem' },
-      { href: '/takvim', label: 'Yayın takvimi' },
-      { href: '/ara', label: 'Anime kataloğu' },
-    ],
-  },
-  {
-    title: 'Modlar',
-    links: [
-      { href: '/ayarlar?tab=icerik', label: 'Mod seç' },
-      { href: '/filmler', label: 'Sinema modu' },
-      { href: '/manga', label: 'Manga' },
-      { href: 'https://hanime.tv', label: 'hanime.tv', external: true },
-      { href: 'https://rule34.us', label: 'rule34.us', external: true },
-    ],
-  },
-]
-
 function HentaiFooter() {
   return (
     <footer className="ht-scope relative mt-24 overflow-hidden border-t border-border bg-card">
@@ -263,6 +225,7 @@ function HentaiFooter() {
     </footer>
   )
 }
+
 export function SiteFooter({ mode = 'anime' }: { mode?: ContentMode }) {
   if (mode === 'film') return <CinemaFooter />
   if (mode === 'hentai') return <HentaiFooter />
@@ -294,80 +257,6 @@ export function SiteFooter({ mode = 'anime' }: { mode?: ContentMode }) {
         <div className="mt-6 flex flex-col items-start justify-between gap-4 border-t border-border pt-6 text-xs text-muted-foreground sm:flex-row sm:items-center">
           <FooterThemeLine />
           <p>© {new Date().getFullYear()} Sytheris. Anime verileri AniList&apos;e aittir. Tüm hakları saklıdır.</p>
-        </div>
-      </div>
-    </footer>
-  )
-}
-
-const HENTAI_COLS = [
-  {
-    title: 'Kütüphane',
-    links: [
-      { href: '/hentai', label: 'Hentailer' },
-      { href: '/hentai/doujin', label: 'Doujinshi' },
-      { href: '/porno', label: 'Pornolar' },
-      { href: '/galeri', label: 'Rule34 galerisi' },
-    ],
-  },
-  {
-    title: 'Keşif',
-    links: [
-      { href: '/rastgele', label: 'Rastgele öner' },
-      { href: '/kutuphane', label: 'Kütüphanem' },
-      { href: '/takvim', label: 'Yayın takvimi' },
-      { href: '/ara', label: 'Anime kataloğu' },
-    ],
-  },
-  {
-    title: 'Modlar',
-    links: [
-      { href: '/ayarlar?tab=icerik', label: 'Mod seç' },
-      { href: '/filmler', label: 'Sinema modu' },
-      { href: '/manga', label: 'Manga' },
-      { href: 'https://hanime.tv', label: 'hanime.tv', external: true },
-      { href: 'https://rule34.us', label: 'rule34.us', external: true },
-    ],
-  },
-]
-
-function HentaiFooter() {
-  return (
-    <footer className="ht-scope relative mt-24 overflow-hidden border-t border-border bg-scrim text-foreground">
-      <div className="ht-grid pointer-events-none absolute inset-0" aria-hidden="true" />
-      <div className="pointer-events-none absolute -top-32 left-1/2 h-64 w-[70%] -translate-x-1/2 rounded-full bg-[oklch(0.72_0.22_350_/_0.16)] blur-[90px]" aria-hidden="true" />
-      <div className="relative mx-auto w-full max-w-[1440px] px-4 pb-28 pt-16 sm:px-6 md:pb-10 lg:px-10">
-        <div className="grid gap-12 lg:grid-cols-[1.3fr_2fr]">
-          <div className="flex flex-col gap-6">
-            <p className="label-mono flex items-center gap-3 text-[var(--ht-accent)]">
-              <span className="h-px w-8 bg-[var(--ht-accent)]" /> Sytheris Hentai
-              <span className="rounded-sm border border-[var(--ht-accent)] px-1.5 py-0.5 text-[10px] tracking-[0.14em]">18+</span>
-            </p>
-            <h2 className="max-w-md text-balance text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
-              Işıklar kısık, <span className="accent-serif ht-neon">sekmeler kapalı.</span>
-            </h2>
-            <p className="max-w-md text-pretty leading-relaxed text-muted-foreground">
-              Hentai arşivi, doujinshi rafı, pornolar ve Rule34 galerisi — hepsi tek yerde, hepsi gömülü oynatıcıyla. Künye ve altyazı bizden.
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {['Hentai', 'Doujinshi', 'Porno', 'Rule34'].map((t) => (
-                <span key={t} className="ht-chip rounded-full px-3.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                  {t}
-                </span>
-              ))}
-            </div>
-          </div>
-          <FooterLinks cols={HENTAI_COLS} />
-        </div>
-
-        <div className="relative mt-16 select-none" aria-hidden="true">
-          <p className="ht-word text-center text-[22vw] font-bold lg:text-[15rem]">HENTAI</p>
-          <span className="ht-rule absolute inset-x-[10%] -bottom-2 h-px" />
-        </div>
-
-        <div className="mt-10 flex flex-col items-start justify-between gap-4 border-t border-border pt-6 text-xs text-muted-foreground sm:flex-row sm:items-center">
-          <p>18+ içerik. Veriler hanime.tv, nhentai, Pornhub, XVideos ve rule34 üzerinden canlı gelir.</p>
-          <p>© {new Date().getFullYear()} Sytheris. Tüm hakları saklıdır.</p>
         </div>
       </div>
     </footer>
