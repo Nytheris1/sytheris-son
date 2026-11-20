@@ -40,41 +40,29 @@ BASE_QUERY.append('order[followedCount]', 'desc')
 for (const r of ['safe', 'suggestive', 'erotica', 'pornographic']) BASE_QUERY.append('contentRating[]', r)
 
 /** MangaDex TR coverage is thin, so the listing is built from Turkish chapter uploads, not from titles. */
+/** Everything that actually has a Turkish chapter, most followed first; falls back if the filter is rejected. */
 export async function listManga(q: string, page = 1) {
   const p = new URLSearchParams()
-  p.append('translatedLanguage[]', 'tr')
-  p.append('order[readableAt]', 'desc')
-  p.append('includes[]', 'manga')
-  p.set('limit', '100')
-  p.set('offset', String((Math.max(1, page) - 1) * 40))
+  p.append('availableTranslatedLanguage[]', 'tr')
+  p.append('includes[]', 'cover_art')
+  p.append('hasAvailableChapters', 'true')
+  p.append('order[followedCount]', 'desc')
   for (const r of ['safe', 'suggestive', 'erotica', 'pornographic']) p.append('contentRating[]', r)
+  p.set('limit', '30')
+  p.set('offset', String((Math.max(1, page) - 1) * 30))
   if (q) p.set('title', q)
 
-  const res = await fetch(API + '/chapter?' + p.toString(), { headers: HEADERS, cache: 'no-store' })
-  if (!res.ok) throw new Error('mangadex ' + res.status + ' ' + (await res.text()).slice(0, 240))
-  const json = (await res.json()) as { data?: { relationships?: { type: string; id: string }[] }[] }
-
-  const ids: string[] = []
-  for (const ch of json.data || []) {
-    const id = ch.relationships?.find((r) => r.type === 'manga')?.id
-    if (id && !ids.includes(id)) ids.push(id)
-    if (ids.length >= 40) break
+  let res = await fetch(API + '/manga?' + p.toString(), { headers: HEADERS, cache: 'no-store' })
+  if (!res.ok) {
+    p.delete('availableTranslatedLanguage[]')
+    res = await fetch(API + '/manga?' + p.toString(), { headers: HEADERS, cache: 'no-store' })
   }
-  if (!ids.length) return { items: [] as MangaCard[], hasNext: false }
+  if (!res.ok) throw new Error('mangadex ' + res.status + ' ' + (await res.text()).slice(0, 200))
 
-  const mp = new URLSearchParams()
-  for (const id of ids) mp.append('ids[]', id)
-  mp.append('includes[]', 'cover_art')
-  mp.set('limit', '40')
-  const mres = await fetch(API + '/manga?' + mp.toString(), { headers: HEADERS, cache: 'no-store' })
-  if (!mres.ok) return { items: [] as MangaCard[], hasNext: false }
-  const mjson = (await mres.json()) as { data?: Raw[] }
-  const byId = new Map((mjson.data || []).map((m) => [m.id, shape(m)]))
-  const items = ids.map((id) => byId.get(id)).filter((m): m is MangaCard => Boolean(m && m.title))
-
-  return { items, hasNext: (json.data?.length ?? 0) >= 100 }
+  const json = (await res.json()) as { data?: Raw[]; total?: number }
+  const items = (json.data || []).map(shape).filter((m) => m.title)
+  return { items, hasNext: (json.total ?? 0) > Math.max(1, page) * 30 }
 }
-
 export async function getManga(id: string) {
   if (!/^[0-9a-f-]{36}$/i.test(id)) return null
   const res = await fetch(API + '/manga/' + id + '?includes[]=cover_art', { headers: HEADERS, cache: 'no-store' })
