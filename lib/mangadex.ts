@@ -178,24 +178,56 @@ async function doujinTag() {
 
 export type DoujinChapter = MangaChapter & { lang: string }
 
-export async function listDoujin(page = 1) {
-  const tag = await doujinTag()
+async function hasChapters(id: string) {
   const p = new URLSearchParams()
-  if (tag) p.append('includedTags[]', tag)
-  p.append('includes[]', 'cover_art')
-  p.append('hasAvailableChapters', 'true')
-  p.append('order[followedCount]', 'desc')
-  for (const r of ['erotica', 'pornographic']) p.append('contentRating[]', r)
-  p.set('limit', '28')
-  p.set('offset', String((Math.max(1, page) - 1) * 28))
-
-  const res = await fetch(API + '/manga?' + p.toString(), { headers: HEADERS, cache: 'no-store' })
-  if (!res.ok) throw new Error('mangadex ' + res.status)
-  const json = (await res.json()) as { data?: Raw[]; total?: number }
-  const items = (json.data || []).map(shape).filter((m) => m.title)
-  return { items, hasNext: (json.total ?? 0) > Math.max(1, page) * 28 }
+  p.set('limit', '1')
+  try {
+    const res = await fetch(API + '/manga/' + id + '/feed?' + p.toString(), { headers: HEADERS, next: { revalidate: 3600 } })
+    if (!res.ok) return false
+    const json = (await res.json()) as { data?: { attributes?: { pages?: number } }[] }
+    return (json.data || []).some((c) => (c.attributes?.pages || 0) > 0)
+  } catch {
+    return false
+  }
 }
 
+/** Only titles that really carry an uploaded chapter, otherwise the page opens empty. */
+export async function listDoujin(page = 1) {
+  const tag = await doujinTag()
+  const need = 24
+  const out: MangaCard[] = []
+  let offset = (Math.max(1, page) - 1) * 60
+  let rounds = 0
+
+  while (out.length < need && rounds < 3) {
+    const p = new URLSearchParams()
+    if (tag) p.append('includedTags[]', tag)
+    p.append('includes[]', 'cover_art')
+    p.append('hasAvailableChapters', 'true')
+    p.append('order[followedCount]', 'desc')
+    for (const r of ['erotica', 'pornographic']) p.append('contentRating[]', r)
+    p.set('limit', '60')
+    p.set('offset', String(offset))
+
+    const res = await fetch(API + '/manga?' + p.toString(), { headers: HEADERS, cache: 'no-store' })
+    if (!res.ok) break
+    const json = (await res.json()) as { data?: Raw[] }
+    const rows = (json.data || []).map(shape).filter((m) => m.title)
+    if (!rows.length) break
+
+    for (let i = 0; i < rows.length && out.length < need; i += 6) {
+      const batch = rows.slice(i, i + 6)
+      const flags = await Promise.all(batch.map((m) => hasChapters(m.id)))
+      batch.forEach((m, index) => {
+        if (flags[index] && out.length < need) out.push(m)
+      })
+    }
+    offset += 60
+    rounds++
+  }
+
+  return { items: out, hasNext: out.length >= need }
+}
 /** Doujinshi is rarely translated to Turkish, so every language is listed with its code. */
 export async function listChaptersAll(id: string): Promise<DoujinChapter[]> {
   const p = new URLSearchParams()
