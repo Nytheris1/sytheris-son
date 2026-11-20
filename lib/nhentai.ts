@@ -8,33 +8,27 @@ export type NhGallery = NhCard & { files: string[] }
 
 const HEADERS = { 'User-Agent': UA, Accept: 'application/json' }
 
+type Img = { path?: string }
 type Raw = {
   id: number
-  media_id?: string
   english_title?: string
   japanese_title?: string
   title?: { english?: string; japanese?: string; pretty?: string }
   num_pages?: number
-  pages?: number
-  thumbnail?: string
-  images?: { pages?: { path?: string }[] }
-  tags?: { name?: string }[]
+  thumbnail?: Img
+  pages?: Img[]
 }
 
 const titleOf = (raw: Raw) =>
   raw.english_title || raw.title?.english || raw.title?.pretty || raw.title?.japanese || raw.japanese_title || 'Doujinshi'
 
-const thumbOf = (raw: Raw) => {
-  const media = raw.media_id || ''
-  const t = raw.thumbnail || 'cover.jpg'
-  return media ? 'https://t.nhentai.net/galleries/' + media + '/' + t : ''
-}
+const thumbOf = (raw: Raw) => (raw.thumbnail?.path ? 'https://t.nhentai.net/' + raw.thumbnail.path : '')
 
 const shape = (raw: Raw): NhCard => ({
   id: raw.id,
   title: titleOf(raw),
   thumb: thumbOf(raw),
-  pages: raw.num_pages || raw.pages || 0,
+  pages: raw.num_pages || raw.pages?.length || 0,
 })
 
 export async function listDoujin(q: string, page = 1) {
@@ -53,11 +47,10 @@ export async function getGallery(id: string): Promise<NhGallery | null> {
   const res = await fetch(API + '/galleries/' + id, { headers: HEADERS, cache: 'no-store' })
   if (!res.ok) return null
   const raw = (await res.json()) as Raw
-  const media = raw.media_id || ''
-  const files = (raw.images?.pages || []).map((p) => p.path || '').filter(Boolean)
-  return { ...shape(raw), files: media ? files : [] }
+  const files = (raw.pages || []).map((p) => p.path || '').filter(Boolean)
+  return { ...shape(raw), files }
 }
 
-export function imageUrl(media: string, file: string) {
-  return 'https://i.nhentai.net/galleries/' + media + '/' + file
+export function imageUrl(path: string) {
+  return 'https://i.nhentai.net/' + path
 }

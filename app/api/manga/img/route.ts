@@ -17,7 +17,7 @@ export async function GET(req: Request) {
     return new Response('host', { status: 400 })
   }
 
-  const res = await fetch(target.toString(), { headers: { 'User-Agent': UA, Referer: 'https://mangadex.org/' }, cache: 'force-cache' })
+  const res = await fetch(target.toString(), { headers: { 'User-Agent': UA, Referer: 'https://nhentai.net/' }, cache: 'force-cache' })
   if (!res.ok) return new Response('kaynak ' + res.status, { status: 502 })
 
   return new Response(await res.arrayBuffer(), {
