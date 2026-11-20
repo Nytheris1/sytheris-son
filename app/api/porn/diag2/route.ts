@@ -11,7 +11,7 @@ const scan = async (label: string, url: string, ref: string, linkRe: RegExp) => 
       cache: 'no-store',
     })
     const b = await r.text()
-    const links = [...new Set([...b.matchAll(linkRe).map((m) => m[1]))]
+    const links = [...new Set([...b.matchAll(linkRe)].map((m) => m[1]))]
     return { label, status: r.status, len: b.length, links: links.slice(0, 4), mp4: /\.mp4/.test(b), cf: /just a moment/i.test(b) }
   } catch (e) {
     return { label, error: e instanceof Error ? e.message : 'hata' }
