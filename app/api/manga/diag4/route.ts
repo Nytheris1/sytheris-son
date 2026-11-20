@@ -8,7 +8,7 @@ const scan = async (label: string, url: string) => {
   try {
     const r = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'application/json' }, cache: 'no-store' })
     const b = await r.text()
-    return { label, status: r.status, len: b.length, json: b.trim().startsWith('{') || b.trim().startsWith('['), head: b.slice(0, 120) }
+    return { label, status: r.status, len: b.length, head: b.slice(0, 160) }
   } catch (e) {
     return { label, error: e instanceof Error ? e.message : 'hata' }
   }
@@ -16,8 +16,8 @@ const scan = async (label: string, url: string) => {
 
 export async function GET() {
   return Response.json([
-    await scan('nh-search', 'https://nhentai.net/api/v2/search?query=dragon%20girl&page=1'),
-    await scan('nh-gallery', 'https://nhentai.net/api/gallery/1'),
-    await scan('eh-api', 'https://api.e-hentai.org/api.php'),
+    await scan('nh2-gallery', 'https://nhentai.net/api/v2/gallery/698296'),
+    await scan('nh2-gallery-2', 'https://nhentai.net/api/v2/galleries/698296'),
+    await scan('nh2-search', 'https://nhentai.net/api/v2/search?query=yuri&page=1'),
   ])
 }
