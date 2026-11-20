@@ -13,7 +13,7 @@ export async function GET(req: Request) {
   } catch {
     return new Response('u bozuk', { status: 400 })
   }
-  if (!/(^|\.)(mangadex\.org|mangadex\.network|mangadex\.dev)$/i.test(target.hostname)) {
+  if (!/(^|\.)(mangadex\.org|mangadex\.network|mangadex\.dev|nhentai\.net)$/i.test(target.hostname)) {
     return new Response('host', { status: 400 })
   }
 
