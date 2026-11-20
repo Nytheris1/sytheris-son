@@ -11,12 +11,14 @@ const scan = async (label: string, url: string, ref: string) => {
       cache: 'no-store',
     })
     const b = await r.text()
+    const all = [...new Set([...b.matchAll(/href="([^"]+)"/gi)].map((m) => m[1]))]
     return {
       label,
       status: r.status,
       len: b.length,
-      videoLinks: [...new Set([...b.matchAll(/href="([^"]*(?:\/video|\/videos|\/watch|\/v\/)[^"]*)"/gi)].map((m) => m[1]))].slice(0, 3),
-      mp4: /\.mp4/.test(b),
+      total: all.length,
+      sample: all.filter((h) => /\d/.test(h)).slice(0, 10),
+      thumbs: [...new Set([...b.matchAll(/src="([^"]+\.(?:jpg|jpeg|webp|png)[^"]*)"/gi)].map((m) => m[1]))].slice(0, 3),
     }
   } catch (e) {
     return { label, error: e instanceof Error ? e.message : 'hata' }
@@ -29,10 +31,7 @@ export async function GET() {
   for (const [label, url, ref] of [
     ['txxx', 'https://txxx.com/search/?q=' + q, 'https://txxx.com/'],
     ['hqporner', 'https://hqporner.com/?q=' + q, 'https://hqporner.com/'],
-    ['beeg', 'https://beeg.com/search?q=' + q, 'https://beeg.com/'],
-    ['spankbang', 'https://spankbang.com/s/' + q + '/', 'https://spankbang.com/'],
     ['hclips', 'https://hclips.com/search/?q=' + q, 'https://hclips.com/'],
-    ['eporner-m', 'https://www.eporner.com/search/' + q + '/', 'https://www.eporner.com/'],
   ] as [string, string, string][]) {
     out.push(await scan(label, url, ref))
   }
