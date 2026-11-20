@@ -3,7 +3,7 @@ import 'server-only'
 const BASE = 'https://rule34.xxx/index.php'
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
 
-export type R34Post = { id: string; file: string; preview: string; kind: 'image' | 'video'; tags: string[]; score: number }
+export type R34Post = { id: number; file: string; preview: string; kind: 'image' | 'video'; tags: string[]; score: number }
 
 const HEADERS = {
   'User-Agent': UA,
@@ -35,7 +35,7 @@ export async function searchR34(tags: string, page = 1) {
     const file = src.replace('/thumbnails/', '/images/').replace(/thumbnail_/i, '')
     const kind: 'image' | 'video' = VIDEO.test(file) || VIDEO.test(src) ? 'video' : 'image'
     items.push({
-      id,
+      id: Number(id),
       file,
       preview: src,
       kind,
