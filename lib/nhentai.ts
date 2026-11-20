@@ -37,9 +37,9 @@ export async function listDoujin(q: string, page = 1) {
   p.set('page', String(Math.max(1, page)))
   const res = await fetch(API + '/search?' + p.toString(), { headers: HEADERS, cache: 'no-store' })
   if (!res.ok) throw new Error('nhentai ' + res.status)
-  const json = (await res.json()) as { result?: Raw[]; num_pages?: number }
-  const items = (json.result || []).map(shape).filter((i) => i.thumb)
-  return { items, hasNext: (json.num_pages ?? 1) > Math.max(1, page) }
+  const json = (await res.json()) as { result?: Raw[] }
+  const items = (json.result || []).map(shape)
+  return { items, hasNext: items.length >= 20 }
 }
 
 export async function getGallery(id: string): Promise<NhGallery | null> {

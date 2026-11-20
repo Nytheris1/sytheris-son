@@ -10,8 +10,8 @@ const img = (u: string) => (u ? '/api/manga/img?u=' + Buffer.from(u).toString('b
 
 export default async function DoujinPage({ searchParams }: { searchParams: Promise<{ q?: string; sayfa?: string }> }) {
   const sp = await searchParams
-  const q = (sp.q || '').trim()
-  const page = Math.max(1, Number(sp.sayfa) || 1)
+  const q = (sp.q || '').trim() || 'language:english'
+  const page = Math.max(1, parseInt(sp.sayfa || '1', 10) || 1)
 
   let items: Awaited<ReturnType<typeof listDoujin>>['items'] = []
   let hasNext = false
