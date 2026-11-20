@@ -62,19 +62,6 @@ function parseXv(html: string): PornItem[] {
   return out
 }
 
-function parseHq(html: string): PornItem[] {
-  const out: PornItem[] = []
-  for (const chunk of html.split('/hdporn/').slice(1)) {
-    const path = '/hdporn/' + (chunk.match(/^([^"']+\.html)/) || [])[1]
-    if (path === '/hdporn/undefined') continue
-    const img = (chunk.match(/data-src="([^"]+)"/i) || chunk.match(/src="([^"]+\.(?:jpg|jpeg|webp)[^"]*)"/i) || [])[1] || ''
-    const dur = (chunk.match(/>\s*(\d+\s*(?:h|min|s)[^<]*)</i) || [])[1] || ''
-    const slug = (path.match(/\/(\d+)-([^/]+)\.html/) || [])[2] || ''
-    out.push({ id: 'hq-' + (path.match(/\/(\d+)-/) || [])[1], src: 'hq', title: decode(slug.replace(/_/g, ' ')), thumb: img, duration: secs(dur), path })
-  }
-  return out
-}
-
 const PARSERS: Record<Src, (html: string) => PornItem[]> = { ph: parsePh, xv: parseXv }
 
 const searchUrl = (src: Src, q: string, page: number) =>
