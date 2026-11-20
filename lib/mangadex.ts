@@ -189,6 +189,8 @@ async function hasChapters(id: string) {
   }
 }
 
+export type DoujinChapter = MangaChapter & { lang: string }
+
 /** Only titles that really carry an uploaded chapter, otherwise the page opens empty. */
 export async function listDoujin(page = 1) {
   const tag = await doujinTag()
