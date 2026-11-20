@@ -103,10 +103,16 @@ export async function listManga(q: string, page = 1) {
 }
 export async function getManga(id: string) {
   if (!/^[0-9a-f-]{36}$/i.test(id)) return null
-  const res = await fetch(API + '/manga/' + id + '?includes[]=cover_art', { headers: HEADERS, cache: 'no-store' })
-  if (!res.ok) return null
-  const json = (await res.json()) as { data?: Raw }
-  return json.data ? shape(json.data) : null
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const res = await fetch(API + '/manga/' + id + '?includes[]=cover_art', { headers: HEADERS, cache: 'no-store' })
+    if (res.ok) {
+      const json = (await res.json()) as { data?: Raw }
+      return json.data ? shape(json.data) : null
+    }
+    if (res.status !== 429) return null
+    await new Promise((r) => setTimeout(r, 700))
+  }
+  return null
 }
 
 export async function listChapters(id: string): Promise<MangaChapter[]> {
