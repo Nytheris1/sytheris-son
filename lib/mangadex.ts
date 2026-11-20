@@ -33,7 +33,7 @@ const shape = (raw: Raw): MangaCard => ({
 })
 
 const BASE_QUERY = new URLSearchParams()
-BASE_QUERY.append('translatedLanguage[]', 'tr')
+BASE_QUERY.append('availableTranslatedLanguage[]', 'tr')
 BASE_QUERY.append('includes[]', 'cover_art')
 BASE_QUERY.append('hasAvailableChapters', 'true')
 BASE_QUERY.append('order[followedCount]', 'desc')
