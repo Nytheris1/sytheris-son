@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowLeft, ArrowRight, Clock, Flame, Search } from 'lucide-react'
-import { searchPorn } from '@/lib/xnxx'
+import { searchPorn } from '@/lib/porn'
 import { cn } from '@/lib/utils'
 
 export const metadata: Metadata = { title: 'Pornolar', robots: { index: false, follow: false } }
@@ -134,7 +134,7 @@ export default async function PornoPage({ searchParams }: { searchParams: SP }) 
         {items.length > 0 ? (
           <div className="grid grid-cols-2 gap-x-4 gap-y-9 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6">
             {items.map((v) => (
-              <Link key={v.id} href={'/porno/' + v.id + '?t=' + encodeURIComponent(v.title) + '&s=' + encodeURIComponent(v.slug)} className="group flex flex-col gap-2.5">
+              <Link key={v.id} href={'/porno/' + v.id + '?t=' + encodeURIComponent(v.title) + '&p=' + encodeURIComponent(v.path) + '&src=' + v.src} className="group flex flex-col gap-2.5">
                 <div className="relative aspect-video overflow-hidden rounded-2xl bg-white/[0.03] ring-1 ring-white/10 transition duration-300 group-hover:ring-rose-500/60">
                   {v.thumb ? (
                     // eslint-disable-next-line @next/next/no-img-element
