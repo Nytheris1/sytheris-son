@@ -79,7 +79,7 @@ export function ContentModePanel({ mode }: { mode: ContentMode }) {
             >
               <span className="dark relative block h-44 overflow-hidden bg-scrim sm:h-52">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={o.image || '/placeholder.svg'} alt="" className={cn('absolute inset-0 size-full object-cover transition duration-1000 group-hover:scale-105', !on && 'grayscale-[0.6]')} />
+                <img src={o.image || '/placeholder.svg'} alt="" className={cn('absolute inset-0 size-full object-cover transition duration-1000 group-hover:scale-105', !on && 'grayscale-[0.6]')} onError={(e) => { e.currentTarget.style.opacity = '0' }} />
                 <span className="absolute inset-0 bg-gradient-to-t from-scrim via-scrim/30 to-transparent" />
                 <span className="absolute left-5 top-5 flex items-center gap-2 rounded-full bg-scrim/60 px-3 py-1.5 text-xs font-medium text-on-scrim backdrop-blur">
                   <o.icon className="size-3.5" /> {o.id === 'anime' ? 'Varsayılan' : o.id === 'hentai' ? '18+' : 'Yeni'}

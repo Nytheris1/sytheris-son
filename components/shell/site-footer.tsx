@@ -190,7 +190,7 @@ function HentaiFooter() {
         <div className="grid gap-12 lg:grid-cols-[1.4fr_2fr]">
           <div className="flex flex-col gap-5">
             <p className="label-mono flex items-center gap-2.5 text-muted-foreground">
-              <span className="size-1.5 rounded-full bg-[var(--ht-accent)]" />
+              <span className="size-1.5 rounded-full bg-primary" />
               Hentai arşivi
               <span className="rounded-sm border border-border px-1.5 py-0.5 text-[10px] tracking-[0.14em] text-muted-foreground">18+</span>
             </p>
