@@ -34,7 +34,7 @@ const OPTIONS: { id: ContentMode; title: string; accent: string; body: string; p
     accent: 'modu',
     body: 'Yetiskin anime katalogu. Ana sayfa 18+ basliklarla acilir, site geneli hentaiye doner.',
     points: ['hanime.tv katalogu: trend, yeni, begenilenler', 'Kendi oynaticimiz, kalite secimi', 'Tur ve studyo filtreleri'],
-    image: '/modes/hentai.webp',
+    image: '',
     icon: Flame,
   },
 ]
