@@ -29,22 +29,22 @@ export function GaleriGrid({ items }: { items: GaleriItem[] }) {
             <button
               type="button"
               onClick={() => setOpen(it)}
-              className="group relative block w-full overflow-hidden rounded-xl border border-white/10 bg-white/5 transition duration-500 hover:border-rose-500/70 hover:shadow-[0_24px_50px_-24px_rgba(244,63,94,0.5)]"
+              className="group relative block w-full overflow-hidden rounded-xl border border-border bg-muted transition duration-500 hover:border-primary/70 hover:shadow-[0_24px_50px_-24px_rgba(244,63,94,0.5)]"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={it.preview} alt="" loading="lazy" decoding="async" className="w-full object-cover transition duration-700 group-hover:scale-[1.04]" />
               <span className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 transition duration-300 group-hover:opacity-100" />
               <span className="absolute inset-x-2 bottom-2 flex items-center justify-between opacity-0 transition duration-300 group-hover:opacity-100">
-                <span className="line-clamp-1 font-mono text-[9px] uppercase tracking-wider text-white/70">
+                <span className="line-clamp-1 font-mono text-[9px] uppercase tracking-wider text-foreground/70">
                   {it.tags.slice(0, 3).join(' · ')}
                 </span>
-                <span className="flex shrink-0 items-center gap-1 rounded bg-black/60 px-1.5 py-0.5 font-mono text-[9px] text-white/85">
-                  <Star className="size-2.5 fill-current text-rose-400" aria-hidden="true" />
+                <span className="flex shrink-0 items-center gap-1 rounded bg-black/60 px-1.5 py-0.5 font-mono text-[9px] text-foreground/85">
+                  <Star className="size-2.5 fill-current text-primary" aria-hidden="true" />
                   {it.score}
                 </span>
               </span>
               {it.kind === 'video' && (
-                <span className="absolute left-2 top-2 flex items-center gap-1 rounded bg-rose-600 px-1.5 py-0.5 font-mono text-[9px] font-bold text-white">
+                <span className="absolute left-2 top-2 flex items-center gap-1 rounded bg-primary px-1.5 py-0.5 font-mono text-[9px] font-bold text-foreground">
                   <Play className="size-2.5 fill-current" aria-hidden="true" /> VIDEO
                 </span>
               )}
@@ -63,7 +63,7 @@ export function GaleriGrid({ items }: { items: GaleriItem[] }) {
           <button
             type="button"
             onClick={() => setOpen(null)}
-            className="absolute right-4 top-4 grid size-10 place-items-center rounded-full border border-white/15 bg-white/10 text-white transition hover:bg-white/20"
+            className="absolute right-4 top-4 grid size-10 place-items-center rounded-full border border-border bg-muted text-foreground transition hover:bg-muted"
             aria-label="Kapat"
           >
             <X className="size-5" />
@@ -76,11 +76,11 @@ export function GaleriGrid({ items }: { items: GaleriItem[] }) {
               <img src={open.src} alt="" className="max-h-[78vh] w-full rounded-2xl object-contain" />
             )}
             <div className="flex flex-wrap items-center gap-2">
-              <span className="flex items-center gap-1 rounded-full bg-rose-600/20 px-2.5 py-1 font-mono text-[10px] text-rose-300">
+              <span className="flex items-center gap-1 rounded-full bg-primary/20 px-2.5 py-1 font-mono text-[10px] text-primary">
                 <Star className="size-3 fill-current" aria-hidden="true" /> {open.score}
               </span>
               {open.tags.slice(0, 14).map((t) => (
-                <span key={t} className="rounded-full border border-white/10 px-2.5 py-1 font-mono text-[10px] text-white/50">
+                <span key={t} className="rounded-full border border-border px-2.5 py-1 font-mono text-[10px] text-foreground/50">
                   {t}
                 </span>
               ))}

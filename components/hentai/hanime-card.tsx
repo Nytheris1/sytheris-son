@@ -14,23 +14,23 @@ export function HanimeCard({ video, badge, rank }: { video: HanimeVideo; badge?:
         )}
         <span className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent" aria-hidden="true" />
         <span className="absolute inset-0 grid place-items-center opacity-0 transition duration-300 group-hover:opacity-100">
-          <span className="grid size-12 place-items-center rounded-full bg-rose-600/90 text-white shadow-[0_10px_30px_-8px_rgba(244,63,94,0.9)]">
+          <span className="grid size-12 place-items-center rounded-full bg-primary/90 text-foreground shadow-[0_10px_30px_-8px_rgba(244,63,94,0.9)]">
             <Play className="ml-0.5 size-5 fill-current" aria-hidden="true" />
           </span>
         </span>
         {rank ? (
-          <span className="absolute left-2 top-2 font-mono text-2xl font-bold leading-none text-white [text-shadow:0_2px_10px_rgba(0,0,0,0.85)]">{rank}</span>
+          <span className="absolute left-2 top-2 font-mono text-2xl font-bold leading-none text-foreground [text-shadow:0_2px_10px_rgba(0,0,0,0.85)]">{rank}</span>
         ) : (
-          <span className="absolute left-2 top-2 rounded bg-black/55 px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wider text-white/85 backdrop-blur-sm">
+          <span className="absolute left-2 top-2 rounded bg-black/55 px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wider text-foreground/85 backdrop-blur-sm">
             {video.censored ? 'Cens' : 'Uncens'}
           </span>
         )}
         {badge && (
-          <span className="absolute right-2 top-2 rounded bg-white/90 px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wider text-black">
+          <span className="absolute right-2 top-2 rounded bg-foreground px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wider text-background">
             {badge}
           </span>
         )}
-        <span className="absolute inset-x-2 bottom-2 flex items-center justify-between font-mono text-[10px] text-white/85">
+        <span className="absolute inset-x-2 bottom-2 flex items-center justify-between font-mono text-[10px] text-foreground/85">
           <span className="flex items-center gap-1">
             <Eye className="size-2.5" aria-hidden="true" /> {compactNumber(video.views)}
           </span>
@@ -38,10 +38,10 @@ export function HanimeCard({ video, badge, rank }: { video: HanimeVideo; badge?:
         </span>
       </span>
       <span className="flex flex-col gap-1">
-        <span className="line-clamp-2 text-[13px] font-semibold leading-snug text-white/90 transition group-hover:text-white">
+        <span className="line-clamp-2 text-[13px] font-semibold leading-snug text-foreground/90 transition group-hover:text-foreground">
           {video.name}
         </span>
-        <span className="truncate font-mono text-[10px] uppercase tracking-[0.18em] text-white/35">{video.brand ?? '—'}</span>
+        <span className="truncate font-mono text-[10px] uppercase tracking-[0.18em] text-foreground/35">{video.brand ?? '—'}</span>
       </span>
     </Link>
   )
