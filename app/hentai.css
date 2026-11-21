@@ -1,15 +1,29 @@
-/* Hentai mode — neon pink on near-black, tape grid, oversized outlined word. */
+/* Hentai mode — pink-shifted token layer.
+   Pages stay on the site's own token classes (bg-background, border-border,
+   bg-primary...); this file only re-hues them so the shell (active nav pill,
+   focus rings, cards, footer) turns pink with the content. */
 
-.ht-scope {
-  --ht-accent: oklch(0.72 0.22 350);
-  --ht-accent-soft: oklch(0.72 0.22 350 / 0.18);
+.ht-theme {
+  --hue: 352;
+  --chroma: 0.2;
+  --primary: oklch(0.68 0.22 352);
+  --primary-foreground: oklch(0.99 0.008 352);
+  --ink-light: oklch(0.56 0.2 352);
+  --ink-dark: oklch(0.83 0.14 352);
 }
 
-.ht-neon {
-  color: var(--ht-accent);
-  text-shadow:
-    0 0 10px oklch(0.72 0.22 350 / 0.55),
-    0 0 32px oklch(0.72 0.22 350 / 0.28);
+/* bloom for hero + card hover; token-derived so it never drifts */
+.ht-glow {
+  box-shadow: 0 28px 64px -28px oklch(0.68 0.22 352 / 0.55);
+}
+.ht-glow-sm {
+  box-shadow: 0 18px 44px -24px oklch(0.68 0.22 352 / 0.5);
+}
+
+.ht-hero-veil {
+  background:
+    radial-gradient(ellipse 80% 60% at 18% -10%, oklch(0.68 0.22 352 / 0.26), transparent 62%),
+    linear-gradient(to bottom, oklch(0.13 0.02 352 / 0.55), oklch(0.13 0.02 352 / 0.94) 62%, var(--background));
 }
 
 .ht-grid {
@@ -23,23 +37,23 @@
 
 .ht-word {
   color: transparent;
-  -webkit-text-stroke: 1px oklch(0.72 0.22 350 / 0.5);
+  -webkit-text-stroke: 1px oklch(0.68 0.22 352 / 0.42);
   letter-spacing: -0.06em;
   line-height: 0.78;
 }
 
 .ht-chip {
-  border: 1px solid oklch(1 0 0 / 0.14);
-  background: oklch(1 0 0 / 0.04);
+  border: 1px solid var(--border);
+  background: oklch(1 0 0 / 0.03);
   transition:
     border-color 0.25s,
     color 0.25s,
     background 0.25s;
 }
 .ht-chip:hover {
-  border-color: var(--ht-accent);
-  background: oklch(0.72 0.22 350 / 0.12);
-  color: oklch(0.98 0.01 350);
+  border-color: var(--primary);
+  background: oklch(0.68 0.22 352 / 0.12);
+  color: var(--foreground);
 }
 
 .ht-card {
@@ -49,9 +63,9 @@
 }
 .ht-card:hover {
   translate: 0 -4px;
-  border-color: var(--ht-accent);
+  border-color: var(--primary);
 }
 
 .ht-rule {
-  background: linear-gradient(90deg, transparent, oklch(0.72 0.22 350 / 0.55), transparent);
+  background: linear-gradient(90deg, transparent, oklch(0.68 0.22 352 / 0.55), transparent);
 }

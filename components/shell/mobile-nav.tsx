@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion } from 'motion/react'
-import { CalendarDays, Clapperboard, Compass, Dices, Home, LibraryBig, Search, Tv , Flame, Images, Video } from 'lucide-react'
+import { CalendarDays, Clapperboard, Compass, Dices, Home, LibraryBig, Search, Tv, BookOpen, Flame, Images, Video } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { ContentMode } from '@/lib/content-mode-shared'
 import { isActive } from './site-header'
@@ -27,7 +27,7 @@ const FILM_ITEMS = [
 const HENTAI_ITEMS = [
   { href: '/', label: 'Ana Sayfa', icon: Home },
   { href: '/hentai', label: 'Hentai', icon: Flame },
-  { href: '/hentai/doujin', label: 'Doujin', icon: LibraryBig },
+  { href: '/hentai/doujin', label: 'Doujin', icon: BookOpen },
   { href: '/galeri', label: 'Rule34', icon: Images, center: true },
   { href: '/porno', label: 'Porno', icon: Video },
   { href: '/kutuphane', label: 'Kutuphane', icon: LibraryBig },
@@ -38,7 +38,7 @@ export function MobileNav({ mode = 'anime' }: { mode?: ContentMode }) {
   const items = mode === 'film' ? FILM_ITEMS : mode === 'hentai' ? HENTAI_ITEMS : ITEMS
   return (
     <nav
-      className="glass fixed inset-x-3 bottom-3 z-50 rounded-[1.75rem] border border-border shadow-2xl shadow-black/20 md:hidden"
+      className={cn('glass fixed inset-x-3 bottom-3 z-50 rounded-[1.75rem] border border-border shadow-2xl shadow-black/20 md:hidden', mode === 'hentai' && 'ht-theme')}
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       aria-label="Mobil menü"
     >

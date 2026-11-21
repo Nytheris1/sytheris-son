@@ -17,13 +17,13 @@ export default async function DoujinReader({ params }: Props) {
   if (!gallery) notFound()
 
   return (
-    <div className="dark min-h-screen bg-[#08070a] pb-20 text-white">
-      <div className="sticky top-0 z-10 border-b border-white/10 bg-[#08070a]/95 backdrop-blur">
+    <div className="ht-theme dark min-h-screen bg-background pb-20 text-foreground">
+      <div className="sticky top-0 z-10 border-b border-border bg-background/95 backdrop-blur">
         <div className="mx-auto flex max-w-[900px] items-center gap-3 px-4 py-3 text-sm">
-          <Link href="/hentai/doujin" className="flex items-center gap-1.5 text-white/50 hover:text-white">
+          <Link href="/hentai/doujin" className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground">
             <ArrowLeft className="size-4" /> Doujin
           </Link>
-          <span className="ml-auto truncate font-mono text-[11px] text-white/40">{gallery.pages} sayfa</span>
+          <span className="ml-auto truncate font-mono text-[11px] text-muted-foreground">{gallery.pages} sayfa</span>
         </div>
       </div>
 
@@ -32,9 +32,9 @@ export default async function DoujinReader({ params }: Props) {
       <div className="mx-auto flex max-w-[900px] flex-col gap-1 px-2 pt-4 sm:px-4">
         {gallery.files.map((file, i) => (
           // eslint-disable-next-line @next/next/no-img-element
-          <img key={file} src={img(imageUrl(file))} alt={'sayfa ' + (i + 1)} loading={i < 3 ? 'eager' : 'lazy'} className="w-full rounded-sm bg-white/5" />
+          <img key={file} src={img(imageUrl(file))} alt={'sayfa ' + (i + 1)} loading={i < 3 ? 'eager' : 'lazy'} className="w-full rounded-sm bg-muted" />
         ))}
-        {!gallery.files.length && <p className="py-20 text-center text-sm text-white/40">Sayfalar yüklenemedi.</p>}
+        {!gallery.files.length && <p className="py-20 text-center text-sm text-muted-foreground">Sayfalar yüklenemedi.</p>}
       </div>
     </div>
   )

@@ -20,18 +20,18 @@ export default async function PornoWatchPage({
   const source = ((src || 'ph') as Src)
 
   return (
-    <div className="dark min-h-screen bg-[#08070a] pb-24 text-white">
+    <div className="ht-theme dark min-h-screen bg-background pb-24 text-foreground">
       <div className="mx-auto max-w-[1200px] px-4 pt-10 sm:px-6 lg:px-10">
-        <Link href="/porno" className="font-mono text-[11px] uppercase tracking-[0.24em] text-white/40 hover:text-white">- Porno</Link>
-        <h1 className="mt-3 mb-4 text-2xl font-semibold tracking-[-0.02em]">{title}</h1>
+        <Link href="/porno" className="label-mono text-muted-foreground transition hover:text-foreground">- Porno</Link>
+        <h1 className="mb-4 mt-3 text-2xl font-semibold tracking-[-0.02em]">{title}</h1>
         <PornPlayer id={id} path={path} src={source} title={title} />
         <a
           href={pageUrl(source, path)}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-white/15 px-4 py-2 text-xs"
+          className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-border px-4 py-2 text-xs text-muted-foreground transition hover:border-primary hover:text-foreground"
         >
-          xnxx.com <ExternalLink className="size-3.5" />
+          {source === 'ph' ? 'pornhub.com' : 'xvideos.com'} <ExternalLink className="size-3.5" />
         </a>
       </div>
     </div>

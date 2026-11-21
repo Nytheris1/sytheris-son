@@ -102,7 +102,7 @@ export function SiteHeader({ user, mode = 'anime' }: { user: HeaderUser | null; 
       <header
         className={cn(
           'sticky top-0 z-50 transition-transform duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)]',
-          hidden && !searchOpen ? '-translate-y-[120%]' : 'translate-y-0',
+          mode === 'hentai' && 'ht-theme', hidden && !searchOpen ? '-translate-y-[120%]' : 'translate-y-0',
         )}
       >
         <div

@@ -55,7 +55,7 @@ export function PornPlayer({
   if (error) {
     return (
       <div className="flex flex-col gap-3">
-        <div className="relative aspect-video overflow-hidden rounded-3xl border border-white/10 bg-black">
+        <div className="relative aspect-video overflow-hidden rounded-3xl border border-border bg-black">
           <iframe
             src={'https://www.pornhub.com/embed/' + id}
             title={title}
@@ -64,15 +64,15 @@ export function PornPlayer({
             allowFullScreen
           />
         </div>
-        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/35">yedek oynatıcı</p>
+        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">yedek oynatıcı</p>
       </div>
     )
   }
 
   if (!list) {
     return (
-      <div className="grid aspect-video place-items-center rounded-3xl border border-white/10 bg-black">
-        <Loader2 className="size-6 animate-spin text-rose-400" aria-hidden="true" />
+      <div className="grid aspect-video place-items-center rounded-3xl border border-border bg-black">
+        <Loader2 className="size-6 animate-spin text-primary" aria-hidden="true" />
       </div>
     )
   }
@@ -94,7 +94,7 @@ export function PornPlayer({
       />
       {list.length > 1 && (
         <div className="flex flex-wrap items-center gap-1.5">
-          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/30">kalite</span>
+          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">kalite</span>
           {list.map((s, i) => (
             <button
               key={s.url}
@@ -102,7 +102,7 @@ export function PornPlayer({
               aria-pressed={i === pick}
               className={cn(
                 'h-8 rounded-full border px-3 font-mono text-[10px] uppercase tracking-wider transition',
-                i === pick ? 'border-rose-400 text-rose-300' : 'border-white/15 text-white/45 hover:border-white/40',
+                i === pick ? 'border-primary text-primary' : 'border-border text-muted-foreground hover:border-primary/50',
               )}
             >
               {s.label}

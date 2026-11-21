@@ -29,7 +29,7 @@ export function GaleriGrid({ items }: { items: GaleriItem[] }) {
             <button
               type="button"
               onClick={() => setOpen(it)}
-              className="group relative block w-full overflow-hidden rounded-xl border border-white/10 bg-white/5 transition duration-500 hover:border-rose-500/70 hover:shadow-[0_24px_50px_-24px_rgba(244,63,94,0.5)]"
+              className="group relative block w-full overflow-hidden rounded-xl border border-border bg-card transition duration-500 hover:border-primary hover:ht-glow-sm"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={it.preview} alt="" loading="lazy" decoding="async" className="w-full object-cover transition duration-700 group-hover:scale-[1.04]" />
@@ -39,12 +39,12 @@ export function GaleriGrid({ items }: { items: GaleriItem[] }) {
                   {it.tags.slice(0, 3).join(' · ')}
                 </span>
                 <span className="flex shrink-0 items-center gap-1 rounded bg-black/60 px-1.5 py-0.5 font-mono text-[9px] text-white/85">
-                  <Star className="size-2.5 fill-current text-rose-400" aria-hidden="true" />
+                  <Star className="size-2.5 fill-current text-primary" aria-hidden="true" />
                   {it.score}
                 </span>
               </span>
               {it.kind === 'video' && (
-                <span className="absolute left-2 top-2 flex items-center gap-1 rounded bg-rose-600 px-1.5 py-0.5 font-mono text-[9px] font-bold text-white">
+                <span className="absolute left-2 top-2 flex items-center gap-1 rounded bg-primary px-1.5 py-0.5 font-mono text-[9px] font-bold text-white">
                   <Play className="size-2.5 fill-current" aria-hidden="true" /> VIDEO
                 </span>
               )}
@@ -76,7 +76,7 @@ export function GaleriGrid({ items }: { items: GaleriItem[] }) {
               <img src={open.src} alt="" className="max-h-[78vh] w-full rounded-2xl object-contain" />
             )}
             <div className="flex flex-wrap items-center gap-2">
-              <span className="flex items-center gap-1 rounded-full bg-rose-600/20 px-2.5 py-1 font-mono text-[10px] text-rose-300">
+              <span className="flex items-center gap-1 rounded-full bg-primary/15 px-2.5 py-1 font-mono text-[10px] text-primary">
                 <Star className="size-3 fill-current" aria-hidden="true" /> {open.score}
               </span>
               {open.tags.slice(0, 14).map((t) => (

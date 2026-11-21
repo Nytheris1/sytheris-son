@@ -180,10 +180,10 @@ function CinemaFooter() {
 
 function HentaiFooter() {
   return (
-    <footer className="ht-scope relative mt-24 overflow-hidden border-t border-border bg-card">
+    <footer className="ht-theme relative mt-24 overflow-hidden border-t border-border bg-card">
       <div
         className="pointer-events-none absolute -top-24 left-1/2 h-56 w-[60%] -translate-x-1/2 rounded-full blur-[80px]"
-        style={{ background: 'oklch(0.72 0.22 350 / 0.12)' }}
+        style={{ background: 'oklch(0.68 0.22 352 / 0.12)' }}
         aria-hidden="true"
       />
       <div className="relative mx-auto w-full max-w-[1440px] px-4 pb-28 pt-16 sm:px-6 md:pb-10 lg:px-10">
@@ -212,7 +212,7 @@ function HentaiFooter() {
         </div>
 
         <div className="mt-16 select-none" aria-hidden="true">
-          <p className="bg-gradient-to-b from-[oklch(0.78_0.18_350_/_0.85)] to-transparent bg-clip-text text-center text-[22vw] font-bold leading-[0.8] tracking-[-0.06em] text-transparent lg:text-[15rem]">
+          <p className="bg-gradient-to-b from-primary/85 to-transparent bg-clip-text text-center text-[22vw] font-bold leading-[0.8] tracking-[-0.06em] text-transparent lg:text-[15rem]">
             HENTAI
           </p>
         </div>

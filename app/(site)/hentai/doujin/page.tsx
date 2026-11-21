@@ -33,51 +33,51 @@ export default async function DoujinPage({ searchParams }: { searchParams: Promi
   }
 
   return (
-    <div className="dark min-h-screen bg-[#08070a] pb-24 text-white">
+    <div className="ht-theme dark min-h-screen bg-background pb-24 text-foreground">
       <div className="mx-auto flex max-w-[1600px] flex-col gap-8 px-4 pt-16 sm:px-6 lg:px-10">
         <div className="flex flex-col gap-2">
-          <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-rose-400">doujinshi</p>
+          <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-primary">doujinshi</p>
           <h1 className="text-4xl font-bold tracking-[-0.04em] sm:text-5xl">
-            Doujin <span className="accent-serif italic text-white/35">rafı</span>
+            Doujin <span className="accent-serif italic text-muted-foreground">rafı</span>
           </h1>
-          <p className="max-w-lg text-sm text-white/40">Her seri kendi okuyucumuzda, sayfa sayfa açılır.</p>
+          <p className="max-w-lg text-sm text-muted-foreground">Her seri kendi okuyucumuzda, sayfa sayfa açılır.</p>
         </div>
 
-        <form action="/hentai/doujin" className="flex w-full max-w-xl items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] p-1.5 pl-5">
-          <Search className="size-4 shrink-0 text-white/35" aria-hidden="true" />
-          <input name="q" defaultValue={q} placeholder="ara (boş = popüler)" className="h-10 flex-1 bg-transparent text-sm outline-none placeholder:text-white/30" />
-          <button className="h-10 rounded-full bg-rose-600 px-6 text-sm font-semibold">Ara</button>
+        <form action="/hentai/doujin" className="flex w-full max-w-xl items-center gap-2 rounded-full border border-border bg-card/60 p-1.5 pl-5">
+          <Search className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+          <input name="q" defaultValue={q} placeholder="ara (boş = popüler)" className="h-10 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/60" />
+          <button className="h-10 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground">Ara</button>
         </form>
 
-        {error && <p className="rounded-2xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">{error}</p>}
+        {error && <p className="rounded-2xl border border-primary/40 bg-primary/10 p-4 text-sm text-primary">{error}</p>}
 
         {items.length ? (
           <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7">
             {items.map((m) => (
               <Link key={m.id} href={'/hentai/doujin/' + m.id} className="group flex flex-col gap-2">
-                <div className="relative aspect-[2/3] overflow-hidden rounded-xl border border-white/10 bg-white/[0.03]">
+                <div className="relative aspect-[2/3] overflow-hidden rounded-xl border border-border bg-card">
                   {m.thumb ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={img(m.thumb)} alt={m.title} loading="lazy" className="size-full object-cover transition duration-500 group-hover:scale-[1.04]" />
                   ) : null}
                   {m.pages ? <span className="absolute bottom-2 right-2 rounded-md bg-black/75 px-1.5 py-0.5 font-mono text-[10px] text-white/85">{m.pages}</span> : null}
                 </div>
-                <h2 className="line-clamp-2 text-[13px] font-medium leading-snug text-white/85 group-hover:text-white">{m.title}</h2>
+                <h2 className="line-clamp-2 text-[13px] font-medium leading-snug text-foreground/85 group-hover:text-foreground">{m.title}</h2>
               </Link>
             ))}
           </div>
         ) : (
-          !error && <p className="rounded-3xl border border-dashed border-white/15 p-16 text-center text-white/40">Sonuç yok.</p>
+          !error && <p className="rounded-3xl border border-dashed border-border p-16 text-center text-muted-foreground">Sonuç yok.</p>
         )}
 
         <nav className="flex items-center justify-center gap-3">
           {page > 1 && (
-            <Link href={href(page - 1)} className="flex h-11 items-center gap-2 rounded-full border border-white/15 px-5 text-sm">
+            <Link href={href(page - 1)} className="flex h-11 items-center gap-2 rounded-full border border-border px-5 text-sm hover:border-primary">
               <ArrowLeft className="size-4" /> Önceki
             </Link>
           )}
           {hasNext && (
-            <Link href={href(page + 1)} className="flex h-11 items-center gap-2 rounded-full bg-rose-600 px-5 text-sm font-semibold">
+            <Link href={href(page + 1)} className="flex h-11 items-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground">
               Sonraki <ArrowRight className="size-4" />
             </Link>
           )}

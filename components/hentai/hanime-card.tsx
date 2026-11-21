@@ -6,15 +6,15 @@ import { compactNumber, shortDuration } from '@/lib/hanime/format'
 export function HanimeCard({ video, badge, rank }: { video: HanimeVideo; badge?: string; rank?: number }) {
   const cover = video.cover ?? video.poster
   return (
-    <Link href={'/hentai/' + video.slug} className="group flex flex-col gap-2.5 outline-none">
-      <span className="relative block aspect-[2/3] overflow-hidden rounded-xl bg-muted ring-1 ring-white/10 transition duration-500 group-hover:-translate-y-1.5 group-hover:shadow-[0_26px_60px_-26px_rgba(244,63,94,0.55)] group-hover:ring-rose-500/70 group-focus-visible:ring-2 group-focus-visible:ring-rose-500">
+    <Link href={'/hentai/' + video.slug} className="ht-card group flex flex-col gap-2.5 outline-none">
+      <span className="relative block aspect-[2/3] overflow-hidden rounded-xl bg-muted ring-1 ring-border transition duration-500 group-hover:-translate-y-1.5 group-hover:ht-glow-sm group-hover:ring-primary/70 group-focus-visible:ring-2 group-focus-visible:ring-primary">
         {cover && (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={cover} alt="" loading="lazy" decoding="async" className="size-full object-cover transition duration-700 group-hover:scale-[1.06]" />
         )}
         <span className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent" aria-hidden="true" />
         <span className="absolute inset-0 grid place-items-center opacity-0 transition duration-300 group-hover:opacity-100">
-          <span className="grid size-12 place-items-center rounded-full bg-rose-600/90 text-white shadow-[0_10px_30px_-8px_rgba(244,63,94,0.9)]">
+          <span className="grid size-12 place-items-center rounded-full bg-primary text-primary-foreground shadow-[0_10px_30px_-8px_oklch(0.68_0.22_352_/_0.9)]">
             <Play className="ml-0.5 size-5 fill-current" aria-hidden="true" />
           </span>
         </span>
@@ -38,10 +38,10 @@ export function HanimeCard({ video, badge, rank }: { video: HanimeVideo; badge?:
         </span>
       </span>
       <span className="flex flex-col gap-1">
-        <span className="line-clamp-2 text-[13px] font-semibold leading-snug text-white/90 transition group-hover:text-white">
+        <span className="line-clamp-2 text-[13px] font-semibold leading-snug text-foreground/90 transition group-hover:text-foreground">
           {video.name}
         </span>
-        <span className="truncate font-mono text-[10px] uppercase tracking-[0.18em] text-white/35">{video.brand ?? '—'}</span>
+        <span className="truncate font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">{video.brand ?? '—'}</span>
       </span>
     </Link>
   )
